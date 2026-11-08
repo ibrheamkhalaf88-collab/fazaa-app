@@ -1,0 +1,848 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#0F4C55">
+<title>سَنَد</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Readex+Pro:wght@300;400;500;600&display=swap">
+<style>
+:root{
+  --ground:#FAF1EE; --surface:#FFFFFF; --surface-2:#F3E6E2; --line:#EAD7D2;
+  --ink:#1B2430; --ink-soft:#5E6573;
+  --petrol:#0F4C55; --petrol-soft:#D6EAE6; --on-petrol:#FFFFFF;
+  --pome:#B8364F; --pome-soft:#F8DDE2;
+  --saffron:#E2A23A; --saffron-soft:#FBEBCF;
+  --skin:#E6B48C; --skin-2:#C98E63; --hair:#3A2622; --frame:#1B2430; --desk:#EFE2DE;
+  --display:"Reem Kufi","Readex Pro",Tahoma,sans-serif;
+  --body:"Readex Pro","Segoe UI",Tahoma,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --ground:#0E1719; --surface:#162427; --surface-2:#1E3135; --line:#2A4045;
+  --ink:#EEF2F1; --ink-soft:#A3B2B3;
+  --petrol:#62B9B3; --petrol-soft:#183A3C; --on-petrol:#062224;
+  --pome:#F07D93; --pome-soft:#3E1E27;
+  --saffron:#F0B95E; --saffron-soft:#3A2C14;
+  --frame:#04090A; --desk:#0A1214; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --ground:#0E1719; --surface:#162427; --surface-2:#1E3135; --line:#2A4045;
+  --ink:#EEF2F1; --ink-soft:#A3B2B3;
+  --petrol:#62B9B3; --petrol-soft:#183A3C; --on-petrol:#062224;
+  --pome:#F07D93; --pome-soft:#3E1E27;
+  --saffron:#F0B95E; --saffron-soft:#3A2C14;
+  --frame:#04090A; --desk:#0A1214; color-scheme:dark}
+:root[data-theme="light"]{color-scheme:light}
+body,.app,.screen,.tabs,.composer{transition:background-color .25s,color .25s}
+.themes{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:var(--surface-2);border-radius:14px;padding:4px}
+.themes button{border:none;background:none;border-radius:11px;padding:8px 4px;font-size:12.5px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--ink-soft)}
+.themes button.on{background:var(--surface);color:var(--ink);font-weight:500}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;margin:0}
+body{background:var(--desk);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.65;overscroll-behavior:none}
+button{font-family:inherit;cursor:pointer;color:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
+svg.ic{width:1.25em;height:1.25em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+h1,h2,h3,.h{font-family:var(--display);font-weight:700;line-height:1.35;margin:0;text-wrap:balance}
+p{margin:0}
+
+/* device shell: full screen on phones, phone frame on wide screens */
+.device{height:100%;display:flex;justify-content:center;align-items:center}
+.app{position:relative;width:100%;height:100%;background:var(--surface);overflow:hidden;display:flex;flex-direction:column}
+@media (min-width:640px) and (min-height:700px){
+  .device{padding:24px}
+  .app{width:400px;height:min(860px,calc(100vh - 48px));border-radius:44px;border:10px solid var(--frame);box-shadow:0 30px 80px rgba(15,76,85,.25)}
+}
+.screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--surface);padding-top:env(safe-area-inset-top,0px)}
+.screen[hidden]{display:none}
+.screen.enter{animation:enter .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes enter{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px max(18px,env(safe-area-inset-right,0px)) 18px max(18px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px;scrollbar-width:none}
+.body::-webkit-scrollbar{display:none}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px 4px}
+.iconbtn{width:40px;height:40px;border-radius:13px;border:none;background:var(--surface-2);display:grid;place-items:center}
+.exit{display:inline-flex;align-items:center;gap:5px;border:none;border-radius:12px;background:var(--pome-soft);color:var(--pome);font-size:13px;font-weight:500;padding:9px 12px}
+.muted{color:var(--ink-soft)}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border-radius:16px;padding:14px;font-size:15px;font-weight:500;border:1px solid var(--line);background:var(--surface)}
+.btn.primary{background:var(--petrol);border-color:var(--petrol);color:var(--on-petrol)}
+.btn.google{background:var(--surface);color:var(--ink)}
+.toast{position:absolute;left:50%;bottom:calc(90px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:14px;font-size:13px;z-index:20;max-width:85%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+
+/* tab bar */
+.tabs{display:flex;justify-content:space-around;border-top:1px solid var(--line);background:var(--surface);padding:6px 6px calc(8px + env(safe-area-inset-bottom,0px))}
+.tabs button{background:none;border:none;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;padding:6px 4px;border-radius:12px;flex:1;min-width:0}
+.tabs button.on{color:var(--petrol);font-weight:500}
+.tabs button.sos{color:var(--pome)}
+.tabs button.sos.on{background:var(--pome-soft)}
+
+/* welcome */
+.welcome .body{justify-content:center;text-align:center;align-items:center}
+.welcome svg.art{width:100%;max-width:300px}
+.dots{display:flex;gap:6px;justify-content:center}
+.dots i{width:7px;height:7px;border-radius:4px;background:var(--line)}
+.dots i.on{width:22px;background:var(--petrol)}
+.stack{display:flex;flex-direction:column;gap:10px;width:100%}
+.fine{font-size:12px;color:var(--ink-soft)}
+
+/* country */
+.countries{display:flex;flex-direction:column;gap:8px}
+.country{border:1.5px solid var(--line);background:var(--surface);border-radius:16px;padding:13px 14px;font-size:15px;text-align:right;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.country small{display:block;font-size:12px;color:var(--ink-soft)}
+.country .tick{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;color:transparent;flex-shrink:0}
+.country.sel{border-color:var(--petrol);background:var(--petrol-soft)}
+.country.sel .tick{background:var(--petrol);border-color:var(--petrol);color:var(--on-petrol)}
+.country:disabled{opacity:.5}
+
+/* home */
+.hello{display:flex;align-items:center;gap:12px}
+.hello svg.av{width:48px;height:48px;border-radius:16px;background:var(--saffron-soft);flex-shrink:0}
+.mic-card{background:var(--petrol);color:var(--on-petrol);border-radius:22px;padding:16px;display:flex;align-items:center;gap:14px;border:none;text-align:right;width:100%;position:relative;overflow:hidden}
+.mic-card::after{content:"";position:absolute;left:-24px;bottom:-34px;width:110px;height:110px;border-radius:50%;border:14px solid rgba(255,255,255,.08)}
+.mic-dot{width:52px;height:52px;border-radius:50%;background:var(--saffron);color:#1B2430;display:grid;place-items:center;flex-shrink:0}
+.topics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.topic{border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:4px;font-weight:500;font-size:14px;border:none;text-align:right;line-height:1.4;min-height:118px}
+.topic small{font-weight:400;color:var(--ink-soft);font-size:12px}
+.topic svg.ill{width:48px;height:48px;margin-bottom:4px}
+.t-pome{background:var(--pome-soft)} .t-petrol{background:var(--petrol-soft)} .t-saff{background:var(--saffron-soft)} .t-ink{background:var(--surface-2)}
+.tip{border:1.5px dashed var(--saffron);border-radius:18px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start}
+.tip svg{color:var(--saffron);margin-top:3px}
+
+/* chat */
+.chat-head{display:flex;align-items:center;gap:10px}
+.logo-mark{width:38px;height:38px;border-radius:12px;background:var(--saffron);color:#1B2430;display:grid;place-items:center;flex-shrink:0}
+.msgs{display:flex;flex-direction:column;gap:10px}
+.u{align-self:flex-start;max-width:85%;background:var(--petrol);color:var(--on-petrol);padding:10px 14px;border-radius:18px 18px 4px 18px;white-space:pre-wrap;word-wrap:break-word}
+.a{align-self:flex-end;max-width:94%;background:var(--surface-2);padding:12px 14px;border-radius:18px 18px 18px 4px}
+.a ol{margin:6px 0 0;padding-right:20px}
+.a li{margin-bottom:2px}
+.cite{margin-top:10px;background:var(--surface);border-radius:14px;border:1px solid var(--line);overflow:hidden}
+.cite summary{list-style:none;padding:10px 12px;display:flex;gap:8px;align-items:flex-start;cursor:pointer}
+.cite summary::-webkit-details-marker{display:none}
+.cite summary svg{color:var(--petrol);margin-top:3px}
+.cite b{display:block;color:var(--petrol);font-weight:500;font-size:13px}
+.cite span{font-size:12px;color:var(--ink-soft)}
+.cite .law{padding:0 12px 12px;font-size:12.5px;line-height:1.8;white-space:pre-wrap;border-top:1px solid var(--line);padding-top:10px}
+.cite .law a{color:var(--petrol)}
+.acts{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;border-radius:12px;padding:8px 11px;border:1px solid var(--line);background:var(--surface)}
+.chip.fill{background:var(--petrol);color:var(--on-petrol);border-color:var(--petrol)}
+.suggest{display:flex;gap:6px;flex-wrap:wrap}
+.typing-dots{display:inline-flex;gap:4px;padding:4px 2px}
+.typing-dots i{width:7px;height:7px;border-radius:50%;background:var(--ink-soft);animation:blink 1s infinite}
+.typing-dots i:nth-child(2){animation-delay:.15s}.typing-dots i:nth-child(3){animation-delay:.3s}
+@keyframes blink{0%,100%{opacity:.25}50%{opacity:1}}
+.composer{display:flex;align-items:flex-end;gap:8px;padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);background:var(--surface)}
+.composer textarea{flex:1;resize:none;border:none;border-radius:20px;background:var(--surface-2);padding:10px 14px;font:inherit;font-size:16px;color:var(--ink);max-height:120px;min-height:42px;line-height:1.4}
+.composer textarea::placeholder{color:var(--ink-soft)}
+.round{width:44px;height:44px;border-radius:50%;border:none;display:grid;place-items:center;flex-shrink:0}
+.round.mic{background:var(--saffron);color:#1B2430}
+.round.send{background:var(--petrol);color:var(--on-petrol)}
+.disclaim{font-size:11px;color:var(--ink-soft);text-align:center}
+
+/* sos */
+.sos-head{background:var(--pome-soft);border-radius:20px;padding:14px;display:flex;gap:12px;align-items:center}
+.sos-head svg.ill{width:64px;height:64px;flex-shrink:0}
+.prog{height:7px;border-radius:4px;background:var(--surface);overflow:hidden;margin-top:8px}
+.prog i{display:block;height:100%;width:0;background:var(--pome);border-radius:4px;transition:width .35s}
+.steps{display:flex;flex-direction:column;gap:8px}
+.step{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:16px;padding:12px;background:var(--surface);text-align:right;font-size:14px;line-height:1.5;width:100%}
+.step .box{width:24px;height:24px;border-radius:8px;border:2px solid var(--line);display:grid;place-items:center;flex-shrink:0;color:transparent;transition:background .2s}
+.step.done .box{background:var(--petrol);border-color:var(--petrol);color:var(--on-petrol)}
+.step.done b{text-decoration:line-through;text-decoration-color:var(--ink-soft)}
+.step small{display:block;color:var(--ink-soft);font-size:12px;margin-top:2px}
+.done-card{background:var(--petrol-soft);border-radius:18px;padding:14px;display:flex;gap:10px;align-items:center}
+
+/* support */
+.stabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.stab{flex:1;border:none;border-radius:12px;padding:9px 12px;font-size:13px;background:var(--surface-2);color:var(--ink-soft);white-space:nowrap}
+.stab.on{background:var(--ink);color:var(--surface)}
+.org{border:1px solid var(--line);border-radius:18px;padding:12px;display:flex;gap:12px;align-items:flex-start}
+.org[hidden]{display:none}
+.org .oi{width:44px;height:44px;border-radius:14px;display:grid;place-items:center;flex-shrink:0}
+.org b{font-weight:500;display:block;line-height:1.4}
+.org small{color:var(--ink-soft);font-size:12px;display:block}
+.badge{display:inline-block;font-size:11px;border-radius:7px;padding:1px 8px;background:var(--petrol-soft);color:var(--petrol);margin-top:4px}
+.note{font-size:12px;color:var(--ink-soft);display:flex;gap:6px;align-items:flex-start}
+
+/* settings */
+.set{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.set:last-child{border-bottom:none}
+.set .si{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;flex-shrink:0;background:var(--surface-2)}
+.set div{flex:1;min-width:0}
+.set b{font-weight:500;display:block;line-height:1.4;font-size:14px}
+.set small{color:var(--ink-soft);font-size:12px;display:block;line-height:1.4}
+.tg{width:48px;height:28px;border-radius:14px;border:none;background:var(--line);position:relative;flex-shrink:0;padding:0;transition:background .2s}
+.tg::after{content:"";position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:#fff;transition:right .2s}
+.tg[aria-checked="true"]{background:var(--petrol)}
+.tg[aria-checked="true"]::after{right:23px}
+.disguise{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dg{border:1.5px solid var(--line);border-radius:16px;padding:10px 4px;background:var(--surface);font-size:12px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.dg .gi{width:40px;height:40px;border-radius:12px;display:grid;place-items:center}
+.dg.sel{border-color:var(--petrol);background:var(--petrol-soft)}
+.card{border:1px solid var(--line);border-radius:18px;padding:4px 14px}
+
+/* chat modes */
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:var(--surface-2);border-radius:14px;padding:4px;margin:4px 18px 2px}
+.mode{border:none;background:none;border-radius:11px;padding:8px 6px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;color:var(--ink-soft)}
+.mode.on{background:var(--surface);color:var(--ink);font-weight:500;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.mode .live{width:8px;height:8px;border-radius:50%;background:#2E9E5B;animation:blink 1.6s infinite}
+.sys{align-self:center;font-size:12px;color:var(--ink-soft);background:var(--surface-2);border-radius:10px;padding:5px 10px;text-align:center}
+.lw{align-self:flex-end;max-width:94%;background:var(--saffron-soft);padding:12px 14px;border-radius:18px 18px 18px 4px}
+.lw .who{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-soft);margin-bottom:4px}
+.lw .who svg{width:26px;height:26px;border-radius:9px;background:var(--surface)}
+.connect{display:flex;align-items:center;gap:12px;border:1px dashed var(--saffron);border-radius:18px;padding:12px;align-self:stretch}
+.connect svg.av{width:46px;height:46px;border-radius:14px;background:var(--saffron-soft);flex-shrink:0}
+
+/* lawyer screen */
+.lhero{background:var(--saffron-soft);border-radius:24px;padding:16px;display:flex;gap:12px;align-items:center}
+.lhero svg.art{width:96px;height:110px;flex-shrink:0}
+.paths{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.path{border-radius:20px;padding:14px 12px;border:none;text-align:right;display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500;line-height:1.4}
+.path small{font-weight:400;font-size:12px;opacity:.85}
+.path .pi{width:40px;height:40px;border-radius:13px;display:grid;place-items:center}
+.path.ai{background:var(--petrol);color:var(--on-petrol)} .path.ai .pi{background:rgba(255,255,255,.15)}
+.path.law{background:var(--ink);color:var(--surface)} .path.law .pi{background:var(--saffron);color:#1B2430}
+.sec{display:flex;justify-content:space-between;align-items:baseline}
+.sec h3{font-size:17px}
+.lawyers{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:0 18px}
+.lawyer{flex:0 0 200px;border:1px solid var(--line);border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.lawyer .lh{display:flex;gap:10px;align-items:center}
+.lawyer svg.av{width:46px;height:46px;border-radius:14px;flex-shrink:0}
+.lawyer b{font-weight:500;line-height:1.3;display:block}
+.lawyer small{font-size:11.5px;color:var(--ink-soft)}
+.avail{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:#2E9E5B}
+.avail i{width:7px;height:7px;border-radius:50%;background:#2E9E5B}
+.avail.busy{color:var(--ink-soft)} .avail.busy i{background:var(--ink-soft)}
+.story{border-radius:20px;padding:14px;display:flex;flex-direction:column;gap:8px}
+.story .tag{font-size:11.5px;font-weight:500;border-radius:8px;padding:2px 9px;align-self:flex-start}
+.story h4{font-family:var(--display);font-size:16px;margin:0;line-height:1.4}
+.story p{font-size:13.5px;color:var(--ink-soft);line-height:1.75}
+.story .out{display:flex;gap:8px;align-items:flex-start;font-size:13px;background:var(--surface);border-radius:12px;padding:8px 10px}
+.story .out svg{color:var(--petrol);margin-top:2px}
+
+/* weather disguise */
+.weather{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:24px;background:linear-gradient(var(--petrol-soft),var(--surface))}
+.weather .city{font-size:18px;font-weight:500}
+.weather .temp{font-size:86px;font-weight:300;line-height:1;border:none;background:none;font-family:var(--body);padding:0}
+.wdays{display:flex;gap:18px;margin-top:26px;font-size:13px;color:var(--ink-soft)}
+.wdays div{display:flex;flex-direction:column;align-items:center;gap:4px}
+.hours{display:flex;gap:10px;margin-top:20px;overflow-x:auto;max-width:100%;scrollbar-width:none}
+.hours div{background:var(--surface);border-radius:14px;padding:8px 12px;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:2px;flex-shrink:0}
+
+@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4zM10 20v-5h4v5"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v4M12 17v.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-exit" viewBox="0 0 24 24"><path d="M10 4h8v16h-8M14 12H3M6 9l-3 3 3 3"/></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
+    <symbol id="i-hands" viewBox="0 0 24 24"><path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/><path d="M9 11h6M12 8v6"/></symbol>
+    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></symbol>
+    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M4 20l1.5-4A8 8 0 1 1 9 19.5z"/></symbol>
+    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></symbol>
+    <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM9 9h6M9 13h6"/></symbol>
+    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-1 5 3 3 0 0 0 2 5 3 3 0 0 0 5 1V5a3 3 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 1 5 3 3 0 0 1-2 5 3 3 0 0 1-5 1"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24"><path d="M20 4L3 11l7 2 2 7z"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></symbol>
+    <symbol id="i-auto" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 4v16a8 8 0 0 0 0-16z" fill="currentColor"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-7 8-7s8 3 8 7"/></symbol>
+
+    <symbol id="w-hijab" viewBox="0 0 120 150">
+      <path d="M10 150c0-36 22-56 50-56s50 20 50 56z" style="fill:var(--c1)"/>
+      <path d="M44 100l16 22 16-22" fill="none" style="stroke:var(--c3)" stroke-width="3" stroke-dasharray="3 3"/>
+      <path d="M26 66c0-28 15-43 34-43s34 15 34 43v28c-9 12-21 17-34 17s-25-5-34-17z" style="fill:var(--c2)"/>
+      <ellipse cx="60" cy="65" rx="19" ry="22" style="fill:var(--skin)"/>
+      <circle cx="51" cy="72" r="3.5" fill="#E8907F" opacity=".45"/><circle cx="69" cy="72" r="3.5" fill="#E8907F" opacity=".45"/>
+      <path d="M50 64q3 3 6 0M64 64q3 3 6 0M55 76q5 4 10 0" fill="none" stroke="#3A2622" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="w-hair" viewBox="0 0 120 150">
+      <path d="M34 76c-5-34 10-52 26-52s31 18 26 52c-2 16-6 26-6 26H40s-4-10-6-26z" style="fill:var(--hair)"/>
+      <path d="M10 150c0-36 22-56 50-56s50 20 50 56z" style="fill:var(--c1)"/>
+      <path d="M46 100q14 14 28 0" fill="none" style="stroke:var(--c3)" stroke-width="3" stroke-dasharray="3 3"/>
+      <rect x="53" y="82" width="14" height="16" rx="6" style="fill:var(--skin-2)"/>
+      <ellipse cx="60" cy="64" rx="18" ry="21" style="fill:var(--skin)"/>
+      <path d="M41 60c4-16 30-20 38 2-10-4-24-10-38-2z" style="fill:var(--hair)"/>
+      <circle cx="51" cy="72" r="3.5" fill="#E8907F" opacity=".45"/><circle cx="69" cy="72" r="3.5" fill="#E8907F" opacity=".45"/>
+      <path d="M50 65q3 3 6 0M64 65q3 3 6 0M55 76q5 4 10 0" fill="none" stroke="#3A2622" stroke-width="2" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="pome" viewBox="0 0 60 60">
+      <path d="M24 10l3 6 3-6 3 6 3-6v8H24z" style="fill:var(--pome)"/>
+      <circle cx="30" cy="36" r="20" style="fill:var(--pome)"/>
+      <path d="M20 30a12 12 0 0 1 8-8" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="olive" viewBox="0 0 100 60">
+      <path d="M4 56C30 40 60 24 96 6" fill="none" style="stroke:var(--petrol)" stroke-width="3" stroke-linecap="round"/>
+      <ellipse cx="26" cy="38" rx="11" ry="4.5" transform="rotate(-50 26 38)" style="fill:var(--petrol)"/>
+      <ellipse cx="34" cy="46" rx="11" ry="4.5" transform="rotate(10 34 46)" style="fill:var(--petrol)"/>
+      <ellipse cx="52" cy="22" rx="11" ry="4.5" transform="rotate(-60 52 22)" style="fill:var(--petrol)"/>
+      <ellipse cx="62" cy="30" rx="11" ry="4.5" transform="rotate(5 62 30)" style="fill:var(--petrol)"/>
+      <ellipse cx="80" cy="10" rx="10" ry="4" transform="rotate(-55 80 10)" style="fill:var(--petrol)"/>
+      <circle cx="45" cy="34" r="4.5" style="fill:var(--saffron)"/>
+      <circle cx="72" cy="18" r="4" style="fill:var(--saffron)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="device">
+<main class="app" id="app">
+
+  <!-- 1. welcome -->
+  <section class="screen welcome" data-screen="welcome">
+    <div class="body">
+      <svg class="art" viewBox="0 0 300 220" role="img" aria-label="رسمة لثلاث نساء تحت قوس">
+        <path d="M30 220V100a120 120 0 0 1 240 0v120z" style="fill:var(--pome-soft)"/>
+        <use href="#olive" x="170" y="0" width="110" height="66"/>
+        <use href="#pome" x="20" y="40" width="40" height="40"/>
+        <use href="#w-hair" x="6" y="80" width="112" height="140" style="--c1:var(--saffron);--c3:#fff"/>
+        <use href="#w-hair" x="182" y="80" width="112" height="140" style="--c1:var(--pome);--c3:var(--saffron);--hair:#6B3E2E"/>
+        <use href="#w-hijab" x="84" y="50" width="132" height="170" style="--c1:var(--petrol);--c2:#1B2430;--c3:var(--saffron)"/>
+      </svg>
+      <div class="dots" aria-hidden="true"><i class="on"></i><i></i></div>
+      <h1 class="h" style="font-size:28px">أهلاً فيكِ بسَنَد</h1>
+      <p class="muted">اسألي عن حقوقك أو اطلبي مساعدة بسرية تامة. ما في تسجيل دخول إجباري، وما بنحفظ ولا كلمة من المحادثة.</p>
+      <div class="stack">
+        <button class="btn primary" data-go="country">ابدئي كضيفة</button>
+        <button class="btn google" data-action="google">
+          <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+          الدخول بحساب Google
+        </button>
+      </div>
+      <p class="fine">الدخول بـ Google اختياري، بس بيحفظ بلدك وإعداداتك.</p>
+    </div>
+  </section>
+
+  <!-- 2. country -->
+  <section class="screen" data-screen="country" hidden>
+    <div class="top"><button class="iconbtn" data-go="welcome" aria-label="رجوع"><svg class="ic"><use href="#i-back"/></svg></button><div class="dots" aria-hidden="true"><i></i><i class="on"></i></div><span style="width:40px"></span></div>
+    <div class="body">
+      <svg viewBox="0 0 300 100" style="width:100%" aria-hidden="true">
+        <rect x="0" y="8" width="300" height="92" rx="24" style="fill:var(--petrol-soft)"/>
+        <path d="M30 80c25-35 50-12 75-35s50-22 75 0 50 12 85-12" fill="none" style="stroke:var(--petrol)" stroke-width="2.5" stroke-dasharray="5 6"/>
+        <g transform="translate(176 18)"><path d="M16 46S0 31 0 17a16 16 0 0 1 32 0c0 14-16 29-16 29z" style="fill:var(--pome)"/><circle cx="16" cy="17" r="6" fill="#fff"/></g>
+      </svg>
+      <h2 class="h" style="font-size:24px">من وين إنتِ؟</h2>
+      <p class="muted">القوانين بتختلف من مكان لمكان، فحتى نجاوبك صح لازم نعرف وين ساكنة.</p>
+      <div class="countries" id="countries">
+        <button class="country sel" data-country="ps-wb"><span>فلسطين: الضفة الغربية<small>قانون الجرائم الإلكترونية ٢٠١٨</small></span><span class="tick"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span></button>
+        <button class="country" data-country="ps-gaza"><span>فلسطين: قطاع غزة<small>قانون الجرائم الإلكترونية ٢٠١٨</small></span><span class="tick"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span></button>
+        <button class="country" disabled><span>بلاد تانية<small>قريباً</small></span><span class="tick"></span></button>
+      </div>
+      <p class="note"><svg class="ic"><use href="#i-lock"/></svg>اختيارك بينحفظ على جهازك بس.</p>
+      <button class="btn primary" data-go="home">متابعة</button>
+    </div>
+  </section>
+
+  <!-- 3. home -->
+  <section class="screen" data-screen="home" hidden>
+    <div class="top">
+      <div class="hello">
+        <svg class="av" viewBox="0 0 120 150" aria-hidden="true"><use href="#w-hijab" style="--c1:var(--petrol);--c2:var(--pome);--c3:var(--saffron)"/></svg>
+        <div><span class="muted" style="font-size:13px" id="hello-name">مرحبا فيكِ</span><div class="h" style="font-size:19px">شو بدك تعرفي اليوم؟</div></div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="iconbtn" data-action="theme" aria-label="تبديل الوضع الليلي" id="theme-btn"><svg class="ic"><use href="#i-moon"/></svg></button>
+        <button class="iconbtn" data-go="settings" aria-label="الإعدادات"><svg class="ic"><use href="#i-gear"/></svg></button>
+        <button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button>
+      </div>
+    </div>
+    <div class="body">
+      <button class="mic-card" data-ask="">
+        <span class="mic-dot"><svg class="ic" style="width:26px;height:26px"><use href="#i-mic"/></svg></span>
+        <span><b style="font-weight:500;font-size:16px">احكي أو اكتبي مشكلتك</b><br><span style="font-size:12.5px;opacity:.85">بلهجتك، وما حدا رح يسمع غيرك</span></span>
+      </button>
+      <div class="topics">
+        <button class="topic t-pome" data-go="sos">
+          <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l16 6v12c0 9-7 17-16 20-9-3-16-11-16-20V10z" style="fill:var(--pome)"/><path d="M17 24l5 5 9-10" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          حدا عم يبتزني<small>خطة أمان فورية</small></button>
+        <button class="topic t-petrol" data-ask="حدا نشر صوري الخاصة بدون إذني، شو بعمل؟">
+          <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><rect x="6" y="10" width="36" height="28" rx="6" style="fill:var(--petrol)"/><circle cx="18" cy="21" r="4" style="fill:var(--saffron)"/><path d="M10 34l10-9 7 6 5-4 8 7" fill="none" stroke="#fff" stroke-width="3" stroke-linejoin="round"/></svg>
+          نشروا صوري<small>الخصوصية وحقك</small></button>
+        <button class="topic t-saff" data-ask="بعتولي صور ومقاطع إباحية بدون ما أطلب، هاد جريمة؟">
+          <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><path d="M8 10h32v22H20l-9 7v-7H8z" style="fill:var(--saffron)"/><path d="M18 17l12 8M30 17l-12 8" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/></svg>
+          رسائل مزعجة<small>محتوى بدون رضاكِ</small></button>
+        <button class="topic t-ink" data-ask="بنتي عمرها ١٦ وفي حدا عم يهددها أونلاين، شو بنعمل؟">
+          <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="16" r="7" style="fill:var(--ink)"/><path d="M5 44c0-10 6-16 13-16s13 6 13 16z" style="fill:var(--ink)"/><circle cx="34" cy="22" r="5" style="fill:var(--pome)"/><path d="M25 44c0-7 4-12 9-12s9 5 9 12z" style="fill:var(--pome)"/></svg>
+          بنتي بخطر<small>إذا الضحية قاصر</small></button>
+      </div>
+      <button class="lhero" data-go="lawyer" style="border:none;text-align:right;width:100%">
+        <svg class="art" viewBox="0 0 120 150" aria-hidden="true" style="width:64px;height:80px"><use href="#w-hijab" style="--c1:#1B2430;--c2:var(--petrol);--c3:#fff"/></svg>
+        <span style="flex:1"><b style="font-weight:500;font-size:15px;display:block">طلاق، نفقة، حضانة؟</b><span class="muted" style="font-size:12.5px">احكي مع محامية الآن، أو اقري قصص نساء مرّوا بنفس الشي</span></span>
+        <svg class="ic" style="transform:scaleX(-1);color:var(--ink-soft)"><use href="#i-back"/></svg>
+      </button>
+      <div class="tip"><svg class="ic"><use href="#i-bulb"/></svg><div><b style="font-weight:500">بتعرفي؟</b><br><span class="muted">رسائل التهديد نفسها دليل. لا تمسحيها، صوّريها واحتفظي فيها بمكان آمن.</span></div></div>
+    </div>
+    <nav class="tabs" data-tabs="home"></nav>
+  </section>
+
+  <!-- 4. chat -->
+  <section class="screen" data-screen="chat" hidden>
+    <div class="top">
+      <div class="chat-head"><span class="logo-mark"><svg class="ic"><use href="#i-hands"/></svg></span><div><b style="font-weight:500">سند</b><br><span style="font-size:12px;color:var(--petrol)" id="chat-sub">محادثة على جهازك · الضفة الغربية</span></div></div>
+      <button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button>
+    </div>
+    <div class="modes" role="tablist" aria-label="مين بيجاوبك">
+      <button class="mode on" data-mode="ai" role="tab" aria-selected="true"><svg class="ic"><use href="#i-chat"/></svg>سند (ذكاء اصطناعي)</button>
+      <button class="mode" data-mode="lawyer" role="tab" aria-selected="false"><span class="live" aria-hidden="true"></span>محامية الآن</button>
+    </div>
+    <div class="body" id="chat-body">
+      <div class="msgs" id="msgs">
+        <div class="a">أهلاً فيكِ. احكيلي شو صار معك، وأنا بجاوبك من نص القانون ومع رقم المادة. كل اللي بتكتبيه بيضل على جهازك.</div>
+        <div class="suggest" id="suggest">
+          <button class="chip" data-ask="حدا عم يهددني ينشر صوري إذا ما بعتله مصاري">حدا بيهددني بصوري</button>
+          <button class="chip" data-ask="شو عقوبة الابتزاز الإلكتروني؟">شو عقوبة الابتزاز؟</button>
+          <button class="chip" data-ask="حدا نشر فيديو إلي بدون إذني">نشروا فيديو إلي</button>
+        </div>
+      </div>
+      <p class="disclaim">معلومات عامة من نص القانون، مش بديل عن محامي.</p>
+    </div>
+    <form class="composer" id="composer" autocomplete="off">
+      <button type="button" class="round mic" data-action="mic" aria-label="سجّلي بصوتك"><svg class="ic"><use href="#i-mic"/></svg></button>
+      <textarea id="q" rows="1" placeholder="اكتبي سؤالك هون..." aria-label="سؤالك"></textarea>
+      <button type="submit" class="round send" aria-label="إرسال"><svg class="ic"><use href="#i-send"/></svg></button>
+    </form>
+  </section>
+
+  <!-- 5. sos -->
+  <section class="screen" data-screen="sos" hidden>
+    <div class="top"><h2 class="h" style="font-size:20px">خطة أمان</h2><button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button></div>
+    <div class="body">
+      <div class="sos-head">
+        <svg class="ill" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" style="fill:var(--surface)"/><path d="M30 46s-14-8.5-14-19a7.5 7.5 0 0 1 14-4 7.5 7.5 0 0 1 14 4c0 10.5-14 19-14 19z" style="fill:var(--pome)"/><path d="M16 50c4-6 10-6 14-4 4-2 10-2 14 4" fill="none" style="stroke:var(--saffron)" stroke-width="3" stroke-linecap="round"/></svg>
+        <div style="flex:1"><div class="h" style="font-size:19px;color:var(--pome)">إنتِ مش غلطانة</div><span class="muted" style="font-size:13px">خلينا نمشي بالخطوات سوا. علّمي على كل خطوة بتخلصيها.</span><div class="prog" aria-hidden="true"><i id="prog"></i></div></div>
+      </div>
+      <div class="steps" id="steps">
+        <button class="step"><span class="box"><svg class="ic" style="width:16px;height:16px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">لا تبعتي مصاري ولا صور</b><small>الدفع ما بيوقّف المبتز، غالباً بيخليه يطلب أكتر.</small></span></button>
+        <button class="step"><span class="box"><svg class="ic" style="width:16px;height:16px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">لا تمسحي المحادثة</b><small>هي دليلك قدام الشرطة والمحكمة.</small></span></button>
+        <button class="step"><span class="box"><svg class="ic" style="width:16px;height:16px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">صوّري الشاشة</b><small>الرسائل، واسم الحساب، ورابطه، والتاريخ.</small></span></button>
+        <button class="step"><span class="box"><svg class="ic" style="width:16px;height:16px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">بلّغي عن الحساب بالمنصة</b><small>إنستغرام وفيسبوك وواتساب فيهم تبليغ عن الابتزاز.</small></span></button>
+        <button class="step"><span class="box"><svg class="ic" style="width:16px;height:16px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">تواصلي مع جهة رسمية</b><small>الابتزاز جريمة حسب المادة ١٥ من قانون الجرائم الإلكترونية.</small></span></button>
+      </div>
+      <div class="done-card" id="done-card" hidden><svg class="ic" style="color:var(--petrol);width:26px;height:26px"><use href="#i-shield"/></svg><div><b style="font-weight:500">عملتي كل الخطوات. برافو عليكِ.</b><br><span class="muted" style="font-size:13px">هلأ روحي لصفحة الدعم وتواصلي مع جهة بتساعدك.</span></div></div>
+      <button class="btn primary" data-go="support"><svg class="ic"><use href="#i-hands"/></svg>مين بيقدر يساعدني</button>
+      <button class="btn" data-ask="حدا عم يبتزني، شو بيقول القانون؟"><svg class="ic"><use href="#i-scale"/></svg>شو بيقول القانون؟</button>
+    </div>
+    <nav class="tabs" data-tabs="sos"></nav>
+  </section>
+
+  <!-- 6. support -->
+  <section class="screen" data-screen="support" hidden>
+    <div class="top"><h2 class="h" style="font-size:20px">مين بيقدر يساعدك</h2><button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button></div>
+    <div class="body">
+      <div class="stabs" id="stabs"><button class="stab on" data-cat="all">الكل</button><button class="stab" data-cat="safe">أمني</button><button class="stab" data-cat="law">قانوني</button><button class="stab" data-cat="mind">نفسي</button></div>
+      <div class="org" data-cat="safe"><span class="oi" style="background:var(--pome-soft);color:var(--pome)"><svg class="ic"><use href="#i-shield"/></svg></span><div><b>وحدة الجرائم الإلكترونية بالشرطة</b><small>للابتزاز والتهديد ونشر الصور</small><span class="badge">رسمية</span><div class="acts"><button class="chip fill" data-action="soon"><svg class="ic"><use href="#i-phone"/></svg>اتصلي</button><button class="chip" data-action="soon"><svg class="ic"><use href="#i-pin"/></svg>أقرب مركز</button></div></div></div>
+      <div class="org" data-cat="law"><span class="oi" style="background:var(--petrol-soft);color:var(--petrol)"><svg class="ic"><use href="#i-scale"/></svg></span><div><b>مساعدة قانونية مجانية للنساء</b><small>محاميات بيتابعوا قضايا العنف والابتزاز والأحوال الشخصية</small><span class="badge">مجانية</span><div class="acts"><button class="chip fill" data-action="soon"><svg class="ic"><use href="#i-msg"/></svg>واتساب</button></div></div></div>
+      <div class="org" data-cat="mind"><span class="oi" style="background:var(--saffron-soft);color:var(--saffron)"><svg class="ic"><use href="#i-brain"/></svg></span><div><b>خط الدعم النفسي</b><small>حدا يسمعك بسرية</small><span class="badge">سري</span><div class="acts"><button class="chip fill" data-action="soon"><svg class="ic"><use href="#i-phone"/></svg>اتصلي</button></div></div></div>
+      <p class="note"><svg class="ic"><use href="#i-pin"/></svg>أرقام التواصل بتنضاف بعد ما نتأكد منها مع الجهات نفسها. هاي النسخة للعرض.</p>
+    </div>
+    <nav class="tabs" data-tabs="support"></nav>
+  </section>
+
+  <!-- lawyer -->
+  <section class="screen" data-screen="lawyer" hidden>
+    <div class="top"><h2 class="h" style="font-size:20px">محامية إلك</h2><button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button></div>
+    <div class="body">
+      <div class="lhero">
+        <svg class="art" viewBox="0 0 160 170" role="img" aria-label="رسمة محامية بثوب المحاماة">
+          <circle cx="80" cy="92" r="72" style="fill:var(--surface)"/>
+          <use href="#w-hijab" x="10" y="20" width="140" height="150" style="--c1:#1B2430;--c2:var(--petrol);--c3:#fff"/>
+          <use href="#olive" x="96" y="4" width="64" height="38"/>
+        </svg>
+        <div><b style="font-weight:500;font-size:16px;display:block">قضايا الطلاق والنفقة والحضانة</b><span class="muted" style="font-size:13px">محاميات متطوعات بيوقفوا معك من أول سؤال لحد المحكمة، وبسرية تامة.</span></div>
+      </div>
+      <div class="paths">
+        <button class="path ai" data-chat="ai"><span class="pi"><svg class="ic"><use href="#i-chat"/></svg></span>اسألي سند<small>جواب فوري لأسئلتك العامة</small></button>
+        <button class="path law" data-chat="lawyer"><span class="pi"><svg class="ic"><use href="#i-phone"/></svg></span>محامية الآن<small>لقضيتك إنتِ بالتفصيل</small></button>
+      </div>
+      <div class="sec"><h3 class="h">محاميات متاحات</h3><span class="muted" style="font-size:11.5px">أسماء للعرض</span></div>
+      <div class="lawyers">
+        <div class="lawyer"><div class="lh"><svg class="av" viewBox="0 0 120 150" style="background:var(--petrol-soft)" aria-hidden="true"><use href="#w-hijab" style="--c1:#1B2430;--c2:var(--pome);--c3:#fff"/></svg><div><b>أ. سلمى</b><small>نفقة وحضانة · ١٢ سنة خبرة</small></div></div><span class="avail"><i></i>متاحة الآن</span><button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button></div>
+        <div class="lawyer"><div class="lh"><svg class="av" viewBox="0 0 120 150" style="background:var(--saffron-soft)" aria-hidden="true"><use href="#w-hair" style="--c1:#1B2430;--c3:#fff"/></svg><div><b>أ. رنا</b><small>طلاق وعنف أسري · ٨ سنين</small></div></div><span class="avail"><i></i>متاحة الآن</span><button class="chip fill" data-chat="lawyer" data-lawyer="رنا">احكي معها</button></div>
+        <div class="lawyer"><div class="lh"><svg class="av" viewBox="0 0 120 150" style="background:var(--pome-soft)" aria-hidden="true"><use href="#w-hijab" style="--c1:#1B2430;--c2:var(--saffron);--c3:#fff"/></svg><div><b>أ. هبة</b><small>ميراث وحقوق عمل · ١٥ سنة</small></div></div><span class="avail busy"><i></i>بترجع الساعة ٤</span><button class="chip" data-action="callback">اطلبي اتصال</button></div>
+      </div>
+      <div class="sec"><h3 class="h">قصص نساء متلك</h3><span class="muted" style="font-size:11.5px">قصص تخيلية</span></div>
+      <div class="story" style="background:var(--petrol-soft)">
+        <span class="tag" style="background:var(--surface);color:var(--petrol)">نفقة</span>
+        <h4>«٤ شهور وما دفع ولا شيكل للولاد»</h4>
+        <p>أم لتلات ولاد، طليقها وقّف يدفع. كانت مفكرة إنو ما في إشي بتقدر تعمله. حكت مع محامية عبر سند، وعرفت إنو نفقة الولاد حق إلهم، وجهّزت أوراقها ورفعت دعوى بالمحكمة الشرعية.</p>
+        <div class="out"><svg class="ic"><use href="#i-check"/></svg><span>صدر حكم بالنفقة، وصارت تعرف شو تعمل إذا ما التزم بالدفع.</span></div>
+        <button class="chip fill" data-chat="lawyer" data-topic="نفقة" style="align-self:flex-start">عندي مشكلة متلها</button>
+      </div>
+      <div class="story" style="background:var(--pome-soft)">
+        <span class="tag" style="background:var(--surface);color:var(--pome)">طلاق</span>
+        <h4>«طلّقني وقال ما إلك ولا إشي»</h4>
+        <p>بعد ١٠ سنين زواج، طلّقها فجأة وقلها إنها ما إلها حقوق. المحامية شرحتلها حقوقها بعد الطلاق، متل المهر المؤجل ونفقة العدة، وساعدتها تعرف شو بينطبق على حالتها.</p>
+        <div class="out"><svg class="ic"><use href="#i-check"/></svg><span>طالبت بحقوقها بالمحكمة، بدل ما تتنازل عنها وهي مش عارفة.</span></div>
+        <button class="chip fill" data-chat="lawyer" data-topic="طلاق" style="align-self:flex-start">عندي مشكلة متلها</button>
+      </div>
+      <div class="story" style="background:var(--saffron-soft)">
+        <span class="tag" style="background:var(--surface);color:var(--ink)">حضانة</span>
+        <h4>«هددني ياخد الولاد مني»</h4>
+        <p>كل ما تختلف معه، يهددها ياخد الولاد. كانت خايفة تطلب الطلاق. المحامية فهّمتها قواعد الحضانة بمنطقتها، وإنو التهديد مش هو اللي بيقرر، المحكمة هي اللي بتقرر.</p>
+        <div class="out"><svg class="ic"><use href="#i-check"/></svg><span>صارت تعرف حقها، وأخدت قرارها وهي مش خايفة.</span></div>
+        <button class="chip fill" data-chat="lawyer" data-topic="حضانة" style="align-self:flex-start">عندي مشكلة متلها</button>
+      </div>
+      <p class="note"><svg class="ic"><use href="#i-lock"/></svg>القصص تخيلية، مستوحاة من مشاكل شائعة، وما فيها أسماء حقيقية.</p>
+    </div>
+    <nav class="tabs" data-tabs="lawyer"></nav>
+  </section>
+
+  <!-- 7. settings -->
+  <section class="screen" data-screen="settings" hidden>
+    <div class="top"><button class="iconbtn" data-go="home" aria-label="رجوع"><svg class="ic"><use href="#i-back"/></svg></button><h2 class="h" style="font-size:20px">الخصوصية والأمان</h2><span style="width:40px"></span></div>
+    <div class="body">
+      <div class="card"><div class="set"><span class="si"><svg class="ic"><use href="#i-user"/></svg></span><div><b id="acct-name">إنتِ داخلة كضيفة</b><small id="acct-sub">ما في أي حساب مربوط</small></div><button class="chip" data-action="google" id="acct-btn">ربط Google</button></div></div>
+      <p class="muted" style="font-size:13px">المظهر:</p>
+      <div class="themes" id="themes" role="radiogroup" aria-label="المظهر">
+        <button data-theme-set="auto" role="radio"><svg class="ic"><use href="#i-auto"/></svg>تلقائي</button>
+        <button data-theme-set="light" role="radio"><svg class="ic"><use href="#i-sun"/></svg>نهاري</button>
+        <button data-theme-set="dark" role="radio"><svg class="ic"><use href="#i-moon"/></svg>ليلي</button>
+      </div>
+      <p class="muted" style="font-size:13px">شكل التطبيق لما تطلعي منه بسرعة:</p>
+      <div class="disguise" id="disguise">
+        <button class="dg sel" data-dg="weather"><span class="gi" style="background:var(--saffron-soft);color:var(--saffron)"><svg class="ic"><use href="#i-sun"/></svg></span>الطقس</button>
+        <button class="dg" data-dg="calc"><span class="gi" style="background:var(--surface-2)"><svg class="ic"><use href="#i-calc"/></svg></span>حاسبة</button>
+        <button class="dg" data-dg="notes"><span class="gi" style="background:var(--petrol-soft);color:var(--petrol)"><svg class="ic"><use href="#i-note"/></svg></span>ملاحظات</button>
+      </div>
+      <div class="card">
+        <div class="set"><span class="si"><svg class="ic"><use href="#i-trash"/></svg></span><div><b>امسحي المحادثة عند الخروج</b><small>ما بيضل أي أثر لما تضغطي «خروج»</small></div><button class="tg" role="switch" aria-checked="true" data-setting="wipe" aria-label="مسح المحادثة عند الخروج"></button></div>
+        <div class="set"><span class="si"><svg class="ic"><use href="#i-lock"/></svg></span><div><b>قفل برمز سري</b><small>ما حدا بيفتح سند غيرك</small></div><button class="tg" role="switch" aria-checked="false" data-setting="pin" aria-label="قفل برمز سري"></button></div>
+        <div class="set"><span class="si"><svg class="ic"><use href="#i-pin"/></svg></span><div><b>المكان</b><small id="set-country">فلسطين: الضفة الغربية</small></div><button class="chip" data-go="country">تغيير</button></div>
+      </div>
+      <button class="btn" data-action="reset"><svg class="ic"><use href="#i-trash"/></svg>امسحي كل بياناتي من الجهاز</button>
+    </div>
+  </section>
+
+  <!-- disguise -->
+  <section class="screen" data-screen="disguise" hidden>
+    <div class="weather" id="disguise-view"></div>
+  </section>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+</main>
+</div>
+
+<script>
+(function(){
+  /* ---------- law data: verbatim sample from maqam.najah.edu ---------- */
+  var LAW = "قرار بقانون رقم (10) لسنة 2018 بشأن الجرائم الإلكترونية";
+  var ARTS = {
+    "15": {topic:"التهديد والابتزاز الإلكتروني", url:"https://maqam.najah.edu/legislation/83/item/4546/", amended:"عُدّلت بموجب القرار بقانون رقم (28) لسنة 2020",
+      text:"1. كل من استعمل الشبكة الإلكترونية أو إحدى وسائل تكنولوجيا المعلومات في تهديد شخص آخر أو ابتزازه لحمله على القيام بفعل أو الامتناع عنه، ولو كان هذا الفعل أو الامتناع مشروعاً، يعاقب بالحبس أو بغرامة لا تقل عن مائتي دينار أردني، ولا تزيد على ألف دينار أردني، أو ما يعادلها بالعملة المتداولة قانوناً، أو بكلتا العقوبتين.\n2. إذا كان التهديد بارتكاب جناية أو بإسناد أمور خادشة للشرف أو الاعتبار، يعاقب بالحبس مدة لا تقل عن سنة، أو بغرامة لا تقل عن ألف دينار أردني، ولا تزيد على ثلاثة آلاف دينار أردني، أو ما يعادلها بالعملة المتداولة قانوناً."},
+    "16": {topic:"إرسال محتوى إباحي دون رضا", url:"https://maqam.najah.edu/legislation/83/item/4547/", amended:"",
+      text:"1. كل من أرسل عن طريق الشبكة الإلكترونية أو إحدى وسائل تكنولوجيا المعلومات قصداً كل ما هو مسموع أو مقروء أو مرئي يتضمن أعمالاً إباحية لمن هم فوق الثامنة عشر سنة ميلادية دون رضاه، يعاقب بالحبس مدة لا تقل عن ثلاثة أشهر، ولا تزيد على سنتين، أو بغرامة لا تقل عن مائتي دينار أردني، ولا تزيد على ألف دينار أردني، أو ما يعادلها بالعملة المتداولة قانوناً، أو بكلتا العقوبتين.\n2. كل من أرسل أو نشر عن طريق الشبكة الإلكترونية أو إحدى وسائل تكنولوجيا المعلومات قصداً كل ما هو مسموع أو مقروء أو مرئي يتضمن أعمالاً إباحية لمن لم يكمل الثامنة عشر سنة ميلادية أو تتعلق بالاستغلال الجنسي لهم، يعاقب بالحبس مدة لا تقل عن سنة، أو بغرامة لا تقل عن ألف دينار أردني، ولا تزيد على ثلاثة آلاف دينار أردني، أو ما يعادلها بالعملة المتداولة قانوناً، أو بكلتا العقوبتين.\n3. كل من قام قصداً باستخدام الشبكة الإلكترونية أو إحدى وسائل تكنولوجيا المعلومات في إنشاء أو إعداد أو حفظ أو معالجة أو عرض أو طباعة أو نشر أو ترويج أنشطة أو أعمال إباحية لغايات التأثير على من لم يكمل الثامنة عشر سنة ميلادية أو من هو من ذوي الإعاقة، يعاقب بالحبس مدة لا تقل عن سنتين، أو بغرامة لا تقل عن ألف دينار أردني، ولا تزيد على ثلاثة آلاف دينار أردني، أو ما يعادلها بالعملة المتداولة، أو بكلتا العقوبتين."},
+    "22": {topic:"انتهاك الخصوصية ونشر الصور", url:"https://maqam.najah.edu/legislation/83/item/4553/", amended:"",
+      text:"1. يحظر التدخل التعسفي أو غير القانوني في خصوصيات أي شخص أو في شؤون أسرته أو بيته أو مراسلاته.\n2. كل من أنشأ موقعاً أو تطبيقاً أو حساباً إلكترونياً أو نشر معلومات على الشبكة الإلكترونية أو إحدى وسائل تكنولوجيا المعلومات بقصد نشر أخبار أو صور أو تسجيلات صوتية أو مرئية، سواء كانت مباشرة أو مسجلة، تتصل بالتدخل غير القانوني في الحياة الخاصة أو العائلية للأفراد، ولو كانت صحيحة، يعاقب بالحبس مدة لا تقل عن سنة، أو بغرامة لا تقل عن ألف دينار أردني، ولا تزيد على ثلاثة آلاف دينار أردني، أو ما يعادلها بالعملة المتداولة قانوناً، أو بكلتا العقوبتين."},
+    "52": {topic:"مضاعفة العقوبة", url:"https://maqam.najah.edu/legislation/83/", amended:"عُدّلت بموجب القرار بقانون رقم (38) لسنة 2021",
+      text:"تضاعف العقوبة المقررة للجرائم المعاقب عليها بموجب أحكام هذا القرار بقانون، في أي من الحالات الآتية:\n1. إذا وقعت الجريمة على موقع أو نظام معلوماتي أو بيانات أو أرقام أو حروف أو شفرات أو صور يدار بمعرفة الدولة أو أحد الأشخاص المعنوية العامة أو مملوك لها أو يخصها، بما في ذلك الهيئات المحلية.\n2. ارتكاب الجاني الجريمة من خلال عصابة منظمة.\n3. التغرير أو استغلال من لم يكمل الثامنة عشر سنة ميلادية.\n4. إذا وقعت الجريمة على نظام معلومات أو موقع إلكتروني أو شبكة معلوماتية تتعلق بتحويل الأموال أو بتقديم خدمات الدفع أو التقاص أو التسويات أو أي من الخدمات المصرفية المقدمة من البنوك والشركات المالية."}
+  };
+
+  /* ---------- answers ---------- */
+  var INTENTS = [
+    {id:"minor", words:["بنتي","ابني","ولدي","قاصر","طفل","طفلة","عمرها","عمره","١٤","١٥","١٦","١٧","14","15","16","17","مراهق"]},
+    {id:"porn", words:["اباحي","إباحي","اباحية","إباحية","جنسي","جنسية","عاري","عارية","مقاطع وسخة","صور وسخة","بدون ما اطلب","بدون ما أطلب"]},
+    {id:"blackmail", words:["ابتز","يبتز","ابتزاز","بيبتز","يهدد","بهدد","بيهدد","تهديد","هددني","مصاري","فلوس","يدفع","ادفع","أدفع","فضيحة","يفضح"]},
+    {id:"nafaqa", words:["نفقة","نفقه","مصروف الولاد","ما بيدفع","ما عم يدفع","ما دفع","صندوق النفقة"]},
+    {id:"divorce", words:["طلاق","طلق","طلقني","طلّقني","مطلقة","مطلقه","خلع","مهر","مؤخر","عدة","العده","بدي اتطلق","بدي أتطلق"]},
+    {id:"custody", words:["حضانة","حضانه","ياخد الولاد","ياخذ الولاد","ياخد ولادي","ولادي","حرمني من الولاد","مشاهدة","رؤية الولاد"]},
+    {id:"violence", words:["بضربني","ضربني","يضربني","عنف","إيذاء","ايذاء","بيأذيني","بيهينني"]},
+    {id:"inherit", words:["ميراث","ورثة","ورث","حصتي","تركة"]},
+    {id:"privacy", words:["نشر","نشروا","ينشر","نزل","نزّل","صوري","صورتي","فيديو","تسجيل","خصوصية","خاصة","حساب مزيف","انتحل"]}
+  ];
+  function norm(s){ return s.replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ى/g,"ي").replace(/ة/g,"ه"); }
+  function detect(q){
+    var n = norm(q), hits = {};
+    INTENTS.forEach(function(it){ it.words.forEach(function(w){ if(n.indexOf(norm(w))>-1){ hits[it.id]=(hits[it.id]||0)+1; } }); });
+    return hits;
+  }
+  function answer(q){
+    var h = detect(q);
+    var bm = h.blackmail, pv = h.privacy, pn = h.porn, mn = h.minor;
+    if(mn && (bm||pv||pn)) return {
+      lead:"خوفك مفهوم، والقانون بيتعامل مع هالحالة بشدة أكبر لأنها قاصر.",
+      steps:["طمّنيها إنها مش غلطانة، وخليها ما ترد على الشخص ولا تبعتله شي","احتفظوا بكل الرسائل وصوّروا الشاشة واسم الحساب","بلّغوا عن الحساب بالمنصة، وتواصلوا مع جهة رسمية بأسرع وقت"],
+      note:"المادة ٥٢ بتضاعف العقوبة إذا الجريمة فيها استغلال لحدا عمره أقل من ١٨ سنة.",
+      cites:["52", bm?"15":(pn?"16":"22")]};
+    var GEN = "هاد شرح عام. نص قانون الأحوال الشخصية لسا مش مضاف لهالنسخة، والتفاصيل بتختلف بين الضفة وغزة، فالمحامية بتقلك شو بينطبق عليكِ بالزبط.";
+    if(h.violence && !pv && !pn) return {
+      lead:"سلامتك أهم إشي. ما حدا إله حق يأذيكِ.",
+      steps:["إذا إنتِ بخطر هلأ، روحي لمكان آمن وتواصلي مع جهة رسمية","وثّقي الإصابات والتهديدات: صور، وتقارير طبية، ورسائل","احكي مع محامية عن الحماية وعن حقوقك وحقوق ولادك"],
+      note:GEN, cites:[], general:true, topic:"عنف أسري", sos:true};
+    if(h.nafaqa && !pv && !pn) return {
+      lead:"نفقة الولاد حق إلهم على أبوهم، حتى بعد الطلاق.",
+      steps:["جهّزي الأوراق: عقد الزواج، وشهادات ميلاد الولاد، وورقة الطلاق إذا موجودة","ارفعي دعوى نفقة بالمحكمة الشرعية بمنطقتك","إذا صدر الحكم وما التزم بالدفع، في طرق تنفيذ، واسألي المحامية عن صندوق النفقة"],
+      note:GEN, cites:[], general:true, topic:"نفقة"};
+    if(h.custody && !pv && !pn) return {
+      lead:"التهديد بأخد الولاد مش هو اللي بيقرر. المحكمة هي اللي بتقرر الحضانة.",
+      steps:["لا تتنازلي عن الحضانة بورقة أو باتفاق قبل ما تستشيري محامية","احتفظي بأي رسائل تهديد","اسألي المحامية عن سن الحضانة بمنطقتك وحقك برؤية الولاد"],
+      note:GEN, cites:[], general:true, topic:"حضانة"};
+    if(h.divorce && !pv && !pn) return {
+      lead:"الطلاق ما بيلغي حقوقك. في حقوق إلك وإلولادك لازم تعرفيها.",
+      steps:["احتفظي بعقد الزواج وأي ورقة طلاق","اسألي عن حقوقك المالية متل المهر المؤجل ونفقة العدة","إذا عندك ولاد، اسألي عن النفقة والحضانة سوا"],
+      note:GEN, cites:[], general:true, topic:"طلاق"};
+    if(h.inherit && !pv && !pn) return {
+      lead:"حصتك بالميراث حق إلك، وما حدا بيقدر يجبرك تتنازلي عنها.",
+      steps:["لا توقّعي على أي تنازل قبل ما تستشيري","اطلبي حصر إرث من المحكمة الشرعية","احكي مع محامية إذا في ضغط عليكِ"],
+      note:GEN, cites:[], general:true, topic:"ميراث"};
+    if(bm) return {
+      lead:"إنتِ مش غلطانة. الابتزاز جريمة، والقانون بيعاقب عليها.",
+      steps:["لا تبعتي مصاري ولا صور، ولا تردّي عليه","لا تمسحي المحادثة، وصوّري الرسائل واسم الحساب","بلّغي عن الحساب بالمنصة، وتواصلي مع جهة رسمية"],
+      note:"حسب المادة ١٥، الابتزاز الإلكتروني عقوبته حبس أو غرامة من ٢٠٠ لـ ١٠٠٠ دينار. وإذا التهديد بأمور بتمس الشرف، الحبس ما بيقل عن سنة أو غرامة من ١٠٠٠ لـ ٣٠٠٠ دينار.",
+      cites: pv ? ["15","22"] : ["15"], sos:true};
+    if(pv) return {
+      lead:"نشر صورك أو أمورك الخاصة بدون إذنك ممنوع بالقانون، حتى لو الصور حقيقية.",
+      steps:["صوّري المنشور ورابطه واسم الحساب قبل ما ينحذف","بلّغي المنصة إنو المحتوى خاص ومنشور بدون إذنك","تواصلي مع جهة رسمية ومعك الأدلة"],
+      note:"حسب المادة ٢٢، اللي بينشر صور أو تسجيلات عن الحياة الخاصة عقوبته حبس ما بيقل عن سنة، أو غرامة من ١٠٠٠ لـ ٣٠٠٠ دينار.",
+      cites:["22"]};
+    if(pn) return {
+      lead:"اللي بيبعتلك محتوى إباحي بدون رضاكِ عم يرتكب جريمة.",
+      steps:["لا تردّي، واعملي حظر للحساب بعد ما توثّقي","صوّري الرسائل والحساب","بلّغي المنصة وجهة رسمية"],
+      note:"حسب المادة ١٦، العقوبة حبس من ٣ شهور لسنتين أو غرامة من ٢٠٠ لـ ١٠٠٠ دينار.",
+      cites:["16"]};
+    return null;
+  }
+
+  /* ---------- state ---------- */
+  var store = {
+    get:function(k,d){ try{ var v=localStorage.getItem("sanad:"+k); return v===null?d:JSON.parse(v);}catch(e){return d;} },
+    set:function(k,v){ try{ localStorage.setItem("sanad:"+k, JSON.stringify(v)); }catch(e){} },
+    clear:function(){ try{ Object.keys(localStorage).forEach(function(k){ if(k.indexOf("sanad:")===0) localStorage.removeItem(k); }); }catch(e){} }
+  };
+  var COUNTRY_NAMES = {"ps-wb":"فلسطين: الضفة الغربية","ps-gaza":"فلسطين: قطاع غزة"};
+  var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+  function isDark(){ return state.theme==="dark" || (state.theme==="auto" && mq && mq.matches); }
+  function applyTheme(){
+    var root=document.documentElement;
+    if(state.theme==="auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", state.theme);
+    var dark=isDark();
+    var tb=document.getElementById("theme-btn");
+    if(tb){ tb.querySelector("use").setAttribute("href", dark ? "#i-sun" : "#i-moon"); tb.setAttribute("aria-label", dark ? "الوضع النهاري" : "الوضع الليلي"); }
+    Array.prototype.forEach.call(document.querySelectorAll("[data-theme-set]"), function(b){ var on=b.getAttribute("data-theme-set")===state.theme; b.classList.toggle("on",on); b.setAttribute("aria-checked",on?"true":"false"); });
+    var meta=document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute("content", dark ? "#0E1719" : "#0F4C55");
+  }
+  if(mq){ var onMq=function(){ if(state.theme==="auto") applyTheme(); }; if(mq.addEventListener) mq.addEventListener("change",onMq); else if(mq.addListener) mq.addListener(onMq); }
+  var state = { theme: store.get("theme","auto"), country: store.get("country","ps-wb"), wipe: store.get("wipe",true), pin: store.get("pin",false), dg: store.get("dg","weather"), user: store.get("user",null) };
+  var current = "welcome", beforeExit = "home";
+
+  var $ = function(s,r){ return (r||document).querySelector(s); };
+  var $$ = function(s,r){ return Array.prototype.slice.call((r||document).querySelectorAll(s)); };
+
+  function show(name){
+    $$(".screen").forEach(function(s){
+      var on = s.getAttribute("data-screen")===name;
+      s.hidden = !on;
+      if(on){ s.classList.remove("enter"); void s.offsetWidth; s.classList.add("enter"); }
+    });
+    current = name;
+    if(name!=="disguise") store.set("last", name);
+    if(name==="chat"){ setTimeout(function(){ $("#q").focus({preventScroll:true}); }, 50); }
+  }
+  function toast(msg){ var t=$("#toast"); t.textContent=msg; t.classList.add("show"); clearTimeout(t._h); t._h=setTimeout(function(){ t.classList.remove("show"); }, 2600); }
+
+  function applyState(){
+    $$(".country[data-country]").forEach(function(c){ c.classList.toggle("sel", c.getAttribute("data-country")===state.country); });
+    $("#chat-sub").textContent = "محادثة على جهازك · " + (COUNTRY_NAMES[state.country]||"").replace("فلسطين: ","");
+    $("#set-country").textContent = COUNTRY_NAMES[state.country] || "";
+    $$("[data-setting]").forEach(function(t){ t.setAttribute("aria-checked", state[t.getAttribute("data-setting")] ? "true":"false"); });
+    $$(".dg").forEach(function(d){ d.classList.toggle("sel", d.getAttribute("data-dg")===state.dg); });
+    if(state.user){
+      $("#hello-name").textContent = "مرحبا " + state.user;
+      $("#acct-name").textContent = state.user; $("#acct-sub").textContent = "مربوطة بـ Google (تجريبي)"; $("#acct-btn").textContent = "فك الربط";
+    } else {
+      $("#hello-name").textContent = "مرحبا فيكِ";
+      $("#acct-name").textContent = "إنتِ داخلة كضيفة"; $("#acct-sub").textContent = "ما في أي حساب مربوط"; $("#acct-btn").textContent = "ربط Google";
+    }
+  }
+
+  /* ---------- chat ---------- */
+  function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+  function icon(id){ var s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("class","ic"); var u=document.createElementNS("http://www.w3.org/2000/svg","use"); u.setAttribute("href","#"+id); s.appendChild(u); return s; }
+  function scrollChat(){ var b=$("#chat-body"); b.scrollTop=b.scrollHeight; }
+
+  function citeCard(n){
+    var a=ARTS[n], d=el("details","cite"), s=el("summary");
+    s.appendChild(icon("i-file"));
+    var t=el("div"); t.appendChild(el("b",null,"المادة "+n+": "+a.topic)); t.appendChild(el("span",null,"قانون الجرائم الإلكترونية الفلسطيني. اضغطي لتقري النص"));
+    s.appendChild(t); d.appendChild(s);
+    var law=el("div","law"); law.appendChild(document.createTextNode(a.text));
+    if(a.amended){ law.appendChild(document.createTextNode("\n\n" + a.amended + ".")); }
+    law.appendChild(document.createTextNode("\n\nالمصدر: "));
+    var link=el("a",null,"قاعدة مقام، جامعة النجاح"); link.href=a.url; link.target="_blank"; link.rel="noopener";
+    law.appendChild(link); d.appendChild(law); return d;
+  }
+
+  function ask(q){
+    q = (q||"").trim(); if(!q) return;
+    if(current!=="chat") show("chat");
+    var sug=$("#suggest"); if(sug) sug.remove();
+    $("#msgs").appendChild(el("div","u",q));
+    if(chatMode==="lawyer"){ lawyerReply(); return; }
+    var typing=el("div","a"); typing.innerHTML='<span class="typing-dots" aria-label="سند عم يكتب"><i></i><i></i><i></i></span>';
+    $("#msgs").appendChild(typing); scrollChat();
+    setTimeout(function(){
+      typing.remove();
+      var r=answer(q), box=el("div","a");
+      if(r){
+        box.appendChild(el("div",null,r.lead));
+        var ol=el("ol"); r.steps.forEach(function(s){ ol.appendChild(el("li",null,s)); }); box.appendChild(ol);
+        var nt=box.appendChild(el("div",null,r.note)); nt.style.marginTop="8px"; if(r.general){ nt.style.fontSize="12.5px"; nt.style.color="var(--ink-soft)"; }
+        r.cites.forEach(function(n){ box.appendChild(citeCard(n)); });
+        var acts=el("div","acts");
+        if(r.general){ var bl=el("button","chip fill"); bl.appendChild(icon("i-phone")); bl.appendChild(document.createTextNode("احكي مع محامية الآن")); bl.setAttribute("data-chat","lawyer"); bl.setAttribute("data-topic", r.topic||""); acts.appendChild(bl); }
+        if(r.sos){ var b1=el("button","chip fill"); b1.appendChild(icon("i-shield")); b1.appendChild(document.createTextNode("افتحي خطة الأمان")); b1.setAttribute("data-go","sos"); acts.appendChild(b1); }
+        var b2=el("button","chip"+(r.sos||r.general?"":" fill")); b2.appendChild(icon("i-hands")); b2.appendChild(document.createTextNode("مين بيساعدني")); b2.setAttribute("data-go","support"); acts.appendChild(b2);
+        box.appendChild(acts);
+      } else {
+        box.appendChild(el("div",null,"سؤالك مهم، بس هالنسخة التجريبية من سند فيها لسا قانون الجرائم الإلكترونية بس، فما بقدر أجاوبك من نص قانوني عن هالموضوع. وما بدي أعطيكِ معلومة بدون مصدر."));
+        box.appendChild(el("div",null,"جرّبي تسألي عن الابتزاز، أو نشر الصور، أو النفقة والطلاق والحضانة. وإذا موضوعك مختلف، احكي مع محامية مباشرة.")).style.marginTop="8px";
+        var acts2=el("div","acts"); var b4=el("button","chip fill"); b4.appendChild(icon("i-phone")); b4.appendChild(document.createTextNode("احكي مع محامية الآن")); b4.setAttribute("data-chat","lawyer"); acts2.appendChild(b4);
+        var b3=el("button","chip"); b3.appendChild(icon("i-hands")); b3.appendChild(document.createTextNode("مين بيساعدني")); b3.setAttribute("data-go","support"); acts2.appendChild(b3); box.appendChild(acts2);
+      }
+      $("#msgs").appendChild(box); scrollChat();
+    }, 900 + Math.min(q.length*12, 900));
+  }
+  /* ---------- two modes: AI or lawyer now ---------- */
+  var chatMode="ai", lawyerName="سلمى", lawyerConnected=false, lawyerTurn=0;
+  function lawyerAvatar(){ var s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("viewBox","0 0 120 150"); var u=document.createElementNS("http://www.w3.org/2000/svg","use"); u.setAttribute("href","#w-hijab"); u.setAttribute("style","--c1:#1B2430;--c2:var(--pome);--c3:#fff"); s.appendChild(u); return s; }
+  function lawyerMsg(text, chips){
+    var b=el("div","lw"), who=el("div","who"); who.appendChild(lawyerAvatar()); who.appendChild(document.createTextNode("المحامية "+lawyerName));
+    b.appendChild(who); b.appendChild(el("div",null,text));
+    if(chips){ var acts=el("div","acts"); chips.forEach(function(c){ var x=el("button","chip"+(c.fill?" fill":""),c.label); x.setAttribute("data-action",c.action); acts.appendChild(x); }); b.appendChild(acts); }
+    $("#msgs").appendChild(b); scrollChat();
+  }
+  function setMode(m, opts){
+    opts=opts||{};
+    if(opts.name) lawyerName=opts.name;
+    chatMode=m;
+    $$(".mode").forEach(function(x){ var on=x.getAttribute("data-mode")===m; x.classList.toggle("on",on); x.setAttribute("aria-selected",on?"true":"false"); });
+    $("#q").placeholder = m==="lawyer" ? "اكتبي للمحامية..." : "اكتبي سؤالك هون...";
+    var sug=$("#suggest"); if(sug && m==="lawyer") sug.remove();
+    if(m==="ai"){ $("#msgs").appendChild(el("div","sys","رجعتي لسند. الأجوبة فورية وعامة.")); scrollChat(); return; }
+    if(lawyerConnected){ if(opts.topic){ lawyerMsg("فهمت إنو سؤالك عن "+opts.topic+". احكيلي شو صاير معك."); } return; }
+    var c=el("div","connect"); var av=lawyerAvatar(); av.setAttribute("class","av"); c.appendChild(av);
+    var t=el("div"); t.appendChild(el("b",null,"عم نوصلك بمحامية...")).style.fontWeight="500"; t.appendChild(el("div",null,"بتاخد أقل من دقيقة")).className="muted";
+    c.appendChild(t); $("#msgs").appendChild(c); scrollChat();
+    setTimeout(function(){
+      c.remove(); lawyerConnected=true; lawyerTurn=0;
+      $("#msgs").appendChild(el("div","sys","عرض تجريبي: بالنسخة الحقيقية بتحكي هون مع محامية حقيقية"));
+      lawyerMsg("أهلاً فيكِ، أنا المحامية "+lawyerName+". كل إشي بنحكيه هون سري. "+(opts.topic ? "فهمت إنو سؤالك عن "+opts.topic+"، احكيلي شو صاير معك." : "احكيلي شو صاير معك، وعلى مهلك."));
+    }, 1600);
+  }
+  function lawyerReply(){
+    var typing=el("div","lw"); typing.innerHTML='<span class="typing-dots" aria-label="المحامية عم تكتب"><i></i><i></i><i></i></span>';
+    $("#msgs").appendChild(typing); scrollChat();
+    setTimeout(function(){
+      typing.remove(); lawyerTurn++;
+      if(!lawyerConnected){ lawyerConnected=true; }
+      if(lawyerTurn===1) lawyerMsg("شكراً إنك حكيتيلي، وإنتِ عملتي الصح. عشان أساعدك صح، بدي أعرف: وين ساكنة بالزبط؟ في ولاد؟ ومن قديش صار هالشي؟");
+      else lawyerMsg("تمام، الصورة وضحت. بقترح نحكي بمكالمة قصيرة نرتّب فيها الأوراق والخطوات. شو بيناسبك؟", [{label:"اتصلي فيّ",action:"callback",fill:true},{label:"خليني أكمل كتابة",action:"keep"}]);
+    }, 1400);
+  }
+  function renderTabs(){
+    var T=[["home","i-home","الرئيسية"],["chat","i-chat","اسألي"],["lawyer","i-scale","محامية"],["support","i-hands","الدعم"],["sos","i-alert","طوارئ"]];
+    $$("nav[data-tabs]").forEach(function(n){
+      var cur=n.getAttribute("data-tabs");
+      n.innerHTML = T.map(function(t){ return '<button data-go="'+t[0]+'" class="'+(t[0]==="sos"?"sos ":"")+(t[0]===cur?"on":"")+'"><svg class="ic"><use href="#'+t[1]+'"/></svg>'+t[2]+'</button>'; }).join("");
+    });
+  }
+  renderTabs();
+
+  function wipeChat(){
+    chatMode="ai"; lawyerConnected=false; lawyerTurn=0;
+    $$(".mode").forEach(function(x){ var on=x.getAttribute("data-mode")==="ai"; x.classList.toggle("on",on); x.setAttribute("aria-selected",on?"true":"false"); });
+    var m=$("#msgs"); var first=m.firstElementChild.cloneNode(true);
+    m.innerHTML=""; m.appendChild(first);
+    var sug=el("div","suggest"); sug.id="suggest";
+    [["حدا بيهددني بصوري","حدا عم يهددني ينشر صوري إذا ما بعتله مصاري"],["شو عقوبة الابتزاز؟","شو عقوبة الابتزاز الإلكتروني؟"],["نشروا فيديو إلي","حدا نشر فيديو إلي بدون إذني"]].forEach(function(p){ var b=el("button","chip",p[0]); b.setAttribute("data-ask",p[1]); sug.appendChild(b); });
+    m.appendChild(sug);
+  }
+
+  /* ---------- sos progress ---------- */
+  function updateProg(){ var all=$$("#steps .step").length, done=$$("#steps .step.done").length; $("#prog").style.width=Math.round(done/all*100)+"%"; $("#done-card").hidden = done<all; store.set("steps", $$("#steps .step").map(function(s){return s.classList.contains("done");})); }
+  (store.get("steps",[])||[]).forEach(function(d,i){ var s=$$("#steps .step")[i]; if(s&&d) s.classList.add("done"); });
+
+  /* ---------- quick exit disguise ---------- */
+  var DISGUISES = {
+    weather: '<span class="city">رام الله</span><button class="temp" data-back aria-label="الحرارة">١٨°</button><b style="font-weight:500">غائم جزئياً</b><span class="muted">العظمى ٢١° · الصغرى ١٢°</span><div class="hours"><div>الآن<b>١٨°</b></div><div>١ م<b>٢٠°</b></div><div>٤ م<b>١٩°</b></div><div>٧ م<b>١٦°</b></div><div>١٠ م<b>١٤°</b></div></div><div class="wdays"><div>السبت<b>٢٠°</b></div><div>الأحد<b>١٩°</b></div><div>الاثنين<b>١٧°</b></div><div>الثلاثاء<b>١٨°</b></div></div>',
+    calc: '<button class="temp" data-back aria-label="الناتج" style="font-size:64px">0</button><div class="hours" style="flex-wrap:wrap;justify-content:center;gap:10px;margin-top:30px;max-width:260px"><div>7</div><div>8</div><div>9</div><div>÷</div><div>4</div><div>5</div><div>6</div><div>×</div><div>1</div><div>2</div><div>3</div><div>−</div><div>0</div><div>.</div><div>=</div><div>+</div></div>',
+    notes: '<b style="font-size:20px;font-weight:500">ملاحظاتي</b><div style="text-align:right;width:100%;max-width:300px;margin-top:16px;display:flex;flex-direction:column;gap:10px"><button class="temp" data-back style="font-size:15px;text-align:right;background:var(--surface);border-radius:14px;padding:12px">أغراض البيت: خبز، حليب، بندورة</button><div style="background:var(--surface);border-radius:14px;padding:12px">موعد الدكتور الخميس ١٠ الصبح</div><div style="background:var(--surface);border-radius:14px;padding:12px">عيد ميلاد سارة الشهر الجاي</div></div>'
+  };
+  function quickExit(){
+    beforeExit = current==="disguise" ? beforeExit : current;
+    if(state.wipe) wipeChat();
+    $("#disguise-view").innerHTML = DISGUISES[state.dg] + '<span class="muted" style="font-size:11px;margin-top:24px">للرجوع لسند: اضغطي مرتين على الرقم الكبير</span>';
+    show("disguise");
+    try{ document.title = state.dg==="weather" ? "الطقس" : state.dg==="calc" ? "الآلة الحاسبة" : "ملاحظات"; }catch(e){}
+  }
+  function leaveDisguise(){ document.title="سَنَد"; show(beforeExit==="welcome"||beforeExit==="country" ? beforeExit : "home"); }
+
+  /* ---------- events ---------- */
+  document.addEventListener("click", function(e){
+    var t=e.target;
+    var ex=t.closest("[data-exit]"); if(ex){ quickExit(); return; }
+    var md=t.closest("[data-mode]"); if(md){ var mm=md.getAttribute("data-mode"); if(mm!==chatMode) setMode(mm); return; }
+    var ch=t.closest("[data-chat]"); if(ch){ show("chat"); var cm=ch.getAttribute("data-chat"); var nm=ch.getAttribute("data-lawyer"); var tp=ch.getAttribute("data-topic"); if(cm!==chatMode || tp) setMode(cm,{name:nm,topic:tp}); return; }
+    var go=t.closest("[data-go]"); if(go){ show(go.getAttribute("data-go")); return; }
+    var ak=t.closest("[data-ask]"); if(ak){ var q=ak.getAttribute("data-ask"); if(q) ask(q); else show("chat"); return; }
+    var c=t.closest(".country[data-country]"); if(c){ state.country=c.getAttribute("data-country"); store.set("country",state.country); applyState(); return; }
+    var st=t.closest("#steps .step"); if(st){ st.classList.toggle("done"); updateProg(); return; }
+    var sb=t.closest(".stab"); if(sb){ var cat=sb.getAttribute("data-cat"); $$(".stab").forEach(function(x){ x.classList.toggle("on", x===sb); }); $$(".org").forEach(function(o){ o.hidden = !(cat==="all"||o.getAttribute("data-cat")===cat); }); return; }
+    var tg=t.closest("[data-setting]"); if(tg){ var k=tg.getAttribute("data-setting"); state[k]=!state[k]; store.set(k,state[k]); applyState(); if(k==="pin"&&state.pin) toast("القفل بالرمز بيشتغل بالنسخة الكاملة"); return; }
+    var th=t.closest("[data-theme-set]"); if(th){ state.theme=th.getAttribute("data-theme-set"); store.set("theme",state.theme); applyTheme(); return; }
+    var dg=t.closest(".dg"); if(dg){ state.dg=dg.getAttribute("data-dg"); store.set("dg",state.dg); applyState(); toast("لما تطلعي بسرعة، سند رح يبيّن كأنه "+dg.textContent.trim()); return; }
+    var act=t.closest("[data-action]"); if(act){
+      var a=act.getAttribute("data-action");
+      if(a==="google"){
+        if(state.user){ state.user=null; store.set("user",null); applyState(); toast("فكّينا الربط مع Google"); }
+        else { state.user="ريم"; store.set("user","ريم"); applyState(); toast("نسخة العرض: الدخول بـ Google تجريبي"); if(current==="welcome") show("country"); }
+      }
+      else if(a==="mic"){ toast("التسجيل الصوتي بيشتغل بالنسخة الكاملة. هلأ اكتبي سؤالك"); }
+      else if(a==="soon"){ toast("رقم التواصل بينضاف بعد التحقق منه"); }
+      else if(a==="theme"){ state.theme = isDark() ? "light" : "dark"; store.set("theme",state.theme); applyTheme(); }
+      else if(a==="callback"){ toast("نسخة العرض: بالنسخة الحقيقية المحامية بتتصل فيكِ على رقمك"); }
+      else if(a==="keep"){ $("#q").focus(); }
+      else if(a==="reset"){ store.clear(); state={theme:"auto",country:"ps-wb",wipe:true,pin:false,dg:"weather",user:null}; applyTheme(); $$("#steps .step").forEach(function(s){ s.classList.remove("done"); }); updateProg(); wipeChat(); applyState(); toast("انمسحت كل بياناتك من الجهاز"); show("welcome"); }
+    }
+  });
+  document.addEventListener("dblclick", function(e){ if(e.target.closest("[data-back]")) leaveDisguise(); });
+  var lastTap=0; document.addEventListener("touchend", function(e){ if(!e.target.closest("[data-back]")) return; var now=Date.now(); if(now-lastTap<350){ e.preventDefault(); leaveDisguise(); } lastTap=now; });
+  document.addEventListener("keydown", function(e){ if(e.key==="Escape" && current!=="disguise") quickExit(); });
+
+  var form=$("#composer"), qa=$("#q");
+  form.addEventListener("submit", function(e){ e.preventDefault(); var v=qa.value; qa.value=""; qa.style.height=""; ask(v); });
+  qa.addEventListener("keydown", function(e){ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); form.requestSubmit ? form.requestSubmit() : form.dispatchEvent(new Event("submit")); } });
+  qa.addEventListener("input", function(){ qa.style.height="auto"; qa.style.height=Math.min(qa.scrollHeight,120)+"px"; });
+
+  applyTheme(); applyState(); updateProg();
+  var last = store.get("last", null);
+  show(last && last!=="disguise" ? last : "welcome");
+})();
+</script>
+
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0F4C55">
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(console.error);
+}
+</script>
+
+</body>
+</html>
