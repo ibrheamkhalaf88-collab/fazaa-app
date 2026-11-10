@@ -2,3 +2,5 @@ node_modules/
 .wrangler/
 .DS_Store
 *.log
+
+server/api/public/

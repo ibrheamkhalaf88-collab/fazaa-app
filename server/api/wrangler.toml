@@ -6,13 +6,20 @@ compatibility_date = "2026-01-01"
 # Serve it on the SAME domain as the site so Cloudflare Access can guard /api/v1/staff/*.
 # routes = [{ pattern = "sanad.example.com/api/*", zone_name = "example.com" }]
 
+# The dashboard (/admin/) is served by this Worker from ./public (built by scripts/build-admin.mjs),
+# so it shares an origin with /api/*. Only /api/* runs the Worker code.
+[assets]
+directory = "./public"
+run_worker_first = ["/api/*"]
+
 [vars]
-ALLOWED_ORIGINS = "https://sanad.example.com"
+# The app's origin (public site) and this Worker's own origin (the dashboard).
+ALLOWED_ORIGINS = "https://sanad-app.pages.dev,https://sanad-api.ibrheamkhalaf88.workers.dev"
 # Cloudflare Zero Trust -> Access -> Applications. Team domain + the Application Audience (AUD) tag.
 ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
 ACCESS_AUD = ""
 # First developer(s): they can then add lawyers from the dashboard. Comma separated.
-DEVELOPER_EMAILS = "ibrheamkhalaf88@gmail.com"
+DEVELOPER_EMAILS = ""
 AI_DAILY_LIMIT = "3000"        # max online-AI answers per day (protects the provider quota)
 RETENTION_CLOSED_DAYS = "7"
 RETENTION_IDLE_DAYS = "30"
@@ -23,7 +30,7 @@ RETENTION_USER_DAYS = "180"   # accounts with no login for this long are deleted
 [[d1_databases]]
 binding = "DB"
 database_name = "sanad"
-database_id = "e3a61665-5eff-4f5a-8049-453dd4efbb8f"
+database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
 
 [triggers]
 crons = ["17 3 * * *"] # daily purge
