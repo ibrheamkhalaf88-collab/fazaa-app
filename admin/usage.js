@@ -247,7 +247,7 @@ export function usersView(ctx) {
 
       const table = el("table", "table");
       const hr = el("tr");
-      for (const h of ["الاسم المستعار", "المنطقة", "تاريخ التسجيل", "آخر دخول"])
+      for (const h of ["الاسم المستعار", "المنطقة", "تاريخ التسجيل", "آخر دخول", "الحالة", ""])
         hr.appendChild(el("th", null, h));
       const thead = el("thead");
       thead.appendChild(hr);
@@ -262,7 +262,21 @@ export function usersView(ctx) {
           el("td", null, REGION[r.region] || r.region),
           el("td", null, dateTime(r.createdAt)),
           el("td", null, r.lastLogin ? ago(Date.now() - r.lastLogin) : "—"),
+          el("td", null, r.lockedUntil > Date.now() ? "مقفول مؤقتاً (رمز غلط)" : "فعّال"),
         );
+        const del = el("button", null, "حذف الحساب");
+        del.addEventListener("click", async () => {
+          if (!window.confirm(`حذف حساب «${r.username}» مع كل حالاتها ورسائلها؟ ما في رجعة.`)) return;
+          try {
+            await api(`/users/${encodeURIComponent(r.id)}`, { method: "DELETE" });
+            load();
+          } catch (e) {
+            ctx.banner(errorText(e));
+          }
+        });
+        const delCell = el("td");
+        delCell.appendChild(del);
+        tr.appendChild(delCell);
         tbody.appendChild(tr);
       }
       table.append(thead, tbody);

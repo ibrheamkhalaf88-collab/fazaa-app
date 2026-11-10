@@ -13,7 +13,7 @@ export async function api(path, { method = "GET", body } = {}) {
       status: res.status,
       body: () => res.json().catch(() => ({})),
     });
-  return res.json();
+  return res.status === 204 ? null : res.json();
 }
 
 /** A calm, specific message for each failure. */

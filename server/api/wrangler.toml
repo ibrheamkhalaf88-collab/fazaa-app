@@ -15,11 +15,12 @@ run_worker_first = ["/api/*"]
 [vars]
 # The app's origin (public site) and this Worker's own origin (the dashboard).
 ALLOWED_ORIGINS = "https://sanad-app.pages.dev,https://sanad-api.ibrheamkhalaf88.workers.dev"
-# Cloudflare Zero Trust -> Access -> Applications. Team domain + the Application Audience (AUD) tag.
-ACCESS_TEAM_DOMAIN = "restless-voice-f31b.cloudflareaccess.com"
-ACCESS_AUD = "f69e9d9a7e9756a4f5fdfc8b1ee7845521f6f8ae631c0bfa8a2e859413ada72b"
-# First developer(s): they can then add lawyers from the dashboard. Comma separated.
-DEVELOPER_EMAILS = "ibrheamkhalaf88@gmail.com"
+# Staff sign in with email + password (server/api/auth.js). The first developer gets a temporary
+# password with:  node scripts/staff-password.mjs --email you@example.com
+# DEVELOPER_EMAILS is only a bootstrap for the local dev server; keep it empty here.
+DEVELOPER_EMAILS = ""
+# Checked by the dashboard's "حالة النظام" page.
+PUBLIC_SITE_URL = "https://sanad-app.pages.dev"
 AI_DAILY_LIMIT = "3000"        # max online-AI answers per day (protects the provider quota)
 RETENTION_CLOSED_DAYS = "7"
 RETENTION_IDLE_DAYS = "30"

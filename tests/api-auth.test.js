@@ -1,73 +1,35 @@
 import assert from "node:assert/strict";
-import { beforeEach, test } from "node:test";
-import { clearJwksCache, resolveStaff, verifyAccessJwt } from "../server/api/auth.js";
-import { toBase64Url } from "../server/api/crypto.js";
+import { test } from "node:test";
+import { passwordProblem, readCookie, resolveStaff, sessionCookie, tempPassword } from "../server/api/auth.js";
 import { createMemoryStore } from "../server/api/store/memory.js";
 
-const TEAM = "team.cloudflareaccess.com";
-const ENV = { ACCESS_TEAM_DOMAIN: TEAM, ACCESS_AUD: "aud123" };
-const NOW = 1_700_000_000_000;
-const enc = (o) => toBase64Url(new TextEncoder().encode(JSON.stringify(o)));
-
-let pair, jwk;
-beforeEach(async () => {
-  clearJwksCache();
-  pair = await crypto.subtle.generateKey(
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256",
-    },
-    true,
-    ["sign", "verify"],
-  );
-  jwk = { ...(await crypto.subtle.exportKey("jwk", pair.publicKey)), kid: "k1" };
+test("temporary passwords: 14 characters, no look-alikes, different every time", () => {
+  const seen = new Set();
+  for (let i = 0; i < 200; i++) {
+    const p = tempPassword();
+    assert.equal(p.length, 14);
+    assert.match(p, /^[a-km-np-zA-HJ-NP-Z2-9]+$/);
+    seen.add(p);
+  }
+  assert.equal(seen.size, 200);
 });
 
-async function sign(payload, { kid = "k1", alg = "RS256", key = pair.privateKey } = {}) {
-  const head = enc({ alg, kid });
-  const body = enc(payload);
-  const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", key, new TextEncoder().encode(`${head}.${body}`));
-  return `${head}.${body}.${toBase64Url(sig)}`;
-}
-const good = (over = {}) => ({
-  aud: ["aud123"],
-  iss: `https://${TEAM}`,
-  exp: NOW / 1000 + 600,
-  email: "Salma@Sanad.Example",
-  ...over,
-});
-const fetchImpl = async () => ({ ok: true, json: async () => ({ keys: [jwk] }) });
-const verify = (token, env = ENV) => verifyAccessJwt(token, env, { fetchImpl, now: NOW });
-
-test("accepts a valid token and lower-cases the email", async () => {
-  assert.equal(await verify(await sign(good())), "salma@sanad.example");
+test("password rules", () => {
+  assert.equal(passwordProblem("short", "a@b.c"), "password-too-short");
+  assert.equal(passwordProblem("x".repeat(201), "a@b.c"), "password-too-long");
+  assert.equal(passwordProblem("aaaaaaaaaaaa", "a@b.c"), "password-too-simple");
+  assert.equal(passwordProblem("Lawyer@x.org", "lawyer@x.org"), "password-is-email");
+  assert.equal(passwordProblem("zeitoun-2026!", "a@b.c"), null);
+  assert.equal(passwordProblem(undefined, "a@b.c"), "password-too-short");
 });
 
-test("rejects: wrong audience, wrong issuer, expired, unknown key id, bad signature, alg none, missing config", async () => {
-  assert.equal(await verify(await sign(good({ aud: ["other"] }))), null);
-  assert.equal(await verify(await sign(good({ iss: "https://evil.example" }))), null);
-  assert.equal(await verify(await sign(good({ exp: NOW / 1000 - 1 }))), null);
-  assert.equal(await verify(await sign(good(), { kid: "zzz" })), null);
-
-  const other = await crypto.subtle.generateKey(
-    {
-      name: "RSASSA-PKCS1-v1_5",
-      modulusLength: 2048,
-      publicExponent: new Uint8Array([1, 0, 1]),
-      hash: "SHA-256",
-    },
-    true,
-    ["sign", "verify"],
-  );
-  assert.equal(await verify(await sign(good(), { key: other.privateKey })), null);
-
-  const none = `${enc({ alg: "none", kid: "k1" })}.${enc(good())}.`;
-  assert.equal(await verify(none), null);
-  assert.equal(await verify(await sign(good()), {}), null);
-  assert.equal(await verify(null), null);
-  assert.equal(await verify("a.b"), null);
+test("session cookie is HttpOnly, Secure, SameSite=Strict and scoped to the staff API", () => {
+  const c = sessionCookie("tok", 60);
+  for (const part of ["fz_staff=tok", "HttpOnly", "Secure", "SameSite=Strict", "Path=/api/v1/staff", "Max-Age=60"])
+    assert.ok(c.includes(part), part);
+  const req = new Request("https://x.example/", { headers: { cookie: "a=1; fz_staff=abc=; b=2" } });
+  assert.equal(readCookie(req, "fz_staff"), "abc=");
+  assert.equal(readCookie(req, "nope"), "");
 });
 
 test("roles: staff table wins; DEVELOPER_EMAILS bootstraps; strangers get nothing", async () => {

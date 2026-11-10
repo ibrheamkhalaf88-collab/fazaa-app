@@ -22,6 +22,8 @@ export function createMemoryStore() {
   const lawyerDaily = new Map();
   const users = new Map();
   const sessions = new Map();
+  const staffAuth = new Map();
+  const staffSessions = new Map();
   const bumpLawyer = (now, email, field) => {
     const k = `${dayKey(now)}|${email}`;
     const r = lawyerDaily.get(k) || { day: dayKey(now), email, claimed: 0, closed: 0 };
@@ -202,12 +204,13 @@ export function createMemoryStore() {
       return [...users.values()]
         .sort((a, b) => (b.lastLogin ?? b.createdAt) - (a.lastLogin ?? a.createdAt))
         .slice(0, limit)
-        .map(({ id, username, region, createdAt, lastLogin }) => ({
+        .map(({ id, username, region, createdAt, lastLogin, lockedUntil }) => ({
           id,
           username,
           region,
           createdAt,
           lastLogin,
+          lockedUntil,
         }));
     },
     async getStaff(email) {
@@ -235,6 +238,43 @@ export function createMemoryStore() {
     },
     async removeStaff(email) {
       staff.delete(email);
+      staffAuth.delete(email);
+      for (const [k, v] of staffSessions) if (v.email === email) staffSessions.delete(k);
+    },
+    /* ---- staff passwords and sessions ---- */
+    async getStaffAuth(email) {
+      const a = staffAuth.get(email);
+      return a ? { ...a } : null;
+    },
+    async setStaffPassword(email, { salt, hash, mustChange, now }) {
+      staffAuth.set(email, { email, salt, hash, mustChange: !!mustChange, fails: 0, lockedUntil: 0, changedAt: now });
+    },
+    /** 5 wrong passwords lock the account for 15 minutes. */
+    async noteStaffLogin(email, ok, now) {
+      const a = staffAuth.get(email);
+      if (!a) return;
+      if (ok) Object.assign(a, { fails: 0, lockedUntil: 0 });
+      else {
+        a.fails += 1;
+        if (a.fails >= 5) Object.assign(a, { fails: 0, lockedUntil: now + 15 * 60_000 });
+      }
+    },
+    async createStaffSession({ tokenHash, email, now, expiresAt }) {
+      staffSessions.set(tokenHash, { email, createdAt: now, expiresAt });
+    },
+    async getStaffSession(tokenHash, now) {
+      const s = staffSessions.get(tokenHash);
+      return s && s.expiresAt > now ? s.email : null;
+    },
+    async deleteStaffSession(tokenHash) {
+      staffSessions.delete(tokenHash);
+    },
+    async deleteStaffSessions(email) {
+      for (const [k, v] of staffSessions) if (v.email === email) staffSessions.delete(k);
+    },
+    async lastAuditAt(action) {
+      const hit = [...audit].reverse().find((a) => a.action === action);
+      return hit ? hit.at : null;
     },
     async track({ event, region = "none", ms = 0, now }) {
       const day = dayKey(now);
@@ -330,6 +370,7 @@ export function createMemoryStore() {
       { closedMs, idleMs, auditMs = 90 * 86_400_000, userIdleMs = 180 * 86_400_000, aiMs = 90 * 86_400_000 },
     ) {
       for (const [k, v] of sessions) if (v.expiresAt <= now) sessions.delete(k);
+      for (const [k, v] of staffSessions) if (v.expiresAt <= now) staffSessions.delete(k);
       const doomed = [...cases.values()].filter(
         (c) => (c.status === "closed" && c.closedAt < now - closedMs) || c.lastActivity < now - idleMs,
       );

@@ -12,12 +12,21 @@
  *   - a lawyer can read only the case she claimed; developers can read no case at all;
  *   - closed cases are deleted after RETENTION_CLOSED_DAYS, idle ones after RETENTION_IDLE_DAYS.
  *
- * Deploy at the SAME origin as the site (route  yourdomain/api/*) so Cloudflare Access can
- * protect /api/v1/staff/* and /admin/*, and the app's CSP (connect-src 'self') stays strict.
+ * Staff sign in with email + password (see auth.js): salted PBKDF2 hashes, lockout after 5 wrong
+ * tries, temporary passwords that must be changed, HttpOnly SameSite=Strict session cookie.
  */
 import { answerQuestion, LIMITS_FOR_QUESTION } from "../ai-proxy/worker.js";
 import { DEFAULT_PROVIDER, PROVIDERS } from "../ai-proxy/providers.js";
-import { verifyAccessJwt, resolveStaff } from "./auth.js";
+import {
+  passwordProblem,
+  PASSWORD_MAX,
+  readCookie,
+  resolveStaff,
+  sessionCookie,
+  STAFF_COOKIE,
+  STAFF_SESSION_MS,
+  tempPassword,
+} from "./auth.js";
 import { decryptText, encryptText, hashPin, newSalt, randomId, safeEqual, sha256Hex } from "./crypto.js";
 import { createD1Store } from "./store/d1.js";
 import { scrub } from "./scrub.js";
@@ -224,18 +233,134 @@ export async function handleRequest(request, env, deps) {
     return reply(json(body, status));
   }
 
-  /* ============ staff routes (Cloudflare Access) ============ */
+  /* ============ staff routes (email + password session) ============ */
   if (path.startsWith("/v1/staff/")) {
+    // State-changing calls must come from a page (the cookie is also SameSite=Strict).
+    if (request.method !== "GET" && !request.headers.get("origin")) return reply(fail(403, "forbidden-origin"));
+
+    const newSession = async (email) => {
+      const token = randomId(32);
+      await store.createStaffSession({
+        tokenHash: await sha256Hex(token),
+        email,
+        now,
+        expiresAt: now + STAFF_SESSION_MS,
+      });
+      return sessionCookie(token, Math.floor(STAFF_SESSION_MS / 1000));
+    };
+    const checkPassword = async (auth, password) =>
+      typeof password === "string" &&
+      password.length <= PASSWORD_MAX &&
+      safeEqual(await hashPin(password, auth.salt), auth.hash);
+    const setTemp = async (email) => {
+      const password = tempPassword();
+      const salt = newSalt();
+      await store.setStaffPassword(email, { salt, hash: await hashPin(password, salt), mustChange: true, now });
+      await store.deleteStaffSessions(email);
+      return password;
+    };
+
+    if (path === "/v1/staff/login" && request.method === "POST") {
+      const { value, error } = await readJson(request);
+      if (error) return reply(fail(error, "bad-body"));
+      const email = cleanText(value.email, LIMITS.email).toLowerCase();
+      const member = email ? await store.getStaff(email) : null;
+      const auth = member ? await store.getStaffAuth(email) : null;
+      if (auth && auth.lockedUntil > now) return reply(fail(429, "locked"));
+      let ok = false;
+      if (auth) ok = (await checkPassword(auth, value.password)) && member.active !== false;
+      else await hashPin("x", newSalt()); // same work either way, so timing does not reveal accounts
+      if (auth) await store.noteStaffLogin(email, ok, now);
+      // one answer for "no such account", "wrong password" and "suspended"
+      if (!ok) return reply(fail(401, "bad-credentials"));
+      await store.touchStaff(email, now);
+      await store.addAudit({ actor: email, action: "staff-login", target: "", now });
+      return reply(json({ ok: true, mustChange: auth.mustChange }, 200, { "set-cookie": await newSession(email) }));
+    }
+
+    const token = deps.staffEmail ? "" : readCookie(request, STAFF_COOKIE);
+    const tokenHash = token ? await sha256Hex(token) : "";
     const email = deps.staffEmail
       ? await deps.staffEmail(request)
-      : await verifyAccessJwt(request.headers.get("cf-access-jwt-assertion"), env, { fetchImpl, now });
+      : tokenHash
+        ? await store.getStaffSession(tokenHash, now)
+        : null;
     const staff = await resolveStaff(email, env, store);
+
+    if (path === "/v1/staff/logout" && request.method === "POST") {
+      if (tokenHash) await store.deleteStaffSession(tokenHash);
+      return reply(new Response(null, { status: 204, headers: { "set-cookie": sessionCookie("", 0) } }));
+    }
+
     if (!staff) return reply(fail(401, "not-staff"));
     const need = (role) => (staff.role === role ? null : reply(fail(403, "wrong-role")));
+    const auth = await store.getStaffAuth(staff.email);
+    const mustChange = Boolean(auth?.mustChange) && !deps.staffEmail;
 
     if (path === "/v1/staff/me" && request.method === "GET") {
       await store.touchStaff(staff.email, now);
-      return reply(json({ email: staff.email, role: staff.role, name: staff.name, code: staff.code || "" }));
+      return reply(
+        json({ email: staff.email, role: staff.role, name: staff.name, code: staff.code || "", mustChange }),
+      );
+    }
+
+    if (path === "/v1/staff/password" && request.method === "POST") {
+      const { value, error } = await readJson(request);
+      if (error) return reply(fail(error, "bad-body"));
+      if (!auth || !(await checkPassword(auth, value.current))) return reply(fail(400, "wrong-password"));
+      const problem = passwordProblem(value.next, staff.email);
+      if (problem) return reply(fail(400, problem));
+      if (value.next === value.current) return reply(fail(400, "password-unchanged"));
+      const salt = newSalt();
+      await store.setStaffPassword(staff.email, { salt, hash: await hashPin(value.next, salt), mustChange: false, now });
+      await store.deleteStaffSessions(staff.email); // signs out every other device
+      await store.addAudit({ actor: staff.email, action: "password-change", target: "", now });
+      return reply(json({ ok: true }, 200, { "set-cookie": await newSession(staff.email) }));
+    }
+
+    // A temporary password allows nothing else until it is changed.
+    if (mustChange) return reply(fail(403, "must-change-password"));
+
+    /* ---- developer: system health ---- */
+    if (path === "/v1/staff/health" && request.method === "GET") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const started = Date.now();
+      let dbOk = true;
+      try {
+        await store.userStats(now, 1);
+      } catch {
+        dbOk = false;
+      }
+      const dbMs = Date.now() - started;
+      let site = null;
+      if (env.PUBLIC_SITE_URL) {
+        const t = Date.now();
+        try {
+          const res = await fetchImpl(env.PUBLIC_SITE_URL, { method: "HEAD", signal: AbortSignal.timeout(6000) });
+          site = { url: env.PUBLIC_SITE_URL, ok: res.ok, status: res.status, ms: Date.now() - t };
+        } catch {
+          site = { url: env.PUBLIC_SITE_URL, ok: false, status: 0, ms: Date.now() - t };
+        }
+      }
+      const ai = aiSummary(env, await loadAi(store, open));
+      const week = await store.analytics(now, 7);
+      return reply(
+        json({
+          checkedAt: now,
+          db: { ok: dbOk, ms: dbMs },
+          site,
+          ai: {
+            configured: ai.hasKey,
+            provider: ai.provider,
+            model: ai.model || ai.defaultModel,
+            ...(await aiUsage(store, env, now)),
+            asked7: week.totals.ask_ai || 0,
+            errors7: week.totals.ai_error || 0,
+          },
+          lastPurgeAt: await store.lastAuditAt("purge"),
+        }),
+      );
     }
 
     /* ---- developer ---- */
@@ -400,6 +525,31 @@ export async function handleRequest(request, env, deps) {
       return reply(json({ ...(await store.userStats(now)), users: await store.listUsers(100) }));
     }
 
+    // developers can delete an account (with her cases); still never see her name or phone
+    const delUser = m(/^\/v1\/staff\/users\/([\w-]+)$/);
+    if (delUser && request.method === "DELETE") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const user = await store.getUser(delUser[1]);
+      if (!user) return reply(fail(404, "not-found"));
+      await store.deleteUser(user.id);
+      await store.addAudit({ actor: staff.email, action: "user-delete", target: user.username, now });
+      return reply(json({ ok: true }));
+    }
+
+    if (path === "/v1/staff/team/reset" && request.method === "POST") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const { value, error } = await readJson(request);
+      if (error) return reply(fail(error, "bad-body"));
+      const target = cleanText(value.email, LIMITS.email).toLowerCase();
+      if (target === staff.email) return reply(fail(400, "use-change-password"));
+      if (!(await store.getStaff(target))) return reply(fail(404, "not-found"));
+      const password = await setTemp(target);
+      await store.addAudit({ actor: staff.email, action: "staff-password-reset", target, now });
+      return reply(json({ ok: true, tempPassword: password }));
+    }
+
     if (path === "/v1/staff/audit" && request.method === "GET")
       return need("developer") || reply(json({ audit: await store.listAudit(100) }));
 
@@ -420,6 +570,7 @@ export async function handleRequest(request, env, deps) {
         await store.upsertStaff({ email: target, role, name: firstName(value.name), now });
         if (typeof value.active === "boolean" && existing && value.active !== existing.active) {
           await store.setStaffActive(target, value.active);
+          if (!value.active) await store.deleteStaffSessions(target); // signed out at once
           await store.addAudit({
             actor: staff.email,
             action: value.active ? "staff-restore" : "staff-suspend",
@@ -428,7 +579,9 @@ export async function handleRequest(request, env, deps) {
           });
         }
         await store.addAudit({ actor: staff.email, action: "staff-add", target: `${target} (${role})`, now });
-        return reply(json({ ok: true }));
+        // a new member (or one from before passwords) gets a temporary password, shown once
+        const tempPw = (await store.getStaffAuth(target)) ? null : await setTemp(target);
+        return reply(json({ ok: true, ...(tempPw ? { tempPassword: tempPw } : {}) }));
       }
       if (request.method === "DELETE") {
         const target = (url.searchParams.get("email") || "").toLowerCase();

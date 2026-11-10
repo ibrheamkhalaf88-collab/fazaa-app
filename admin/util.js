@@ -17,6 +17,10 @@ export const ACTION = {
   "ai-config-test": "جرّبت اتصال الذكاء الاصطناعي",
   "ai-answers-export": "صدّرت أجوبة الذكاء المراجَعة",
   "view-contact": "فتحت بيانات تواصل مستخدمة",
+  "staff-login": "سجّل دخول للوحة",
+  "password-change": "غيّر كلمة السر",
+  "staff-password-reset": "عمل كلمة سر مؤقتة لعضو",
+  "user-delete": "حذف حساب مستخدمة",
 };
 
 export const minutes = (ms) => Math.max(0, Math.floor(ms / 60000));

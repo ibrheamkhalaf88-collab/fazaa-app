@@ -40,6 +40,26 @@ CREATE TABLE IF NOT EXISTS staff (
 --   ALTER TABLE staff ADD COLUMN code TEXT NOT NULL DEFAULT '';
 --   ALTER TABLE staff ADD COLUMN active INTEGER NOT NULL DEFAULT 1;
 
+-- Staff sign-in: email + password. Only a salted PBKDF2 hash is stored. 5 wrong passwords lock the
+-- account for 15 minutes. must_change = 1 for a temporary password set by the owner (first login / reset).
+CREATE TABLE IF NOT EXISTS staff_auth (
+  email        TEXT PRIMARY KEY,
+  pw_salt      TEXT NOT NULL,
+  pw_hash      TEXT NOT NULL,
+  must_change  INTEGER NOT NULL DEFAULT 1,
+  fails        INTEGER NOT NULL DEFAULT 0,
+  locked_until INTEGER NOT NULL DEFAULT 0,
+  changed_at   INTEGER NOT NULL
+);
+-- Staff sessions: only the SHA-256 of the cookie token is stored.
+CREATE TABLE IF NOT EXISTS staff_sessions (
+  token_hash TEXT PRIMARY KEY,
+  email      TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_staff_sessions_email ON staff_sessions(email);
+
 -- A lawyer's private note on her own case (encrypted like messages; deleted with the case).
 CREATE TABLE IF NOT EXISTS case_notes (
   case_id    TEXT PRIMARY KEY,

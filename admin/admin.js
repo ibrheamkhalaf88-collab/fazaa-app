@@ -1,16 +1,16 @@
 import { api } from "./api.js";
 import { aiSettingsView } from "./ai-settings.js";
 import { answersView } from "./answers.js";
-import { auditView, overviewView, teamView } from "./developer.js";
+import { auditView, healthView, overviewView, teamView } from "./developer.js";
 import { lawyerView } from "./lawyer.js";
 import { aiView, usageView, usersView } from "./usage.js";
 import { workView } from "./work.js";
 import { el, ROLE } from "./util.js";
 
 /**
- * Staff dashboard shell. Sign-in is done by Cloudflare Access before this page loads; the API
- * says who we are and which role we have, and we show only that role's sections. (The API
- * enforces the permissions; hiding a section here is just convenience.)
+ * Staff dashboard shell. Staff sign in here with email + password; a temporary password must be
+ * changed before anything else. The API says who we are and which role we have, and we show only
+ * that role's sections. (The API enforces the permissions; hiding a section here is convenience.)
  * All text is inserted with textContent, never innerHTML.
  */
 const $ = (id) => document.getElementById(id);
@@ -87,16 +87,85 @@ const banner = (msg) => {
   $("banner").hidden = !msg;
 };
 
+/* ---------- sign-in, change password, sign-out ---------- */
+const screens = ["boot", "login", "pw", "shell"];
+const only = (id) => screens.forEach((s) => ($(s).hidden = s !== id));
+const formError = (id, msg) => {
+  $(id).textContent = msg || "";
+  $(id).hidden = !msg;
+};
+
+const LOGIN_ERRORS = {
+  401: "البريد أو كلمة السر غلط.",
+  429: "محاولات غلط كتيرة. الحساب مقفول 15 دقيقة.",
+};
+$("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  formError("login-error");
+  try {
+    await api("/login", {
+      method: "POST",
+      body: { email: $("login-email").value.trim(), password: $("login-password").value },
+    });
+    $("login-password").value = "";
+    location.reload();
+  } catch (err) {
+    formError("login-error", LOGIN_ERRORS[err.status] || "في مشكلة بالاتصال. جرّبي كمان شوي.");
+  }
+});
+
+const PW_ERRORS = {
+  "wrong-password": "كلمة السر الحالية غلط.",
+  "password-too-short": "كلمة السر الجديدة لازم تكون 10 أحرف على الأقل.",
+  "password-too-long": "كلمة السر الجديدة طويلة كتير.",
+  "password-too-simple": "كلمة السر الجديدة سهلة كتير. استعملي أحرف مختلفة.",
+  "password-is-email": "ما بصير كلمة السر تكون نفس البريد.",
+  "password-unchanged": "اختاري كلمة سر غير المؤقتة.",
+};
+function showPasswordForm(forced) {
+  $("pw-why").textContent = forced
+    ? "هاي كلمة سر مؤقتة. اختاري كلمة سر جديدة إلك لحالك قبل ما تكمّلي."
+    : "بعد الحفظ بتنطلعي من كل الأجهزة التانية.";
+  $("pw-cancel").hidden = forced;
+  for (const id of ["pw-current", "pw-next", "pw-again"]) $(id).value = "";
+  formError("pw-error");
+  only("pw");
+  $("pw-current").focus();
+}
+$("pw-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if ($("pw-next").value !== $("pw-again").value) return formError("pw-error", "الكلمتين الجديدتين مش متطابقتين.");
+  try {
+    await api("/password", { method: "POST", body: { current: $("pw-current").value, next: $("pw-next").value } });
+    location.reload();
+  } catch (err) {
+    const { error } = err.body ? await err.body() : {};
+    formError("pw-error", PW_ERRORS[error] || "ما زبط الحفظ. جرّبي كمان مرة.");
+  }
+});
+$("pw-cancel").addEventListener("click", () => only("shell"));
+$("change-pw").addEventListener("click", () => showPasswordForm(false));
+$("logout").addEventListener("click", async () => {
+  try {
+    await api("/logout", { method: "POST" });
+  } finally {
+    location.reload();
+  }
+});
+
 (async () => {
   let me;
   try {
     me = await api("/me");
-  } catch {
-    $("boot").textContent = "ما عندك صلاحية دخول. تواصلي مع المسؤول ليضيف بريدك.";
+  } catch (err) {
+    if (err.status === 401) {
+      only("login");
+      $("login-email").focus();
+    } else $("boot").textContent = "في مشكلة بالاتصال. حدّثي الصفحة كمان شوي.";
     return;
   }
-  $("boot").hidden = true;
-  $("shell").hidden = false;
+  if (me.mustChange) return showPasswordForm(true);
+  only("shell");
   $("me-name").textContent = me.name || "مرحباً";
   $("me-mail").textContent = me.email;
   $("me-role").textContent = ROLE[me.role];
@@ -110,6 +179,7 @@ const banner = (msg) => {
         ]
       : [
           ["overview", "نظرة عامة", overviewView],
+          ["health", "حالة النظام", healthView],
           ["usage", "الزوّار والاستخدام", usageView],
           ["users", "المستخدمات", usersView],
           ["ai", "الذكاء الاصطناعي", aiView],

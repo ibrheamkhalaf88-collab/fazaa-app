@@ -27,6 +27,10 @@
             <button id="theme" class="ghost" type="button" aria-label="تبديل المظهر"></button>
             <button id="sound" class="ghost" type="button" aria-pressed="false" hidden></button>
           </div>
+          <div class="tools">
+            <button id="change-pw" class="ghost" type="button">تغيير كلمة السر</button>
+            <button id="logout" class="ghost" type="button">تسجيل الخروج</button>
+          </div>
         </div>
       </aside>
       <main class="main">
@@ -35,6 +39,36 @@
       </main>
     </div>
     <p id="boot" class="boot">جاري التحميل...</p>
+
+    <main class="auth" id="login" hidden>
+      <form class="card auth-card" id="login-form" novalidate>
+        <div class="brand">فَزعة <small>لوحة التحكم</small></div>
+        <h1>تسجيل الدخول</h1>
+        <label for="login-email">البريد الإلكتروني</label>
+        <input id="login-email" type="email" dir="ltr" autocomplete="username" required />
+        <label for="login-password">كلمة السر</label>
+        <input id="login-password" type="password" dir="ltr" autocomplete="current-password" required />
+        <p id="login-error" class="form-error" role="alert" hidden></p>
+        <button class="primary" type="submit">دخول</button>
+        <p class="hint">نسيتي كلمة السر؟ اطلبي من المسؤول يعمللك كلمة سر مؤقتة جديدة.</p>
+      </form>
+    </main>
+
+    <main class="auth" id="pw" hidden>
+      <form class="card auth-card" id="pw-form" novalidate>
+        <h1>تغيير كلمة السر</h1>
+        <p id="pw-why" class="hint"></p>
+        <label for="pw-current">كلمة السر الحالية (أو المؤقتة)</label>
+        <input id="pw-current" type="password" dir="ltr" autocomplete="current-password" required />
+        <label for="pw-next">كلمة السر الجديدة (10 أحرف على الأقل)</label>
+        <input id="pw-next" type="password" dir="ltr" autocomplete="new-password" minlength="10" required />
+        <label for="pw-again">أعيدي كتابة الجديدة</label>
+        <input id="pw-again" type="password" dir="ltr" autocomplete="new-password" required />
+        <p id="pw-error" class="form-error" role="alert" hidden></p>
+        <button class="primary" type="submit">حفظ</button>
+        <button id="pw-cancel" class="ghost" type="button" hidden>رجوع</button>
+      </form>
+    </main>
     <script type="module" src="admin.js"></script>
   </body>
 </html>

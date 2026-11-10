@@ -1,6 +1,6 @@
 import { api, errorText } from "./api.js";
 import { barRows, barsChart, kpi, legend } from "./charts.js";
-import { ACTION, ago, dateTime, duration, el, REGION, ROLE } from "./util.js";
+import { ACTION, ago, dateTime, duration, el, pill, REGION, ROLE } from "./util.js";
 
 const REFRESH_MS = 30_000;
 const STATUS = { open: "بانتظار محامية", claimed: "قيد المتابعة", closed: "منتهية" };
@@ -86,7 +86,9 @@ const PERMISSIONS = [
   ["إحصائيات الاستخدام (أعداد فقط)", false, true],
   ["إعدادات الذكاء الاصطناعي والمفتاح", false, true],
   ["تصدير أجوبة الذكاء المراجَعة", false, true],
-  ["إدارة الفريق وتعليق الحسابات", false, true],
+  ["إدارة الفريق وتعليق الحسابات وكلمات السر المؤقتة", false, true],
+  ["حالة النظام (السيرفر، القاعدة، الموقع، الذكاء)", false, true],
+  ["قائمة حسابات المستخدمات وحذفها (بدون اسم ولا رقم)", false, true],
   ["سجل التدقيق", false, true],
 ];
 
@@ -114,10 +116,41 @@ function permissionsCard() {
   return card;
 }
 
+/** A temporary password, shown once with who it is for. */
+function secretBox(email, password) {
+  const box = el("div", "secret");
+  box.setAttribute("role", "status");
+  const code = el("code", null, password);
+  code.dir = "ltr";
+  const copy = el("button", null, "نسخ");
+  copy.type = "button";
+  copy.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(password);
+      copy.textContent = "انتسخت";
+    } catch {
+      copy.textContent = "انسخيها يدوياً";
+    }
+  });
+  const row = el("div");
+  row.append(code, " ", copy);
+  box.append(
+    el("b", null, `كلمة سر مؤقتة لـ ${email}`),
+    row,
+    el(
+      "span",
+      "hint",
+      "بتظهر هالمرة بس. أعطيها للعضو بطريقة آمنة (مش بمجموعة). أول ما يدخل، النظام بيطلب منه يغيّرها.",
+    ),
+  );
+  return box;
+}
+
 /* ============ team ============ */
 export function teamView(ctx) {
   const body = el("div");
   ctx.view.replaceChildren(body);
+  let shown = null; // the last temporary password, until the page changes
 
   async function load() {
     try {
@@ -150,6 +183,19 @@ export function teamView(ctx) {
         toggle.addEventListener("click", () =>
           save({ email: m.email, name: m.name, role: m.role, active: m.active === false }),
         );
+        const reset = el("button", null, "كلمة سر جديدة");
+        reset.disabled = isMe;
+        reset.addEventListener("click", async () => {
+          if (!window.confirm(`عمل كلمة سر مؤقتة جديدة لـ ${m.email}؟ القديمة بتوقف وبينطلع من كل أجهزته.`))
+            return;
+          try {
+            const r = await api("/team/reset", { method: "POST", body: { email: m.email } });
+            shown = { email: m.email, password: r.tempPassword };
+            load();
+          } catch (e) {
+            ctx.banner(errorText(e));
+          }
+        });
         const rm = el("button", null, "حذف");
         rm.disabled = isMe;
         rm.addEventListener("click", async () => {
@@ -170,7 +216,7 @@ export function teamView(ctx) {
         const act = seen.get(m.email);
         const idCell = el("td", null, m.code || "—");
         idCell.dir = "ltr";
-        rmCell.prepend(toggle, " ");
+        rmCell.prepend(toggle, " ", reset, " ");
         tr.append(
           idCell,
           el("td", null, m.name || "—"),
@@ -204,7 +250,16 @@ export function teamView(ctx) {
       form.append(email, name, role, add);
 
       const card = el("section", "card");
-      card.append(wrap, form, el("p", "hint", "العضو بيدخل بنفس البريد عبر رمز بيوصله على إيميله."));
+      card.append(
+        wrap,
+        form,
+        ...(shown ? [secretBox(shown.email, shown.password)] : []),
+        el(
+          "p",
+          "hint",
+          "لما تضيفي عضو جديد بتطلعلك كلمة سر مؤقتة مرة وحدة. إذا نسي كلمة السر، اكبسي «كلمة سر جديدة».",
+        ),
+      );
       body.replaceChildren(head, card, permissionsCard());
     } catch (e) {
       ctx.banner(errorText(e));
@@ -213,7 +268,8 @@ export function teamView(ctx) {
 
   async function save(member) {
     try {
-      await api("/team", { method: "PUT", body: member });
+      const r = await api("/team", { method: "PUT", body: member });
+      shown = r.tempPassword ? { email: member.email.trim().toLowerCase(), password: r.tempPassword } : null;
       ctx.banner();
       load();
     } catch (e) {
@@ -223,6 +279,54 @@ export function teamView(ctx) {
 
   load();
   return { destroy() {} };
+}
+
+/* ============ system health ============ */
+function statusCard(title, ok, lines) {
+  const card = el("section", "card");
+  const head = el("h2");
+  head.append(title, " ", pill(ok === null ? "غير مفعّل" : ok ? "شغّال" : "في مشكلة", ok ? "good" : "wait"));
+  card.append(head, ...lines.map((t) => el("p", null, t)));
+  return card;
+}
+
+export function healthView(ctx) {
+  const body = el("div");
+  ctx.view.replaceChildren(body);
+  async function load() {
+    try {
+      const h = await api("/health");
+      ctx.banner();
+      const head = el("div", "page-head");
+      head.append(el("h1", null, "حالة النظام"), el("span", "muted", `آخر فحص ${dateTime(h.checkedAt)}`));
+      const errRate = h.ai.asked7 ? Math.round((100 * h.ai.errors7) / h.ai.asked7) : 0;
+      const grid = el("div", "health");
+      grid.append(
+        statusCard("السيرفر (API)", true, ["بيرد على الطلبات."]),
+        statusCard("قاعدة البيانات", h.db.ok, [`زمن الرد: ${h.db.ms} ms`]),
+        h.site
+          ? statusCard("الموقع العام", h.site.ok, [
+              h.site.ok ? `فاتح (${h.site.ms} ms)` : `ما فتح (رمز ${h.site.status || "بدون رد"})`,
+              h.site.url,
+            ])
+          : statusCard("الموقع العام", null, ["ضيفي PUBLIC_SITE_URL بإعدادات السيرفر لنفحصه."]),
+        statusCard("الذكاء الاصطناعي", h.ai.configured ? errRate < 20 : null, [
+          h.ai.configured ? `${h.ai.provider} / ${h.ai.model}` : "ما في مفتاح. ضيفيه من «إعدادات الذكاء».",
+          `اليوم: ${h.ai.usedToday} من ${h.ai.dailyLimit} سؤال`,
+          `آخر 7 أيام: ${h.ai.asked7} سؤال، ${h.ai.errors7} فشل (${errRate}%)`,
+        ]),
+        statusCard("الحذف التلقائي اليومي", h.lastPurgeAt ? Date.now() - h.lastPurgeAt < 2 * 86_400_000 : null, [
+          h.lastPurgeAt ? `آخر تشغيل ${ago(Date.now() - h.lastPurgeAt)}` : "ما اشتغل لسا (بيشتغل كل يوم الساعة 3 الفجر UTC).",
+        ]),
+      );
+      body.replaceChildren(head, grid);
+    } catch (e) {
+      ctx.banner(errorText(e));
+    }
+  }
+  load();
+  const t = setInterval(load, 60_000);
+  return { destroy: () => clearInterval(t) };
 }
 
 /* ============ audit ============ */

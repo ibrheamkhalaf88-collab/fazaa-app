@@ -10,6 +10,42 @@ const impls = { memory: createMemoryStore, d1: () => createD1Store(createFakeD1(
 for (const [name, make] of Object.entries(impls)) {
   const T = (title, fn) => test(`store[${name}]: ${title}`, () => fn(make()));
 
+  T("staff passwords, lockout, sessions and removal", async (s) => {
+    await s.upsertStaff({ email: "l@x.org", role: "lawyer", name: "ليلى", now: 1 });
+    assert.equal(await s.getStaffAuth("l@x.org"), null);
+    await s.setStaffPassword("l@x.org", { salt: "s1", hash: "h1", mustChange: true, now: 2 });
+    const a = await s.getStaffAuth("l@x.org");
+    assert.deepEqual([a.salt, a.hash, a.mustChange, a.fails, a.lockedUntil], ["s1", "h1", true, 0, 0]);
+
+    for (let i = 0; i < 4; i++) await s.noteStaffLogin("l@x.org", false, 100);
+    assert.equal((await s.getStaffAuth("l@x.org")).fails, 4);
+    await s.noteStaffLogin("l@x.org", false, 100);
+    assert.equal((await s.getStaffAuth("l@x.org")).lockedUntil, 100 + 15 * 60_000);
+    await s.setStaffPassword("l@x.org", { salt: "s2", hash: "h2", mustChange: false, now: 3 });
+    assert.equal((await s.getStaffAuth("l@x.org")).lockedUntil, 0); // a reset also unlocks
+    assert.equal((await s.getStaffAuth("l@x.org")).mustChange, false);
+
+    await s.createStaffSession({ tokenHash: "t1", email: "l@x.org", now: 10, expiresAt: 50 });
+    await s.createStaffSession({ tokenHash: "t2", email: "l@x.org", now: 10, expiresAt: 500 });
+    assert.equal(await s.getStaffSession("t1", 20), "l@x.org");
+    assert.equal(await s.getStaffSession("t1", 60), null); // expired
+    await s.deleteStaffSession("t2");
+    assert.equal(await s.getStaffSession("t2", 20), null);
+    await s.createStaffSession({ tokenHash: "t3", email: "l@x.org", now: 10, expiresAt: 500 });
+    await s.deleteStaffSessions("l@x.org");
+    assert.equal(await s.getStaffSession("t3", 20), null);
+
+    await s.createStaffSession({ tokenHash: "t4", email: "l@x.org", now: 10, expiresAt: 500 });
+    await s.removeStaff("l@x.org");
+    assert.equal(await s.getStaffAuth("l@x.org"), null);
+    assert.equal(await s.getStaffSession("t4", 20), null);
+
+    assert.equal(await s.lastAuditAt("purge"), null);
+    await s.addAudit({ actor: "system", action: "purge", target: "0 cases", now: 7 });
+    await s.addAudit({ actor: "system", action: "purge", target: "0 cases", now: 9 });
+    assert.equal(await s.lastAuditAt("purge"), 9);
+  });
+
   T("settings: set, replace and delete", async (s) => {
     assert.equal(await s.getSetting("ai"), null);
     await s.setSetting({ key: "ai", iv: "i1", body: "b1", now: 5, by: "dev@x.org" });

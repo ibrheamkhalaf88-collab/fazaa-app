@@ -289,7 +289,7 @@ export function createD1Store(db) {
     async listUsers(limit = 100) {
       return (
         await q(
-          "SELECT id, username, region, created_at, last_login FROM users ORDER BY COALESCE(last_login, created_at) DESC LIMIT ?",
+          "SELECT id, username, region, created_at, last_login, locked_until FROM users ORDER BY COALESCE(last_login, created_at) DESC LIMIT ?",
           limit,
         ).all()
       ).results.map((r) => ({
@@ -298,6 +298,7 @@ export function createD1Store(db) {
         region: r.region,
         createdAt: r.created_at,
         lastLogin: r.last_login,
+        lockedUntil: r.locked_until,
       }));
     },
     async getStaff(email) {
@@ -328,6 +329,72 @@ export function createD1Store(db) {
     },
     async removeStaff(email) {
       await q("DELETE FROM staff WHERE email = ?", email).run();
+      await q("DELETE FROM staff_auth WHERE email = ?", email).run();
+      await q("DELETE FROM staff_sessions WHERE email = ?", email).run();
+    },
+    /* ---- staff passwords and sessions ---- */
+    async getStaffAuth(email) {
+      const r = await q("SELECT * FROM staff_auth WHERE email = ?", email).first();
+      return r
+        ? {
+            email: r.email,
+            salt: r.pw_salt,
+            hash: r.pw_hash,
+            mustChange: !!r.must_change,
+            fails: r.fails,
+            lockedUntil: r.locked_until,
+            changedAt: r.changed_at,
+          }
+        : null;
+    },
+    async setStaffPassword(email, { salt, hash, mustChange, now }) {
+      await q(
+        "INSERT INTO staff_auth (email, pw_salt, pw_hash, must_change, fails, locked_until, changed_at) VALUES (?,?,?,?,0,0,?) ON CONFLICT(email) DO UPDATE SET pw_salt = excluded.pw_salt, pw_hash = excluded.pw_hash, must_change = excluded.must_change, fails = 0, locked_until = 0, changed_at = excluded.changed_at",
+        email,
+        salt,
+        hash,
+        mustChange ? 1 : 0,
+        now,
+      ).run();
+    },
+    /** 5 wrong passwords lock the account for 15 minutes. */
+    async noteStaffLogin(email, ok, now) {
+      if (ok) {
+        await q("UPDATE staff_auth SET fails = 0, locked_until = 0 WHERE email = ?", email).run();
+        return;
+      }
+      await q(
+        "UPDATE staff_auth SET locked_until = CASE WHEN fails + 1 >= 5 THEN ? ELSE locked_until END, fails = CASE WHEN fails + 1 >= 5 THEN 0 ELSE fails + 1 END WHERE email = ?",
+        now + 15 * 60_000,
+        email,
+      ).run();
+    },
+    async createStaffSession({ tokenHash, email, now, expiresAt }) {
+      await q(
+        "INSERT INTO staff_sessions (token_hash, email, created_at, expires_at) VALUES (?,?,?,?)",
+        tokenHash,
+        email,
+        now,
+        expiresAt,
+      ).run();
+    },
+    async getStaffSession(tokenHash, now) {
+      const r = await q(
+        "SELECT email FROM staff_sessions WHERE token_hash = ? AND expires_at > ?",
+        tokenHash,
+        now,
+      ).first();
+      return r ? r.email : null;
+    },
+    async deleteStaffSession(tokenHash) {
+      await q("DELETE FROM staff_sessions WHERE token_hash = ?", tokenHash).run();
+    },
+    async deleteStaffSessions(email) {
+      await q("DELETE FROM staff_sessions WHERE email = ?", email).run();
+    },
+    async lastAuditAt(action) {
+      const r = await q("SELECT MAX(at) AS at FROM audit WHERE action = ?", action).first();
+      return r?.at ?? null;
     },
     async track({ event, region = "none", ms = 0, now }) {
       await q(
@@ -472,6 +539,7 @@ export function createD1Store(db) {
       { closedMs, idleMs, auditMs = 90 * 86_400_000, userIdleMs = 180 * 86_400_000, aiMs = 90 * 86_400_000 },
     ) {
       await q("DELETE FROM sessions WHERE expires_at <= ?", now).run();
+      await q("DELETE FROM staff_sessions WHERE expires_at <= ?", now).run();
       const where = "(status = 'closed' AND closed_at < ?) OR last_activity < ?";
       const ids = (await q(`SELECT id FROM cases WHERE ${where}`, now - closedMs, now - idleMs).all())
         .results;
