@@ -2,8 +2,7 @@
 # Safe to run again. It never prints your encryption key.
 $ErrorActionPreference = "Stop"
 
-$repo = Join-Path $env:USERPROFILE "sanad-app\server\api\sanad-app"
-if (-not (Test-Path $repo)) { $repo = Join-Path $env:USERPROFILE "sanad-app" }
+$repo = Join-Path $env:USERPROFILE "sanad-app"
 if (-not (Test-Path (Join-Path $repo "server\api\wrangler.toml"))) {
   Write-Host "Cannot find the project at $repo" -ForegroundColor Red; exit 1
 }
