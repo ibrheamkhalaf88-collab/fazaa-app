@@ -50,7 +50,7 @@ server/api/                API (Worker + D1): women's accounts, cases, lawyer/de
 admin/                     staff dashboard (lawyers and developers), see docs/ADMIN.md
 server/ai-proxy/           optional Cloudflare Worker for online AI (keeps the API key off the device)
 tests/                     unit tests (node:test) + e2e/ (Playwright)
-docs/                      ARCHITECTURE, AI, ADMIN, DEPLOYMENT, CONTENT, ROADMAP
+docs/                      ARCHITECTURE, AI, ADMIN, DEPLOYMENT, TRANSFER, CONTENT, ROADMAP
 assets/                    fonts, icon sprite, app icons
 archive/                   old landing page (reference only)
 ```
