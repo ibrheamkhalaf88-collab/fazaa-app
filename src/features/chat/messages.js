@@ -26,5 +26,5 @@ export function typingBubble(className, label) {
   return append(bubble);
 }
 
-/** Small centred system note ("you are back with Sanad"). */
+/** Small centred system note ("you are back with Fazaa"). */
 export const systemNote = (text) => append(el("div", "sys", text));

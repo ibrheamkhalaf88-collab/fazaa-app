@@ -1,4 +1,4 @@
-# Transferring Sanad to another owner or organisation
+# Transferring Fazaa to another owner or organisation
 
 The code is portable: plain HTML/CSS/ES modules, no build step, no vendor lock-in beyond Cloudflare
 (Pages, Workers, D1, Access), which can be swapped (see `ARCHITECTURE.md`).

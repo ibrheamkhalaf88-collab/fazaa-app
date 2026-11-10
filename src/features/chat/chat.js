@@ -120,7 +120,7 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
       el(
         "div",
         null,
-        "سؤالك مهم، بس هالنسخة التجريبية من سند فيها لسا قانون الجرائم الإلكترونية بس، فما بقدر أجاوبك من نص قانوني عن هالموضوع. وما بدي أعطيكِ معلومة بدون مصدر.",
+        "سؤالك مهم، بس هالنسخة التجريبية من فزعة فيها لسا قانون الجرائم الإلكترونية بس، فما بقدر أجاوبك من نص قانوني عن هالموضوع. وما بدي أعطيكِ معلومة بدون مصدر.",
       ),
     );
     box.appendChild(
@@ -154,7 +154,7 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
     }
 
     const myEpoch = epoch;
-    const typing = typingBubble("a", "سند عم يكتب");
+    const typing = typingBubble("a", "فزعة عم تكتب");
     const started = Date.now();
     const answer = await answerer.answer(question, { country: state.get("country") });
     // anonymous counter only: which engine answered (never the question or the answer)
@@ -183,7 +183,7 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
     $("#q").placeholder = next === "lawyer" ? "اكتبي للمحامية..." : "اكتبي سؤالك هون...";
 
     if (next === "ai") {
-      systemNote("رجعتي لسند. الأجوبة فورية وعامة.");
+      systemNote("رجعتي لفزعة. الأجوبة فورية وعامة.");
       return;
     }
     $("#suggest")?.remove();

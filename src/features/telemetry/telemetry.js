@@ -43,7 +43,7 @@ export function createTelemetry({
 
   return {
     track,
-    /** Once per app open; "return" only says this device has opened Sanad before. */
+    /** Once per app open; "return" only says this device has opened Fazaa before. */
     visit() {
       const returning = store.get("seen", false);
       store.set("seen", true);

@@ -1,4 +1,4 @@
-# Contributing to Sanad
+# Contributing to Fazaa
 
 Welcome. This is a small codebase on purpose: **no build step, no framework**. If you can read JavaScript, you can
 change it. Read this page (5 minutes), then `docs/ARCHITECTURE.md`.

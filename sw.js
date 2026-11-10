@@ -11,7 +11,7 @@
  * RELEASING: bump CACHE_VERSION on every deploy. tests/precache.test.js fails if a file
  * in the app is missing from PRECACHE, so a forgotten file cannot ship unnoticed.
  */
-const CACHE_VERSION = "sanad-v10";
+const CACHE_VERSION = "sanad-v11";
 
 const PRECACHE = [
   "./",

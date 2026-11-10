@@ -1,7 +1,7 @@
 {
   "name": "sanad",
   "version": "0.2.0",
-  "description": "سند: women's legal-rights PWA (Palestine). Offline-first, privacy-first.",
+  "description": "فزعة (Fazaa): women's legal-rights PWA (Palestine). Offline-first, privacy-first.",
   "private": true,
   "type": "module",
   "engines": {

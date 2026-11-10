@@ -1,4 +1,4 @@
-# سَنَد (Sanad)
+# فَزعة (Fazaa)
 
 A women's legal-rights web app for Palestine, in the Palestinian dialect. It gives clear answers **from the text of the law,
 with the article number**, a step-by-step safety plan against online blackmail, and a hand-off to a lawyer.

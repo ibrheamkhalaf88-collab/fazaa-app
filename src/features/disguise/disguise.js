@@ -17,13 +17,13 @@ const DISGUISES = {
 };
 
 const TAB_TITLES = { weather: "الطقس", calc: "الآلة الحاسبة", notes: "ملاحظات" };
-const APP_TITLE = "سَنَد";
+const APP_TITLE = "فَزعة";
 
 /** How to get back, per disguise (shown in Settings). */
 export const DISGUISE_HINTS = {
-  weather: "للرجوع لسند: اضغطي مرتين على الرقم الكبير",
-  calc: `للرجوع لسند: اكتبي ${CALC_CODE} ثم =`,
-  notes: "للرجوع لسند: اضغطي مرتين على أول ملاحظة",
+  weather: "للرجوع لفزعة: اضغطي مرتين على الرقم الكبير",
+  calc: `للرجوع لفزعة: اكتبي ${CALC_CODE} ثم =`,
+  notes: "للرجوع لفزعة: اضغطي مرتين على أول ملاحظة",
 };
 
 /**

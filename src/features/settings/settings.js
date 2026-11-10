@@ -56,13 +56,13 @@ export function createSettings({ state, router, theme, chat, sos, aiAvailable })
     setDisguise(id, label) {
       state.set("dg", id);
       render();
-      toast(`لما تطلعي بسرعة، سند رح يبيّن كأنه ${label}`);
+      toast(`لما تطلعي بسرعة، فزعة رح تبيّن كأنها ${label}`);
     },
     toggle(key) {
       state.set(key, !state.get(key));
       render();
       if (key === "aiOnline" && state.get(key)) {
-        toast("هلأ أسئلتك بتنبعت لسيرفر سند عشان جواب أوضح. بتقدري تطفيها بأي وقت.");
+        toast("هلأ أسئلتك بتنبعت لسيرفر فزعة عشان جواب أوضح. بتقدري تطفيها بأي وقت.");
       }
     },
     /** Demo sign-in (no real Google flow yet). */

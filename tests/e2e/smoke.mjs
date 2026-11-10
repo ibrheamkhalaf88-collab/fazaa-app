@@ -164,7 +164,7 @@ await test("quick exit wipes the chat and safety ticks, shows the disguise, and 
   assert.equal(await current(page), "home");
   await page.click(".ask-pill");
   assert.equal(await page.locator("#msgs .u").count(), 0, "chat was wiped");
-  assert.equal(await page.title(), "سَنَد");
+  assert.equal(await page.title(), "فَزعة");
 });
 
 await test("a reply still 'typing' when the user exits never appears afterwards", async (page) => {

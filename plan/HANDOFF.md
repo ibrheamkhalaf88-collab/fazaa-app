@@ -2,6 +2,12 @@
 
 Read this first, then `plan/PLAN.md` and `plan/DATABASE.md`. Reply to the owner in Palestinian-dialect Arabic, short.
 
+## Name
+
+The app is now called **فزعة (Fazaa)** (renamed from سند / Sanad on 2026-11-10). Only user-facing text changed.
+Technical identifiers keep `sanad` on purpose: repo, Pages project, Worker `sanad-api`, D1 `sanad`, URLs, and the
+`sanad:` localStorage prefix (changing it would wipe users' saved data). Rename those only with a planned migration.
+
 ## Where things are
 
 - GitHub: https://github.com/ibrheamkhalaf88-collab/sanad-app (branch `master`; the public site auto-deploys from it)

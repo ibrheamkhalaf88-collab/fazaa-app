@@ -6,7 +6,7 @@ import { append, systemNote, typingBubble } from "./messages.js";
  * "Lawyer now" mode. DEMO ONLY: the replies are scripted placeholders. The real
  * product connects to a human lawyer; every demo message is labelled as such.
  *
- * The session survives switching between "Sanad" and "lawyer" tabs inside one visit.
+ * The session survives switching between "Fazaa" and "lawyer" tabs inside one visit.
  */
 export function createLawyerSession() {
   let name = "سلمى";

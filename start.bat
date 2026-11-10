@@ -1,5 +1,5 @@
 @echo off
-REM Double-click to run Sanad locally and open it in your browser.
+REM Double-click to run Fazaa locally and open it in your browser.
 cd /d "%~dp0"
 where node >nul 2>nul && (
   start "" http://localhost:8080
