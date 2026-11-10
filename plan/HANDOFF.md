@@ -21,8 +21,14 @@ Technical identifiers keep `sanad` on purpose: repo, Pages project, Worker `sana
 
 - Done: app, AI retrieval (41 law articles), dashboard, staff IDs/suspension, API deployed, tables created,
   `MESSAGE_KEY` secret set (key copy was saved on the Desktop; owner must move it to a safe place).
-- Staff routes are locked (401) until Cloudflare Access is configured: `ACCESS_TEAM_DOMAIN` and `ACCESS_AUD` in
-  `server/api/wrangler.toml` are still placeholders.
+- Cloudflare Access is live (2026-11-11): Zero Trust Free, team `restless-voice-f31b.cloudflareaccess.com`, app
+  "sanad-api - Cloudflare Workers" created from the Worker's Access tab. The owner signs in at `/admin/` with the
+  "Cloudflare" login and is `developer`. Caveats:
+  - It protects the WHOLE Worker (workers.dev has no zone, so path-only apps are not possible). Before connecting the
+    public app (step 3) the public routes (`/api/v1/cases*`, `/api/v1/answer`, `/api/v1/ping`) need a bypass, a
+    separate Worker, or a custom domain.
+  - Only the "Cloudflare account members" rule works. The second rule was saved as an email *domain* containing a full
+    address and matches nobody. To add lawyers: enable One-time PIN login and add an "Emails" rule.
 
 ## Next steps, in order
 
