@@ -395,6 +395,53 @@ export function createD1Store(db) {
     async deleteSetting(key) {
       await q("DELETE FROM settings WHERE key = ?", key).run();
     },
+    async addAiAnswer({ at, region, provider, model, body }) {
+      await q(
+        "INSERT INTO ai_answers (at, region, provider, model, body) VALUES (?,?,?,?,?)",
+        at,
+        region,
+        provider,
+        model,
+        body,
+      ).run();
+    },
+    async listAiAnswers({ verdict = "all", limit = 50 } = {}) {
+      const where = verdict === "all" ? "1=1" : verdict === "pending" ? "verdict IS NULL" : "verdict = ?";
+      const args = ["good", "bad"].includes(verdict) ? [verdict, limit] : [limit];
+      const rows = (
+        await q(
+          `SELECT id, at, region, provider, model, body, verdict, reviewed_by, reviewed_at FROM ai_answers WHERE ${where} ORDER BY id DESC LIMIT ?`,
+          ...args,
+        ).all()
+      ).results;
+      return rows.map((r) => ({
+        id: r.id,
+        at: r.at,
+        region: r.region,
+        provider: r.provider,
+        model: r.model,
+        body: r.body,
+        verdict: r.verdict,
+        reviewedBy: r.reviewed_by,
+        reviewedAt: r.reviewed_at,
+      }));
+    },
+    async reviewAiAnswer(id, verdict, by, now) {
+      const res = await q(
+        "UPDATE ai_answers SET verdict = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ?",
+        verdict,
+        verdict ? by : null,
+        verdict ? now : null,
+        id,
+      ).run();
+      return (res.meta?.changes ?? 0) > 0;
+    },
+    async aiAnswerCounts() {
+      const c = { pending: 0, good: 0, bad: 0 };
+      const rows = (await q("SELECT verdict, COUNT(*) AS n FROM ai_answers GROUP BY verdict").all()).results;
+      for (const r of rows) c[r.verdict ?? "pending"] = r.n;
+      return c;
+    },
     async addAudit({ actor, action, target = "", now }) {
       await q(
         "INSERT INTO audit (at, actor, action, target) VALUES (?,?,?,?)",
@@ -410,7 +457,10 @@ export function createD1Store(db) {
       ).results;
     },
     /** Retention: delete closed cases after closedMs, and anything idle longer than idleMs. */
-    async purge(now, { closedMs, idleMs, auditMs = 90 * 86_400_000, userIdleMs = 180 * 86_400_000 }) {
+    async purge(
+      now,
+      { closedMs, idleMs, auditMs = 90 * 86_400_000, userIdleMs = 180 * 86_400_000, aiMs = 90 * 86_400_000 },
+    ) {
       await q("DELETE FROM sessions WHERE expires_at <= ?", now).run();
       const where = "(status = 'closed' AND closed_at < ?) OR last_activity < ?";
       const ids = (await q(`SELECT id FROM cases WHERE ${where}`, now - closedMs, now - idleMs).all())
@@ -420,6 +470,7 @@ export function createD1Store(db) {
         await q("DELETE FROM case_notes WHERE case_id = ?", id).run();
       }
       await q("DELETE FROM audit WHERE at < ?", now - auditMs).run();
+      await q("DELETE FROM ai_answers WHERE at < ?", now - aiMs).run();
       await q(`DELETE FROM cases WHERE ${where}`, now - closedMs, now - idleMs).run();
       const stale = (
         await q("SELECT id FROM users WHERE COALESCE(last_login, created_at) < ?", now - userIdleMs).all()

@@ -588,3 +588,81 @@ test("/v1/answer rejects missing origin and bad questions", async () => {
   assert.equal((await post({ question: "ab" })).status, 400);
   assert.equal((await post({ question: "ا".repeat(501) })).status, 400);
 });
+
+/* ---------- AI answers kept for review (the question is never stored) ---------- */
+test("answers are kept without the question, scrubbed, and reviewable by lawyers", async () => {
+  const w = world();
+  await addLawyer(w);
+  await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
+  const QUESTION = "اسمي ليلى ورقمي 0599123456 وحدا عم يبتزني";
+  const fetchImpl = async () =>
+    geminiReply({
+      covered: true,
+      lead: "مش ذنبك. بلغي على 0599123456 أو https://x.test/a",
+      note: "تواصلي على help@x.org",
+      steps: ["لا تدفعي", "احفظي الأدلة"],
+      sos: false,
+      cites: [],
+    });
+  const res = await handleRequest(
+    new Request("https://sanad.example/api/v1/answer", {
+      method: "POST",
+      headers: { origin: ORIGIN, "content-type": "application/json" },
+      body: JSON.stringify({ question: QUESTION, country: "ps-gaza" }),
+    }),
+    ENV,
+    { store: w.store, now: 7_000_000, fetchImpl },
+  );
+  assert.equal(res.status, 200);
+
+  const stored = JSON.stringify(await w.store.listAiAnswers({ verdict: "all" }));
+  assert.ok(!stored.includes("ليلى") && !stored.includes(QUESTION)); // no question text
+  assert.ok(!stored.includes("0599123456") && !stored.includes("x.test") && !stored.includes("help@x.org"));
+  assert.match(stored, /\[رقم\]/);
+
+  const lawyer = "salma@sanad.example";
+  const list = await j(await w.call("GET", "/v1/staff/ai-answers?verdict=pending", { as: lawyer }));
+  assert.equal(list.items.length, 1);
+  assert.equal(list.items[0].region, "ps-gaza");
+  assert.equal(list.counts.pending, 1);
+
+  const id = list.items[0].id;
+  assert.equal(
+    (await w.call("PUT", `/v1/staff/ai-answers/${id}`, { as: lawyer, body: { verdict: "maybe" } })).status,
+    400,
+  );
+  assert.equal(
+    (await w.call("PUT", `/v1/staff/ai-answers/${id}`, { as: lawyer, body: { verdict: "good" } })).status,
+    200,
+  );
+  assert.equal(
+    (await w.call("PUT", "/v1/staff/ai-answers/9999", { as: lawyer, body: { verdict: "good" } })).status,
+    404,
+  );
+  assert.equal((await w.call("GET", "/v1/staff/ai-answers", { as: null })).status, 401);
+
+  // export: developers only, reviewed answers only, audited
+  assert.equal((await w.call("GET", "/v1/staff/ai-answers/export", { as: lawyer })).status, 403);
+  const exp = await j(await w.call("GET", "/v1/staff/ai-answers/export", { as: DEV }));
+  assert.equal(exp.items.length, 1);
+  assert.equal(exp.items[0].verdict, "good");
+  assert.match(JSON.stringify(await w.store.listAudit()), /ai-answers-export/);
+});
+
+test("a failed or empty AI call keeps nothing", async () => {
+  const w = world();
+  await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
+  const post = (fetchImpl) =>
+    handleRequest(
+      new Request("https://sanad.example/api/v1/answer", {
+        method: "POST",
+        headers: { origin: ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+      }),
+      ENV,
+      { store: w.store, now: 8_000_000, fetchImpl },
+    );
+  await post(async () => new Response("nope", { status: 500 }));
+  await post(async () => geminiReply({ covered: false }));
+  assert.equal((await w.store.listAiAnswers({ verdict: "all" })).length, 0);
+});

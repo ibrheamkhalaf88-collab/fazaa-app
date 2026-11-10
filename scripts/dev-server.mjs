@@ -25,6 +25,21 @@ const store = createMemoryStore();
 
 /** SEED=1 fills the in-memory store with demo data (staff, a 2-week history, a few live cases). */
 if (process.env.SEED) {
+  for (const [i, lead] of ["مش ذنبك. الابتزاز جريمة.", "بتقدري تبلّغي وما بتدفعي."].entries())
+    await store.addAiAnswer({
+      at: Date.now() - i * 3_600_000,
+      region: i ? "ps-gaza" : "ps-wb",
+      provider: "gemini",
+      model: "gemini-2.5-flash-lite",
+      body: JSON.stringify({
+        lead,
+        steps: ["لا تدفعي ولا تردّي", "احفظي الأدلة"],
+        note: "القانون بيعاقب على التهديد الإلكتروني.",
+        cites: ["cyber-15"],
+        sos: false,
+        topic: "ابتزاز",
+      }),
+    });
   const { encryptText, sha256Hex } = await import("../server/api/crypto.js");
   const DAY = 86_400_000;
   const now = Date.now();

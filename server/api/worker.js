@@ -20,6 +20,7 @@ import { DEFAULT_PROVIDER, PROVIDERS } from "../ai-proxy/providers.js";
 import { verifyAccessJwt, resolveStaff } from "./auth.js";
 import { decryptText, encryptText, hashPin, newSalt, randomId, safeEqual, sha256Hex } from "./crypto.js";
 import { createD1Store } from "./store/d1.js";
+import { scrub } from "./scrub.js";
 import { EVENTS, normalizeTopic } from "./store/days.js";
 
 const REGIONS = ["ps-wb", "ps-gaza"];
@@ -125,6 +126,34 @@ function aiSummary(env, saved) {
 }
 
 /**
+ * Keep the AI's ANSWER (never the question) so lawyers can review it. Failure here must never
+ * break the reply the woman is waiting for.
+ */
+async function keepAnswer(store, answer, region, env, now) {
+  try {
+    const { lead, steps, note, cites, sos, topic } = answer;
+    await store.addAiAnswer({
+      at: now,
+      region,
+      provider: env.PROVIDER || DEFAULT_PROVIDER,
+      model: env.MODEL || PROVIDERS[env.PROVIDER || DEFAULT_PROVIDER].defaultModel,
+      body: JSON.stringify({
+        lead: scrub(lead),
+        steps: steps.map(scrub),
+        note: scrub(note),
+        cites,
+        sos,
+        topic: topic || "",
+      }),
+    });
+  } catch {
+    /* the answer is still delivered */
+  }
+}
+
+const parseAnswer = (row) => ({ ...row, body: undefined, answer: JSON.parse(row.body) });
+
+/**
  * @param {Request} request
  * @param {Record<string,string> & {RATE_LIMITER?: any}} env
  * @param {{store: ReturnType<typeof import("./store/memory.js").createMemoryStore>, fetchImpl?: typeof fetch, now?: number, staffEmail?: (r: Request)=>Promise<string|null>}} deps
@@ -165,7 +194,9 @@ export async function handleRequest(request, env, deps) {
       return reply(fail(400, "bad-question"));
     const country = REGIONS.includes(value.country) ? value.country : "ps-wb";
     const saved = await loadAi(store, open);
-    const { status, body } = await answerQuestion(question, country, aiEnv(env, saved), fetchImpl);
+    const live = aiEnv(env, saved);
+    const { status, body } = await answerQuestion(question, country, live, fetchImpl);
+    if (body.answer) await keepAnswer(store, body.answer, country, live, now);
     return reply(json(body, status));
   }
 
@@ -197,6 +228,38 @@ export async function handleRequest(request, env, deps) {
           }),
         )
       );
+
+    /* ---- AI answers kept for review: lawyers and developers ---- */
+    if (path === "/v1/staff/ai-answers" && request.method === "GET") {
+      const verdict = ["pending", "good", "bad"].includes(url.searchParams.get("verdict"))
+        ? url.searchParams.get("verdict")
+        : "all";
+      const rows = await store.listAiAnswers({ verdict, limit: 50 });
+      return reply(json({ items: rows.map(parseAnswer), counts: await store.aiAnswerCounts() }));
+    }
+
+    const review = m(/^\/v1\/staff\/ai-answers\/(\d+)$/);
+    if (review && request.method === "PUT") {
+      const { value, error } = await readJson(request);
+      if (error) return reply(fail(error, "bad-body"));
+      if (!["good", "bad", ""].includes(value.verdict)) return reply(fail(400, "bad-verdict"));
+      const ok = await store.reviewAiAnswer(Number(review[1]), value.verdict || null, staff.email, now);
+      return ok ? reply(json({ ok: true })) : reply(fail(404, "not-found"));
+    }
+
+    // reviewed answers as JSON, to improve the prompt/evaluation set or train a model
+    if (path === "/v1/staff/ai-answers/export" && request.method === "GET") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const rows = (await store.listAiAnswers({ verdict: "all", limit: 5000 })).filter((r) => r.verdict);
+      await store.addAudit({
+        actor: staff.email,
+        action: "ai-answers-export",
+        target: `${rows.length} answers`,
+        now,
+      });
+      return reply(json({ items: rows.map(parseAnswer) }));
+    }
 
     /* ---- AI settings: developer only; the key is write-only ---- */
     if (path === "/v1/staff/ai-config" && request.method === "GET") {

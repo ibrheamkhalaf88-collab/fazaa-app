@@ -12,6 +12,8 @@ export function createMemoryStore() {
   const notes = new Map();
   let audit = [];
   const settings = new Map();
+  let aiAnswers = [];
+  let aiSeq = 0;
   const daily = new Map();
   const events = new Map();
   const seen = new Map();
@@ -271,13 +273,49 @@ export function createMemoryStore() {
     async deleteSetting(key) {
       settings.delete(key);
     },
+    async addAiAnswer({ at, region, provider, model, body }) {
+      aiAnswers.push({
+        id: ++aiSeq,
+        at,
+        region,
+        provider,
+        model,
+        body,
+        verdict: null,
+        reviewedBy: null,
+        reviewedAt: null,
+      });
+    },
+    async listAiAnswers({ verdict = "all", limit = 50 } = {}) {
+      const match = (a) =>
+        verdict === "all" || (verdict === "pending" ? a.verdict === null : a.verdict === verdict);
+      return aiAnswers
+        .filter(match)
+        .slice(-limit)
+        .reverse()
+        .map((a) => ({ ...a }));
+    },
+    async reviewAiAnswer(id, verdict, by, now) {
+      const a = aiAnswers.find((x) => x.id === id);
+      if (!a) return false;
+      Object.assign(a, { verdict, reviewedBy: verdict ? by : null, reviewedAt: verdict ? now : null });
+      return true;
+    },
+    async aiAnswerCounts() {
+      const c = { pending: 0, good: 0, bad: 0 };
+      for (const a of aiAnswers) c[a.verdict ?? "pending"]++;
+      return c;
+    },
     async addAudit({ actor, action, target = "", now }) {
       audit.push({ id: audit.length + 1, at: now, actor, action, target });
     },
     async listAudit(limit = 100) {
       return audit.slice(-limit).reverse();
     },
-    async purge(now, { closedMs, idleMs, auditMs = 90 * 86_400_000, userIdleMs = 180 * 86_400_000 }) {
+    async purge(
+      now,
+      { closedMs, idleMs, auditMs = 90 * 86_400_000, userIdleMs = 180 * 86_400_000, aiMs = 90 * 86_400_000 },
+    ) {
       for (const [k, v] of sessions) if (v.expiresAt <= now) sessions.delete(k);
       const doomed = [...cases.values()].filter(
         (c) => (c.status === "closed" && c.closedAt < now - closedMs) || c.lastActivity < now - idleMs,
@@ -289,6 +327,7 @@ export function createMemoryStore() {
         notes.delete(id);
       });
       audit = audit.filter((a) => a.at >= now - auditMs);
+      aiAnswers = aiAnswers.filter((a) => a.at >= now - aiMs);
       for (const u of [...users.values()])
         if ((u.lastLogin ?? u.createdAt) < now - userIdleMs) await this.deleteUser(u.id);
       return ids.size;

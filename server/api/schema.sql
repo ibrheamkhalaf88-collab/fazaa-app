@@ -122,3 +122,18 @@ CREATE TABLE IF NOT EXISTS settings (
   updated_at INTEGER NOT NULL,
   updated_by TEXT NOT NULL
 );
+
+-- AI answers kept for lawyer review and for improving the model. Only the ANSWER is stored: never the
+-- question, never an account, IP or device. Personal details are scrubbed first. Deleted after 90 days.
+CREATE TABLE IF NOT EXISTS ai_answers (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  at          INTEGER NOT NULL,
+  region      TEXT NOT NULL,
+  provider    TEXT NOT NULL,
+  model       TEXT NOT NULL,
+  body        TEXT NOT NULL,            -- JSON {lead, steps, note, cites, sos, topic}
+  verdict     TEXT,                     -- NULL (not reviewed) | 'good' | 'bad'
+  reviewed_by TEXT,
+  reviewed_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_ai_answers_at ON ai_answers(at);

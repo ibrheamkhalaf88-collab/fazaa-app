@@ -56,6 +56,10 @@ The key is stored encrypted (AES-GCM, `MESSAGE_KEY`) in D1, is write-only (the d
 3. In `src/config.js` set `AI_ENDPOINT` to the worker URL.
 4. In `_headers` add that origin to `connect-src`. Bump `CACHE_VERSION` in `sw.js`. Deploy.
 
+## Answers kept for review
+
+When the AI answers through the staff API, the **answer** is stored (lead, steps, note, cited articles, region, model) so lawyers can mark it correct or wrong in the dashboard (**مراجعة أجوبة الذكاء**). The **question is never stored**, nor any account, IP or device. Phone numbers, links, e-mails and @handles are scrubbed from the answer first (`server/api/scrub.js`), and rows are deleted after 90 days. A developer can export the reviewed answers as JSON to improve the prompt, build an evaluation set, or later fine-tune. The settings text tells users that only the answer text is kept.
+
 ## Providers (`server/ai-proxy/providers.js`)
 
 | PROVIDER           | Key secret                          | Default model                 | Notes                                      |

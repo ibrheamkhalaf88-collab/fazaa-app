@@ -692,3 +692,38 @@ dl.client dd {
   color: var(--ink);
   font-weight: 600;
 }
+
+/* AI answers review */
+.answers {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+.answer-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.answer-lead {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.answer-steps {
+  margin: 6px 0;
+  padding-inline-start: 20px;
+}
+.answer .ai-actions {
+  margin-top: 10px;
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.filters button[aria-selected="true"] {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}

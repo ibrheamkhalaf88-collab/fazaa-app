@@ -13,6 +13,7 @@ export const ACTION = {
   "ai-config-set": "حفظت إعدادات الذكاء الاصطناعي",
   "ai-config-clear": "حذفت مفتاح الذكاء الاصطناعي",
   "ai-config-test": "جرّبت اتصال الذكاء الاصطناعي",
+  "ai-answers-export": "صدّرت أجوبة الذكاء المراجَعة",
   "view-contact": "فتحت بيانات تواصل مستخدمة",
 };
 

@@ -24,6 +24,22 @@ for (const [name, make] of Object.entries(impls)) {
     assert.equal(await s.getSetting("ai"), null);
   });
 
+  T("ai answers: stored, reviewed, counted and purged after 90 days", async (s) => {
+    await s.addAiAnswer({ at: 1000, region: "ps-wb", provider: "gemini", model: "m", body: "{}" });
+    await s.addAiAnswer({ at: 2000, region: "ps-gaza", provider: "gemini", model: "m", body: "{}" });
+    assert.deepEqual(await s.aiAnswerCounts(), { pending: 2, good: 0, bad: 0 });
+    const [newest] = await s.listAiAnswers({ verdict: "pending" });
+    assert.equal(newest.at, 2000);
+    assert.equal(await s.reviewAiAnswer(newest.id, "good", "l@x.org", 3000), true);
+    assert.equal(await s.reviewAiAnswer(999, "good", "l@x.org", 3000), false);
+    assert.deepEqual(await s.aiAnswerCounts(), { pending: 1, good: 1, bad: 0 });
+    assert.equal((await s.listAiAnswers({ verdict: "good" })).length, 1);
+    await s.reviewAiAnswer(newest.id, null, "l@x.org", 3500); // clearing the mark
+    assert.equal((await s.listAiAnswers({ verdict: "pending" })).length, 2);
+    await s.purge(1000 + 91 * DAY, { closedMs: DAY, idleMs: DAY });
+    assert.equal((await s.listAiAnswers({ verdict: "all" })).length, 0);
+  });
+
   T("a new case is open and appears in the queue without any message text", async (s) => {
     await s.createCase({ id: "c1", tokenHash: "h", topic: "نفقة", region: "ps-gaza", now: 1000 });
     const [q] = await s.listQueue();
