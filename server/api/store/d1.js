@@ -301,20 +301,30 @@ export function createD1Store(db) {
       }));
     },
     async getStaff(email) {
-      const r = await q("SELECT email, role, name FROM staff WHERE email = ?", email).first();
-      return r ? { email: r.email, role: r.role, name: r.name } : null;
+      const r = await q("SELECT email, role, name, code, active FROM staff WHERE email = ?", email).first();
+      return r ? { email: r.email, role: r.role, name: r.name, code: r.code, active: !!r.active } : null;
     },
     async listStaff() {
-      return (await q("SELECT email, role, name FROM staff ORDER BY role, email").all()).results;
+      const rows = (await q("SELECT email, role, name, code, active FROM staff ORDER BY role, email").all())
+        .results;
+      return rows.map((r) => ({ ...r, active: !!r.active }));
     },
     async upsertStaff({ email, role, name, now }) {
+      const top = await q(
+        "SELECT MAX(CAST(SUBSTR(code, 3) AS INTEGER)) AS n FROM staff WHERE code LIKE 'S-%'",
+      ).first();
+      const code = `S-${String((top?.n || 0) + 1).padStart(3, "0")}`;
       await q(
-        "INSERT INTO staff (email, role, name, created_at) VALUES (?,?,?,?) ON CONFLICT(email) DO UPDATE SET role = excluded.role, name = excluded.name",
+        "INSERT INTO staff (email, role, name, created_at, code) VALUES (?,?,?,?,?) ON CONFLICT(email) DO UPDATE SET role = excluded.role, name = excluded.name, code = CASE WHEN staff.code = '' THEN excluded.code ELSE staff.code END",
         email,
         role,
         name,
         now,
+        code,
       ).run();
+    },
+    async setStaffActive(email, active) {
+      await q("UPDATE staff SET active = ? WHERE email = ?", active ? 1 : 0, email).run();
     },
     async removeStaff(email) {
       await q("DELETE FROM staff WHERE email = ?", email).run();

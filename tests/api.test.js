@@ -690,3 +690,30 @@ test("/v1/answer stops at the daily cap, and the cap resets the next day", async
   assert.equal(cfg.dailyLimit, 2);
   assert.ok(cfg.usedToday >= 0);
 });
+
+test("staff get stable IDs, can be suspended (cannot sign in), and cannot lock themselves out", async () => {
+  const w = await world();
+  const dev = "dev@x.org";
+  const lawyer = "l1@x.org";
+  await w.store.upsertStaff({ email: dev, role: "developer", name: "D", now: 1 });
+  const put = (body) => w.call("PUT", "/v1/staff/team", { as: dev, body });
+  assert.equal((await put({ email: lawyer, role: "lawyer", name: "ليلى" })).status, 200);
+  const team = (await j(await w.call("GET", "/v1/staff/team", { as: dev }))).team;
+  const l = team.find((m) => m.email === lawyer);
+  assert.match(l.code, /^S-\d{3}$/);
+  assert.equal(l.active, true);
+
+  assert.equal((await put({ email: lawyer, role: "lawyer", name: "ليلى", active: false })).status, 200);
+  assert.equal((await w.call("GET", "/v1/staff/queue", { as: lawyer })).status, 401);
+  assert.equal((await put({ email: lawyer, role: "lawyer", name: "ليلى" })).status, 200); // still suspended
+  assert.equal((await w.call("GET", "/v1/staff/queue", { as: lawyer })).status, 401);
+  assert.equal((await put({ email: lawyer, role: "lawyer", name: "ليلى", active: true })).status, 200);
+  assert.equal((await w.call("GET", "/v1/staff/queue", { as: lawyer })).status, 200);
+
+  const again = (await j(await w.call("GET", "/v1/staff/team", { as: dev }))).team.find(
+    (m) => m.email === lawyer,
+  );
+  assert.equal(again.code, l.code); // ID never changes
+  assert.equal((await put({ email: dev, role: "developer", name: "D", active: false })).status, 400);
+  assert.equal((await put({ email: dev, role: "lawyer", name: "D" })).status, 400);
+});

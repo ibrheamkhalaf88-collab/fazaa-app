@@ -76,7 +76,10 @@ export async function verifyAccessJwt(token, env, { fetchImpl = fetch, now = Dat
 export async function resolveStaff(email, env, store) {
   if (!email) return null;
   const row = await store.getStaff(email);
-  if (row) return { email, role: row.role, name: row.name || "" };
+  if (row)
+    return row.active === false
+      ? null
+      : { email, role: row.role, name: row.name || "", code: row.code || "" };
   const boot = (env.DEVELOPER_EMAILS || "")
     .split(",")
     .map((s) => s.trim().toLowerCase())

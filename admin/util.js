@@ -9,6 +9,8 @@ export const ACTION = {
   close: "أنهت حالة",
   "staff-add": "أضاف/عدّل عضواً",
   "staff-remove": "حذف عضواً",
+  "staff-suspend": "علّق حساب عضو",
+  "staff-restore": "أعاد تفعيل عضو",
   purge: "حذف تلقائي للمنتهي",
   "ai-config-set": "حفظت إعدادات الذكاء الاصطناعي",
   "ai-config-clear": "حذفت مفتاح الذكاء الاصطناعي",

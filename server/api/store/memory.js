@@ -17,6 +17,8 @@ export function createMemoryStore() {
   const daily = new Map();
   const events = new Map();
   const seen = new Map();
+  let staffSeq = 0;
+  const nextStaffCode = () => `S-${String(++staffSeq).padStart(3, "0")}`;
   const lawyerDaily = new Map();
   const users = new Map();
   const sessions = new Map();
@@ -218,7 +220,18 @@ export function createMemoryStore() {
         .map((s) => ({ ...s }));
     },
     async upsertStaff({ email, role, name }) {
-      staff.set(email, { email, role, name });
+      const old = staff.get(email);
+      staff.set(email, {
+        email,
+        role,
+        name,
+        code: old?.code || nextStaffCode(),
+        active: old ? old.active : true,
+      });
+    },
+    async setStaffActive(email, active) {
+      const s = staff.get(email);
+      if (s) s.active = !!active;
     },
     async removeStaff(email) {
       staff.delete(email);

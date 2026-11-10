@@ -78,6 +78,7 @@ test("roles: staff table wins; DEVELOPER_EMAILS bootstraps; strangers get nothin
     email: "l@x.org",
     role: "lawyer",
     name: "ليلى",
+    code: "S-001",
   });
   assert.equal((await resolveStaff("dev@x.org", env, store)).role, "developer");
   assert.equal(await resolveStaff("nobody@x.org", env, store), null);

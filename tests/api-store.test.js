@@ -172,7 +172,18 @@ for (const [name, make] of Object.entries(impls)) {
   T("staff upsert replaces role, remove deletes", async (s) => {
     await s.upsertStaff({ email: "a@x.org", role: "lawyer", name: "A", now: 1 });
     await s.upsertStaff({ email: "a@x.org", role: "developer", name: "B", now: 2 });
-    assert.deepEqual(await s.getStaff("a@x.org"), { email: "a@x.org", role: "developer", name: "B" });
+    assert.deepEqual(await s.getStaff("a@x.org"), {
+      email: "a@x.org",
+      role: "developer",
+      name: "B",
+      code: "S-001",
+      active: true,
+    });
+    await s.setStaffActive("a@x.org", false);
+    assert.equal((await s.getStaff("a@x.org")).active, false);
+    await s.upsertStaff({ email: "a@x.org", role: "developer", name: "B", now: 3 });
+    assert.equal((await s.getStaff("a@x.org")).active, false); // editing never re-activates
+    assert.equal((await s.getStaff("a@x.org")).code, "S-001"); // ID is stable
     await s.removeStaff("a@x.org");
     assert.equal(await s.getStaff("a@x.org"), null);
   });

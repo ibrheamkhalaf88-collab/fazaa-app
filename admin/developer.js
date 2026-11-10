@@ -78,6 +78,42 @@ export function overviewView(ctx) {
   return { destroy: () => clearInterval(t) };
 }
 
+/* ============ permissions matrix (read-only; enforced on the server) ============ */
+const PERMISSIONS = [
+  ["الحالات والمحادثات مع المستخدمات", true, false],
+  ["استلام حالة وإنهاؤها", true, false],
+  ["مراجعة أجوبة الذكاء الاصطناعي", true, true],
+  ["إحصائيات الاستخدام (أعداد فقط)", false, true],
+  ["إعدادات الذكاء الاصطناعي والمفتاح", false, true],
+  ["تصدير أجوبة الذكاء المراجَعة", false, true],
+  ["إدارة الفريق وتعليق الحسابات", false, true],
+  ["سجل التدقيق", false, true],
+];
+
+function permissionsCard() {
+  const card = el("section", "card");
+  const table = el("table", "table");
+  const head = el("tr");
+  for (const h of ["الصلاحية", "محامية", "مطوّر"]) head.appendChild(el("th", null, h));
+  const tbody = el("tbody");
+  for (const [label, lawyer, dev] of PERMISSIONS) {
+    const tr = el("tr");
+    tr.append(el("td", null, label), el("td", null, lawyer ? "✓" : "—"), el("td", null, dev ? "✓" : "—"));
+    tbody.appendChild(tr);
+  }
+  const thead = el("thead");
+  thead.appendChild(head);
+  table.append(thead, tbody);
+  const wrap = el("div", "table-wrap");
+  wrap.appendChild(table);
+  card.append(
+    el("h2", null, "جدول الصلاحيات"),
+    wrap,
+    el("p", "hint", "المطوّر ما بقدر يقرأ محتوى الحالات أبداً. هاد مفروض من السيرفر مش من الشاشة."),
+  );
+  return card;
+}
+
 /* ============ team ============ */
 export function teamView(ctx) {
   const body = el("div");
@@ -97,7 +133,7 @@ export function teamView(ctx) {
       const table = el("table", "table");
       const thead = el("thead");
       const hr = el("tr");
-      for (const h of ["الاسم", "البريد", "الصلاحية", "آخر دخول", "عدد أيام الدخول", ""])
+      for (const h of ["المعرّف", "الاسم", "البريد", "الصلاحية", "الحالة", "آخر دخول", "عدد أيام الدخول", ""])
         hr.appendChild(el("th", null, h));
       thead.appendChild(hr);
       const tbody = el("tbody");
@@ -109,6 +145,11 @@ export function teamView(ctx) {
         for (const [v, l] of Object.entries(ROLE)) roleSel.append(new Option(l, v, false, v === m.role));
         roleSel.disabled = isMe;
         roleSel.addEventListener("change", () => save({ email: m.email, name: m.name, role: roleSel.value }));
+        const toggle = el("button", null, m.active === false ? "تفعيل" : "تعليق");
+        toggle.disabled = isMe;
+        toggle.addEventListener("click", () =>
+          save({ email: m.email, name: m.name, role: m.role, active: m.active === false }),
+        );
         const rm = el("button", null, "حذف");
         rm.disabled = isMe;
         rm.addEventListener("click", async () => {
@@ -127,10 +168,15 @@ export function teamView(ctx) {
         const rmCell = el("td");
         rmCell.appendChild(rm);
         const act = seen.get(m.email);
+        const idCell = el("td", null, m.code || "—");
+        idCell.dir = "ltr";
+        rmCell.prepend(toggle, " ");
         tr.append(
+          idCell,
           el("td", null, m.name || "—"),
           emailCell,
           roleCell,
+          el("td", null, m.active === false ? "معلّق" : "فعّال"),
           el("td", null, act?.lastSeen ? ago(Date.now() - act.lastSeen) : "ما دخل بعد"),
           el("td", null, String(act?.sessions || 0)),
           rmCell,
@@ -159,7 +205,7 @@ export function teamView(ctx) {
 
       const card = el("section", "card");
       card.append(wrap, form, el("p", "hint", "العضو بيدخل بنفس البريد عبر رمز بيوصله على إيميله."));
-      body.replaceChildren(head, card);
+      body.replaceChildren(head, card, permissionsCard());
     } catch (e) {
       ctx.banner(errorText(e));
     }

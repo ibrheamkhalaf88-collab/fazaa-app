@@ -32,8 +32,13 @@ CREATE TABLE IF NOT EXISTS staff (
   email      TEXT PRIMARY KEY,
   role       TEXT NOT NULL,             -- lawyer | developer
   name       TEXT NOT NULL DEFAULT '',  -- first name shown to the woman
-  created_at INTEGER NOT NULL
+  created_at INTEGER NOT NULL,
+  code       TEXT NOT NULL DEFAULT '',  -- stable staff ID, e.g. S-007 (never reused)
+  active     INTEGER NOT NULL DEFAULT 1 -- 0 = suspended: cannot sign in, history kept
 );
+-- Existing database? Run once:
+--   ALTER TABLE staff ADD COLUMN code TEXT NOT NULL DEFAULT '';
+--   ALTER TABLE staff ADD COLUMN active INTEGER NOT NULL DEFAULT 1;
 
 -- A lawyer's private note on her own case (encrypted like messages; deleted with the case).
 CREATE TABLE IF NOT EXISTS case_notes (

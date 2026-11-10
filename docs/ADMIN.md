@@ -93,3 +93,12 @@ a notice to women that a human reads their messages, and a written procedure for
 - الحذف: هي بتحذف حسابها من المحادثة («حذف حسابي»)، وبينحذف معه كل شي. وأي حساب بدون دخول 180 يوماً (`RETENTION_USER_DAYS`) بينحذف تلقائياً.
 - **التفعيل:** في `src/config.js` اجعلي `API_BASE = "/api"` بعد نشر الـ API على نفس الدومين (فاضي = العرض التجريبي المكتوب سلفاً).
 - **تنبيه:** رقم الهاتف الحقيقي بيخلّي الحساب أسهل للتتبّع لو انسرقت القاعدة أو المفتاح `MESSAGE_KEY`، ولو الجهاز مشترك فالرمز بيحمي المحادثات. لازم تظهر للمستخدمة جملة موافقة واضحة (موجودة بنموذج التسجيل)، ويُنصح بمراجعة قانونية لحماية البيانات.
+
+## Staff IDs, suspension and the permissions table
+
+- Every team member gets a stable ID (`S-001`, `S-002`, ...) when first added. It never changes and is never reused.
+- **تعليق** suspends a member: they can no longer sign in, but their history stays. **تفعيل** restores them.
+  Editing a member never re-activates a suspended one.
+- You cannot suspend yourself or change your own role (so nobody locks themselves out).
+- The "جدول الصلاحيات" under the team table is a read-only summary; the real rules are enforced on the server.
+- Existing database? Run the two `ALTER TABLE staff` lines from `server/api/schema.sql` once.

@@ -235,7 +235,7 @@ export async function handleRequest(request, env, deps) {
 
     if (path === "/v1/staff/me" && request.method === "GET") {
       await store.touchStaff(staff.email, now);
-      return reply(json({ email: staff.email, role: staff.role, name: staff.name }));
+      return reply(json({ email: staff.email, role: staff.role, name: staff.name, code: staff.code || "" }));
     }
 
     /* ---- developer ---- */
@@ -414,7 +414,19 @@ export async function handleRequest(request, env, deps) {
         const role = value.role;
         if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(target) || !["lawyer", "developer"].includes(role))
           return reply(fail(400, "bad-staff"));
+        const existing = await store.getStaff(target);
+        if (target === staff.email && (role !== staff.role || value.active === false))
+          return reply(fail(400, "cannot-change-self"));
         await store.upsertStaff({ email: target, role, name: firstName(value.name), now });
+        if (typeof value.active === "boolean" && existing && value.active !== existing.active) {
+          await store.setStaffActive(target, value.active);
+          await store.addAudit({
+            actor: staff.email,
+            action: value.active ? "staff-restore" : "staff-suspend",
+            target,
+            now,
+          });
+        }
         await store.addAudit({ actor: staff.email, action: "staff-add", target: `${target} (${role})`, now });
         return reply(json({ ok: true }));
       }
