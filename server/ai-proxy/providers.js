@@ -52,7 +52,7 @@ const anthropic = {
 const gemini = {
   keyName: "GEMINI_API_KEY",
   build({ system, user, tool, env }, key) {
-    const model = env.MODEL || "gemini-2.5-flash";
+    const model = env.MODEL || "gemini-2.5-flash-lite";
     return {
       url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       headers: { "x-goog-api-key": key },

@@ -50,7 +50,7 @@ If the network, proxy or validation fails the user silently gets the offline ans
 
 | PROVIDER           | Key secret                          | Default model                 | Notes                                      |
 | ------------------ | ----------------------------------- | ----------------------------- | ------------------------------------------ |
-| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-2.5-flash`            | free tier; good Arabic                     |
+| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-2.5-flash-lite`            | free tier; good Arabic                     |
 | `nvidia`           | `NVIDIA_API_KEY` (build.nvidia.com) | `meta/llama-3.3-70b-instruct` | free trial credits; Arabic weaker, test it |
 | `anthropic`        | `ANTHROPIC_API_KEY`                 | `claude-sonnet-5-5`           | paid                                       |
 

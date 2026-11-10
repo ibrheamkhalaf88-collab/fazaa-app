@@ -7,11 +7,11 @@ compatibility_date = "2026-01-01"
 
 [vars]
 # Exact origins of the deployed app, comma separated, no trailing slash.
-ALLOWED_ORIGINS = "https://sanad.pages.dev"
+ALLOWED_ORIGINS = "https://sanad-app.pages.dev"
 # Which model provider to call: "gemini" (default) | "nvidia" | "anthropic".
 PROVIDER = "gemini"
 # Optional: override the model (defaults live in providers.js; names change often).
-# MODEL = "gemini-2.5-flash"
+MODEL = "gemini-2.5-flash-lite"   # lightest, cheapest Gemini; raise only if answers are weak
 
 # Strongly recommended before public launch: per-IP rate limit (Cloudflare Rate Limiting binding).
 # [[unsafe.bindings]]
