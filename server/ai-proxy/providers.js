@@ -9,7 +9,7 @@
  * Model names change often; override with MODEL instead of editing code.
  *
  * @typedef {{ system: string, user: string, tool: {name:string, description:string, input_schema:object}, env: Record<string,string> }} CallArgs
- * @typedef {{ keyName: string, build(a: CallArgs, key: string): {url:string, headers:Record<string,string>, body:object}, parse(data:any, toolName:string): object|undefined }} Provider
+ * @typedef {{ keyName: string, label: string, defaultModel: string, build(a: CallArgs, key: string): {url:string, headers:Record<string,string>, body:object}, parse(data:any, toolName:string): object|undefined }} Provider
  */
 
 const MAX_TOKENS = 700;
@@ -30,12 +30,14 @@ export function extractJson(text) {
 /** @type {Provider} */
 const anthropic = {
   keyName: "ANTHROPIC_API_KEY",
+  label: "Anthropic Claude",
+  defaultModel: "claude-sonnet-5-5",
   build({ system, user, tool, env }, key) {
     return {
       url: "https://api.anthropic.com/v1/messages",
       headers: { "x-api-key": key, "anthropic-version": "2023-06-01" },
       body: {
-        model: env.MODEL || "claude-sonnet-5-5",
+        model: env.MODEL || anthropic.defaultModel,
         max_tokens: MAX_TOKENS,
         system,
         tools: [tool],
@@ -51,8 +53,10 @@ const anthropic = {
 /** @type {Provider} */
 const gemini = {
   keyName: "GEMINI_API_KEY",
+  label: "Google Gemini",
+  defaultModel: "gemini-2.5-flash-lite",
   build({ system, user, tool, env }, key) {
-    const model = env.MODEL || "gemini-2.5-flash-lite";
+    const model = env.MODEL || gemini.defaultModel;
     return {
       url: `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
       headers: { "x-goog-api-key": key },
@@ -83,12 +87,14 @@ const gemini = {
 /** @type {Provider} */
 const nvidia = {
   keyName: "NVIDIA_API_KEY",
+  label: "NVIDIA NIM",
+  defaultModel: "meta/llama-3.3-70b-instruct",
   build({ system, user, tool, env }, key) {
     return {
       url: "https://integrate.api.nvidia.com/v1/chat/completions",
       headers: { authorization: `Bearer ${key}` },
       body: {
-        model: env.MODEL || "meta/llama-3.3-70b-instruct",
+        model: env.MODEL || nvidia.defaultModel,
         max_tokens: MAX_TOKENS,
         temperature: 0.2,
         messages: [

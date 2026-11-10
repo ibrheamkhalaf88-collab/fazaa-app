@@ -11,6 +11,7 @@ export function createMemoryStore() {
   let nextId = 1;
   const notes = new Map();
   let audit = [];
+  const settings = new Map();
   const daily = new Map();
   const events = new Map();
   const seen = new Map();
@@ -260,6 +261,15 @@ export function createMemoryStore() {
     },
     async getNote(caseId) {
       return notes.get(caseId) ? { ...notes.get(caseId) } : null;
+    },
+    async getSetting(key) {
+      return settings.get(key) ? { ...settings.get(key) } : null;
+    },
+    async setSetting({ key, iv, body, now, by }) {
+      settings.set(key, { iv, body, updatedAt: now, updatedBy: by });
+    },
+    async deleteSetting(key) {
+      settings.delete(key);
     },
     async addAudit({ actor, action, target = "", now }) {
       audit.push({ id: audit.length + 1, at: now, actor, action, target });

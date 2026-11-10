@@ -9,8 +9,10 @@ export const STORAGE_PREFIX = "sanad:";
 export const CALC_CODE = "1379";
 
 /**
- * URL of the AI proxy (see server/ai-proxy/README.md), for example
- * "https://sanad-ai.<your-subdomain>.workers.dev/v1/answer".
+ * URL of the online AI endpoint. Two ways to serve it:
+ *   - the staff API (recommended): "/api/v1/answer". A developer pastes the provider key in the
+ *     admin dashboard (إعدادات الذكاء), no terminal needed;
+ *   - the standalone proxy (server/ai-proxy): "https://sanad-ai.<subdomain>.workers.dev/v1/answer".
  * Leave empty to ship WITHOUT online AI: the setting then shows "قريباً" and the app
  * works fully offline with the rules engine.
  */

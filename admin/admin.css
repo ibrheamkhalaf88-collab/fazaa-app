@@ -672,3 +672,23 @@ dl.client dd {
   font-weight: 600;
   overflow-wrap: anywhere;
 }
+
+/* AI settings form */
+.field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+.ai-status {
+  margin-bottom: 14px;
+}
+.ai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.hint.bad {
+  color: var(--ink);
+  font-weight: 600;
+}

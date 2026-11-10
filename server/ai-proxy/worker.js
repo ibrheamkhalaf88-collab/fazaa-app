@@ -134,14 +134,25 @@ export async function handleRequest(request, env, { fetchImpl = fetch } = {}) {
   }
   const country = COUNTRIES.includes(body.country) ? body.country : "ps-wb";
 
+  const { status, body: out } = await answerQuestion(question, country, env, fetchImpl);
+  return json(out, status, cors);
+}
+
+/**
+ * The whole "ask the model" step, without any HTTP concerns (origin checks, body parsing).
+ * Shared by this proxy and by the staff API, which serves the same endpoint with a key that a
+ * developer saved in the dashboard.
+ * @returns {Promise<{status: number, body: object}>}
+ */
+export async function answerQuestion(question, country, env, fetchImpl = fetch) {
   // ---- retrieval: no sources, no model call ----
   const articles = retrieveArticles(question, articlesFor(country), 3);
-  if (articles.length === 0) return json({ answer: null }, 200, cors);
+  if (articles.length === 0) return { status: 200, body: { answer: null } };
 
   const provider = PROVIDERS[env.PROVIDER || DEFAULT_PROVIDER];
-  if (!provider) return json({ error: "bad-provider" }, 500, cors);
+  if (!provider) return { status: 500, body: { error: "bad-provider" } };
   const key = env[provider.keyName];
-  if (!key) return json({ error: "not-configured" }, 503, cors);
+  if (!key) return { status: 503, body: { error: "not-configured" } };
 
   // ---- ask the model, forced into the answer schema ----
   const call = provider.build(
@@ -157,27 +168,29 @@ export async function handleRequest(request, env, { fetchImpl = fetch } = {}) {
       body: JSON.stringify(call.body),
     });
   } catch {
-    return json({ error: "upstream-unreachable" }, 502, cors);
+    return { status: 502, body: { error: "upstream-unreachable" } };
   }
-  if (!upstream.ok) return json({ error: `upstream-${upstream.status}` }, 502, cors);
+  if (!upstream.ok) return { status: 502, body: { error: `upstream-${upstream.status}` } };
 
   // ---- never trust the model output: extract, validate, restrict citations ----
   let input;
   try {
     input = provider.parse(await upstream.json(), ANSWER_TOOL.name);
   } catch {
-    return json({ error: "upstream-bad-body" }, 502, cors);
+    return { status: 502, body: { error: "upstream-bad-body" } };
   }
-  if (!input) return json({ error: "no-tool-output" }, 502, cors);
-  if (input.covered === false) return json({ answer: null }, 200, cors);
+  if (!input) return { status: 502, body: { error: "no-tool-output" } };
+  if (input.covered === false) return { status: 200, body: { answer: null } };
 
   try {
     const answer = validateAnswer(input, { articleIds: articles.map((a) => a.id) });
-    return json({ answer }, 200, cors);
+    return { status: 200, body: { answer } };
   } catch (err) {
-    return json({ error: `invalid-output:${err.message}` }, 502, cors);
+    return { status: 502, body: { error: `invalid-output:${err.message}` } };
   }
 }
+
+export const LIMITS_FOR_QUESTION = { min: LIMITS.questionMin, max: LIMITS.questionMax };
 
 export default {
   fetch: (request, env) => handleRequest(request, env),

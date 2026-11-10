@@ -472,3 +472,119 @@ test("retention: accounts with no login for 180 days are deleted with their case
   assert.equal(await w.store.getUserByName(username), null);
   assert.equal(await w.store.getCase(caseId), null);
 });
+
+/* ---------- AI settings saved from the dashboard ---------- */
+const DEV = "dev@sanad.example";
+const SECRET_KEY = "AIzaSy-test-key-1234567890abcdef";
+const geminiReply = (args) =>
+  new Response(
+    JSON.stringify({
+      candidates: [{ content: { parts: [{ functionCall: { name: "give_answer", args } }] } }],
+    }),
+  );
+
+test("ai-config: developers only, and the key is never returned", async () => {
+  const w = world();
+  await addLawyer(w);
+  assert.equal((await w.call("GET", "/v1/staff/ai-config", { as: "salma@sanad.example" })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/ai-config")).status, 401);
+
+  const put = await w.call("PUT", "/v1/staff/ai-config", {
+    as: DEV,
+    body: { provider: "gemini", model: "", apiKey: SECRET_KEY },
+  });
+  assert.equal(put.status, 200);
+  const cfg = await j(put);
+  assert.equal(cfg.hasKey, true);
+  assert.equal(cfg.source, "dashboard");
+  assert.equal(cfg.keyHint, "••••cdef");
+  assert.ok(!JSON.stringify(cfg).includes(SECRET_KEY));
+  assert.ok(
+    !JSON.stringify(await j(await w.call("GET", "/v1/staff/ai-config", { as: DEV }))).includes(SECRET_KEY),
+  );
+});
+
+test("ai-config: validates input, encrypts at rest, keeps the key when only the model changes", async () => {
+  const w = world();
+  const put = (body) => w.call("PUT", "/v1/staff/ai-config", { as: DEV, body });
+  assert.equal((await put({ provider: "nope", apiKey: SECRET_KEY })).status, 400);
+  assert.equal((await put({ provider: "gemini", apiKey: "short" })).status, 400);
+  assert.equal((await put({ provider: "gemini", apiKey: "has space in it 1234567890" })).status, 400);
+  assert.equal((await put({ provider: "gemini", model: "bad model!", apiKey: SECRET_KEY })).status, 400);
+  assert.equal((await put({ provider: "gemini" })).status, 400); // first save needs a key
+
+  assert.equal((await put({ provider: "gemini", apiKey: SECRET_KEY })).status, 200);
+  const stored = await w.store.getSetting("ai");
+  assert.ok(!JSON.stringify(stored).includes(SECRET_KEY)); // ciphertext only
+
+  const again = await j(await put({ provider: "gemini", model: "gemini-2.5-flash" }));
+  assert.equal(again.model, "gemini-2.5-flash");
+  assert.equal(again.hasKey, true);
+  assert.equal((await put({ provider: "nvidia", model: "x" })).status, 400); // another provider needs its own key
+});
+
+test("ai-config: save, test and delete are audited without the key", async () => {
+  const w = world();
+  await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
+  await w.call("DELETE", "/v1/staff/ai-config", { as: DEV });
+  const log = JSON.stringify(await w.store.listAudit());
+  assert.match(log, /ai-config-set/);
+  assert.match(log, /ai-config-clear/);
+  assert.ok(!log.includes(SECRET_KEY));
+  assert.equal((await j(await w.call("GET", "/v1/staff/ai-config", { as: DEV }))).hasKey, false);
+});
+
+test("/v1/answer uses the dashboard key and falls back to the Worker secret", async () => {
+  const w = world();
+  const seen = [];
+  const fetchImpl = async (url, init) => {
+    seen.push({ url, key: init.headers["x-goog-api-key"] });
+    return geminiReply({
+      covered: true,
+      lead: "مش ذنبك.",
+      note: "القانون بيعاقب على الابتزاز الإلكتروني.",
+      steps: ["لا تدفعي", "احفظي الأدلة"],
+      sos: false,
+      citations: [],
+    });
+  };
+  const ask = (env) =>
+    handleRequest(
+      new Request("https://sanad.example/api/v1/answer", {
+        method: "POST",
+        headers: { origin: ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+      }),
+      env,
+      { store: w.store, now: 5_000_000, fetchImpl },
+    );
+
+  assert.equal((await ask(ENV)).status, 503); // nothing configured yet
+  assert.equal(seen.length, 0);
+
+  await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
+  await ask(ENV);
+  assert.equal(seen.at(-1).key, SECRET_KEY);
+  assert.match(seen.at(-1).url, /gemini-2\.5-flash-lite/);
+
+  await w.call("DELETE", "/v1/staff/ai-config", { as: DEV });
+  await ask({ ...ENV, GEMINI_API_KEY: "secret-from-worker-1234567890" });
+  assert.equal(seen.at(-1).key, "secret-from-worker-1234567890");
+});
+
+test("/v1/answer rejects missing origin and bad questions", async () => {
+  const w = world();
+  const post = (body, origin = ORIGIN) =>
+    handleRequest(
+      new Request("https://sanad.example/api/v1/answer", {
+        method: "POST",
+        headers: { ...(origin ? { origin } : {}), "content-type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+      ENV,
+      { store: w.store, now: 1 },
+    );
+  assert.equal((await post({ question: "حدا عم يبتزني بصوري" }, null)).status, 403);
+  assert.equal((await post({ question: "ab" })).status, 400);
+  assert.equal((await post({ question: "ا".repeat(501) })).status, 400);
+});

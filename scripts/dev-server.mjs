@@ -138,6 +138,10 @@ createServer(async (req, res) => {
   res.writeHead(200, { "content-type": types[extname(file)] || "application/octet-stream" });
   // local only: turn the real lawyer chat on (the shipped config keeps API_BASE = "")
   if (file.endsWith(join("src", "config.js")))
-    return res.end(readFileSync(file, "utf8").replace('API_BASE = ""', 'API_BASE = "/api"'));
+    return res.end(
+      readFileSync(file, "utf8")
+        .replace('API_BASE = ""', 'API_BASE = "/api"')
+        .replace('AI_ENDPOINT = ""', 'AI_ENDPOINT = "/api/v1/answer"'),
+    );
   createReadStream(file).pipe(res);
 }).listen(port, () => console.log(`dev server http://localhost:${port}  (signed in as ${staffEmail})`));

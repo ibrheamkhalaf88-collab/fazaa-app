@@ -378,6 +378,23 @@ export function createD1Store(db) {
       const r = await q("SELECT iv, body, updated_at FROM case_notes WHERE case_id = ?", caseId).first();
       return r ? { iv: r.iv, body: r.body, updatedAt: r.updated_at } : null;
     },
+    async getSetting(key) {
+      const r = await q("SELECT iv, body, updated_at, updated_by FROM settings WHERE key = ?", key).first();
+      return r ? { iv: r.iv, body: r.body, updatedAt: r.updated_at, updatedBy: r.updated_by } : null;
+    },
+    async setSetting({ key, iv, body, now, by }) {
+      await q(
+        "INSERT INTO settings (key, iv, body, updated_at, updated_by) VALUES (?,?,?,?,?) ON CONFLICT(key) DO UPDATE SET iv = excluded.iv, body = excluded.body, updated_at = excluded.updated_at, updated_by = excluded.updated_by",
+        key,
+        iv,
+        body,
+        now,
+        by,
+      ).run();
+    },
+    async deleteSetting(key) {
+      await q("DELETE FROM settings WHERE key = ?", key).run();
+    },
     async addAudit({ actor, action, target = "", now }) {
       await q(
         "INSERT INTO audit (at, actor, action, target) VALUES (?,?,?,?)",

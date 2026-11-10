@@ -8,7 +8,11 @@ export async function api(path, { method = "GET", body } = {}) {
     headers: body ? { "content-type": "application/json" } : undefined,
     body: body ? JSON.stringify(body) : undefined,
   });
-  if (!res.ok) throw Object.assign(new Error(`HTTP ${res.status}`), { status: res.status });
+  if (!res.ok)
+    throw Object.assign(new Error(`HTTP ${res.status}`), {
+      status: res.status,
+      body: () => res.json().catch(() => ({})),
+    });
   return res.json();
 }
 

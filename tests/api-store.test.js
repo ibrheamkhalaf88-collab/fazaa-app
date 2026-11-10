@@ -10,6 +10,20 @@ const impls = { memory: createMemoryStore, d1: () => createD1Store(createFakeD1(
 for (const [name, make] of Object.entries(impls)) {
   const T = (title, fn) => test(`store[${name}]: ${title}`, () => fn(make()));
 
+  T("settings: set, replace and delete", async (s) => {
+    assert.equal(await s.getSetting("ai"), null);
+    await s.setSetting({ key: "ai", iv: "i1", body: "b1", now: 5, by: "dev@x.org" });
+    await s.setSetting({ key: "ai", iv: "i2", body: "b2", now: 6, by: "dev@x.org" });
+    assert.deepEqual(await s.getSetting("ai"), {
+      iv: "i2",
+      body: "b2",
+      updatedAt: 6,
+      updatedBy: "dev@x.org",
+    });
+    await s.deleteSetting("ai");
+    assert.equal(await s.getSetting("ai"), null);
+  });
+
   T("a new case is open and appears in the queue without any message text", async (s) => {
     await s.createCase({ id: "c1", tokenHash: "h", topic: "نفقة", region: "ps-gaza", now: 1000 });
     const [q] = await s.listQueue();

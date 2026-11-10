@@ -39,8 +39,18 @@ If the network, proxy or validation fails the user silently gets the offline ans
 
 ## Turn it on
 
+### Option A (recommended): from the admin dashboard, no terminal
+
+1. Deploy the staff API (see `DEPLOYMENT.md`). It serves the endpoint `POST /api/v1/answer` on the site's own domain, so the CSP needs no change.
+2. In `src/config.js` set `AI_ENDPOINT = "/api/v1/answer"`, bump `CACHE_VERSION` in `sw.js`, deploy the site.
+3. A developer opens the dashboard, section **إعدادات الذكاء**, picks the provider, optionally a model (default is the lightest one, `gemini-2.5-flash-lite`), pastes the API key, saves, and presses **جرّبي الاتصال**.
+
+The key is stored encrypted (AES-GCM, `MESSAGE_KEY`) in D1, is write-only (the dashboard shows only its last 4 characters), and every save, test and delete is written to the audit log without the key. Settings saved in the dashboard win over Worker secrets; deleting them falls back to `GEMINI_API_KEY` / `NVIDIA_API_KEY` / `ANTHROPIC_API_KEY` if those exist.
+
+### Option B: standalone proxy (no database)
+
 1. `cd server/ai-proxy`; set `ALLOWED_ORIGINS` in `wrangler.toml` to your site origin(s).
-2. Pick the provider in `wrangler.toml` (`PROVIDER = "gemini" | "nvidia" | "anthropic"`), then store its key:
+2. Pick the provider (`PROVIDER = "gemini" | "nvidia" | "anthropic"`), then store its key:
    `npx wrangler secret put GEMINI_API_KEY` (or `NVIDIA_API_KEY`, `ANTHROPIC_API_KEY`), then `npx wrangler deploy`.
    Optional: `MODEL` var, a `RATE_LIMITER` binding.
 3. In `src/config.js` set `AI_ENDPOINT` to the worker URL.
@@ -50,7 +60,7 @@ If the network, proxy or validation fails the user silently gets the offline ans
 
 | PROVIDER           | Key secret                          | Default model                 | Notes                                      |
 | ------------------ | ----------------------------------- | ----------------------------- | ------------------------------------------ |
-| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-2.5-flash-lite`            | free tier; good Arabic                     |
+| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-2.5-flash-lite`       | free tier; good Arabic                     |
 | `nvidia`           | `NVIDIA_API_KEY` (build.nvidia.com) | `meta/llama-3.3-70b-instruct` | free trial credits; Arabic weaker, test it |
 | `anthropic`        | `ANTHROPIC_API_KEY`                 | `claude-sonnet-5-5`           | paid                                       |
 

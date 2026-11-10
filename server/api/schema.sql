@@ -112,3 +112,13 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_cases_user ON cases(user_id);
+
+-- Developer-managed settings. The AI provider/model/key live here, encrypted (AES-GCM) with
+-- MESSAGE_KEY. The key can be replaced or deleted from the dashboard but never read back.
+CREATE TABLE IF NOT EXISTS settings (
+  key        TEXT PRIMARY KEY,
+  iv         TEXT NOT NULL,
+  body       TEXT NOT NULL,
+  updated_at INTEGER NOT NULL,
+  updated_by TEXT NOT NULL
+);

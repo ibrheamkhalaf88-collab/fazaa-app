@@ -1,4 +1,5 @@
 import { api } from "./api.js";
+import { aiSettingsView } from "./ai-settings.js";
 import { auditView, overviewView, teamView } from "./developer.js";
 import { lawyerView } from "./lawyer.js";
 import { aiView, usageView, usersView } from "./usage.js";
@@ -110,6 +111,7 @@ const banner = (msg) => {
           ["usage", "الزوّار والاستخدام", usageView],
           ["users", "المستخدمات", usersView],
           ["ai", "الذكاء الاصطناعي", aiView],
+          ["ai-settings", "إعدادات الذكاء", aiSettingsView],
           ["team", "الفريق", teamView],
           ["audit", "سجل العمليات", auditView],
         ];

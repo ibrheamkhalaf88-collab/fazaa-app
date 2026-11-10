@@ -15,6 +15,8 @@
  * Deploy at the SAME origin as the site (route  yourdomain/api/*) so Cloudflare Access can
  * protect /api/v1/staff/* and /admin/*, and the app's CSP (connect-src 'self') stays strict.
  */
+import { answerQuestion, LIMITS_FOR_QUESTION } from "../ai-proxy/worker.js";
+import { DEFAULT_PROVIDER, PROVIDERS } from "../ai-proxy/providers.js";
 import { verifyAccessJwt, resolveStaff } from "./auth.js";
 import { decryptText, encryptText, hashPin, newSalt, randomId, safeEqual, sha256Hex } from "./crypto.js";
 import { createD1Store } from "./store/d1.js";
@@ -75,6 +77,53 @@ async function readJson(request) {
 const cleanText = (v, max) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 const firstName = (s) => (s || "").trim().split(/\s+/)[0].slice(0, LIMITS.name);
 
+/* ---------- AI settings (developer dashboard) ---------- */
+const AI_SETTING = "ai";
+const MODEL_RE = /^[\w.\-/:]{1,80}$/;
+const API_KEY_RE = /^[\x21-\x7e]{20,400}$/; // visible ASCII only, no spaces
+const aiProviders = () =>
+  Object.entries(PROVIDERS).map(([id, p]) => ({ id, label: p.label, defaultModel: p.defaultModel }));
+
+/** The saved AI settings (decrypted) or null. */
+async function loadAi(store, open) {
+  const row = await store.getSetting(AI_SETTING);
+  if (!row) return null;
+  try {
+    return { ...JSON.parse(await open(row)), updatedAt: row.updatedAt, updatedBy: row.updatedBy };
+  } catch {
+    return null; // MESSAGE_KEY changed: treat as not set
+  }
+}
+
+/** env as the AI step expects it: dashboard settings win, Worker secrets are the fallback. */
+function aiEnv(env, saved) {
+  if (!saved) return env;
+  return {
+    ...env,
+    PROVIDER: saved.provider,
+    MODEL: saved.model || "",
+    [PROVIDERS[saved.provider].keyName]: saved.apiKey,
+  };
+}
+
+/** What the dashboard may know: never the key itself, only whether one exists and its last 4 characters. */
+function aiSummary(env, saved) {
+  const provider = saved?.provider || env.PROVIDER || DEFAULT_PROVIDER;
+  const def = PROVIDERS[provider] || PROVIDERS[DEFAULT_PROVIDER];
+  const key = saved?.apiKey || env[def.keyName] || "";
+  return {
+    provider,
+    model: saved ? saved.model || "" : env.MODEL || "",
+    defaultModel: def.defaultModel,
+    hasKey: Boolean(key),
+    keyHint: key ? `••••${key.slice(-4)}` : "",
+    source: saved ? "dashboard" : key ? "secret" : "none",
+    updatedAt: saved?.updatedAt ?? null,
+    updatedBy: saved?.updatedBy ?? null,
+    providers: aiProviders(),
+  };
+}
+
 /**
  * @param {Request} request
  * @param {Record<string,string> & {RATE_LIMITER?: any}} env
@@ -107,6 +156,19 @@ export async function handleRequest(request, env, deps) {
   const seal = (text) => encryptText(text, env.MESSAGE_KEY);
   const open = (row) => decryptText(row, env.MESSAGE_KEY);
 
+  /* ============ public AI endpoint: the key is the one a developer saved in the dashboard ============ */
+  if (path === "/v1/answer" && request.method === "POST") {
+    if (!request.headers.get("origin")) return reply(fail(403, "forbidden-origin")); // browsers only
+    const { value, error } = await readJson(request);
+    const question = typeof value?.question === "string" ? value.question.trim() : "";
+    if (error || question.length < LIMITS_FOR_QUESTION.min || question.length > LIMITS_FOR_QUESTION.max)
+      return reply(fail(400, "bad-question"));
+    const country = REGIONS.includes(value.country) ? value.country : "ps-wb";
+    const saved = await loadAi(store, open);
+    const { status, body } = await answerQuestion(question, country, aiEnv(env, saved), fetchImpl);
+    return reply(json(body, status));
+  }
+
   /* ============ staff routes (Cloudflare Access) ============ */
   if (path.startsWith("/v1/staff/")) {
     const email = deps.staffEmail
@@ -135,6 +197,72 @@ export async function handleRequest(request, env, deps) {
           }),
         )
       );
+
+    /* ---- AI settings: developer only; the key is write-only ---- */
+    if (path === "/v1/staff/ai-config" && request.method === "GET") {
+      const denied = need("developer");
+      if (denied) return denied;
+      return reply(json(aiSummary(env, await loadAi(store, open))));
+    }
+
+    if (path === "/v1/staff/ai-config" && request.method === "PUT") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const { value, error } = await readJson(request);
+      if (error) return reply(fail(error, "bad-body"));
+      const saved = await loadAi(store, open);
+      const provider = value.provider;
+      if (!PROVIDERS[provider]) return reply(fail(400, "bad-provider"));
+      const model = cleanText(value.model, 80);
+      if (model && !MODEL_RE.test(model)) return reply(fail(400, "bad-model"));
+      const typedKey = typeof value.apiKey === "string" ? value.apiKey.trim() : "";
+      if (typedKey && !API_KEY_RE.test(typedKey)) return reply(fail(400, "bad-key"));
+      // keep the stored key when only the model/provider changes (and the provider is the same)
+      const apiKey = typedKey || (saved?.provider === provider ? saved.apiKey : "");
+      if (!apiKey) return reply(fail(400, "key-required"));
+      await store.setSetting({
+        key: AI_SETTING,
+        ...(await seal(JSON.stringify({ provider, model, apiKey }))),
+        now,
+        by: staff.email,
+      });
+      await store.addAudit({
+        actor: staff.email,
+        action: "ai-config-set",
+        target: `${provider}${model ? ` / ${model}` : ""}${typedKey ? " (new key)" : ""}`,
+        now,
+      });
+      return reply(json(aiSummary(env, await loadAi(store, open))));
+    }
+
+    if (path === "/v1/staff/ai-config" && request.method === "DELETE") {
+      const denied = need("developer");
+      if (denied) return denied;
+      await store.deleteSetting(AI_SETTING);
+      await store.addAudit({ actor: staff.email, action: "ai-config-clear", target: "", now });
+      return reply(json(aiSummary(env, null)));
+    }
+
+    // one real round trip with a fixed sample question, so a developer knows the key works
+    if (path === "/v1/staff/ai-config/test" && request.method === "POST") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const started = Date.now();
+      const { status, body } = await answerQuestion(
+        "حدا عم يبتزني بصوري",
+        "ps-wb",
+        aiEnv(env, await loadAi(store, open)),
+        fetchImpl,
+      );
+      const ok = status === 200 && Boolean(body.answer);
+      await store.addAudit({
+        actor: staff.email,
+        action: "ai-config-test",
+        target: ok ? "ok" : body.error || "no-answer",
+        now,
+      });
+      return reply(json({ ok, error: ok ? null : body.error || "no-answer", ms: Date.now() - started }));
+    }
 
     if (path === "/v1/staff/analytics" && request.method === "GET") {
       const denied = need("developer");
