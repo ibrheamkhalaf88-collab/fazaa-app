@@ -1,0 +1,90 @@
+/*
+  Design tokens: every colour, font and shadow lives here, nowhere else.
+  Components only use var(--token). To restyle the app, change this file.
+
+  Palette: dusty slate-blue ground, navy primary, cream cards, one honey-gold accent.
+  There is deliberately no red: an alarming colour is the wrong signal for someone
+  who may already be frightened. Emergency pieces use navy + gold instead.
+
+  Dark mode is defined twice on purpose (CSS cannot share one block between a media
+  query and an attribute selector): once for the system setting, once for the manual
+  override in Settings. tests/tokens.test.js fails if the two copies drift apart.
+*/
+
+:root {
+  /* type */
+  --display: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --brush: "Aref Ruqaa", "IBM Plex Sans Arabic", Tahoma, serif; /* handwriting, big headings only */
+
+  /* surfaces */
+  --ground: #aebbd3; /* page background */
+  --surface: #f6f1e3; /* cards, inputs */
+  --surface-2: #eae4d3; /* quieter inset surface */
+  --line: #dcd5c2; /* borders, dividers */
+  --desk: #e9e6de; /* behind the phone frame on desktop */
+  --frame: #18214a; /* phone frame on desktop */
+
+  /* text */
+  --ink: #18214a;
+  --ink-soft: #3f4b72; /* secondary text, still AA on --ground */
+
+  /* brand */
+  --primary: #1c2654; /* main buttons, active states */
+  --primary-soft: #c6d0e3; /* tinted backgrounds */
+  --on-primary: #f6f1e3; /* text on --primary */
+  --accent: #e2a650; /* gold: SOS button, active tab, highlights */
+  --emphasis: #1c2654; /* emergency emphasis (navy, never red) */
+  --emphasis-soft: #c6d0e3;
+
+  --shadow: 0 1px 2px rgba(24, 33, 74, 0.08), 0 12px 24px -16px rgba(24, 33, 74, 0.45);
+
+  /* illustration skin and hair (used by the character symbols in the sprite) */
+  --skin: #f0c3a0;
+  --skin-2: #dba47e;
+  --hair: #3b2a2f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --ground: #121935;
+    --surface: #1c2548;
+    --surface-2: #253059;
+    --line: #34406e;
+    --desk: #0a0e1f;
+    --frame: #060916;
+    --ink: #f3efe2;
+    --ink-soft: #aeb9d6;
+    --primary: #c6d0e3;
+    --primary-soft: #2a3662;
+    --on-primary: #121935;
+    --accent: #ebb868;
+    --emphasis: #c6d0e3;
+    --emphasis-soft: #2a3662;
+    --shadow: 0 0 0 1px #34406e;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --ground: #121935;
+  --surface: #1c2548;
+  --surface-2: #253059;
+  --line: #34406e;
+  --desk: #0a0e1f;
+  --frame: #060916;
+  --ink: #f3efe2;
+  --ink-soft: #aeb9d6;
+  --primary: #c6d0e3;
+  --primary-soft: #2a3662;
+  --on-primary: #121935;
+  --accent: #ebb868;
+  --emphasis: #c6d0e3;
+  --emphasis-soft: #2a3662;
+  --shadow: 0 0 0 1px #34406e;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}

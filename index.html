@@ -1,749 +1,924 @@
 <!doctype html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="description" content="سند: مستشارة قانونية بالعامية وخطة أمان ضد الابتزاز الإلكتروني للنساء. نموذج أولي.">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>سَنَد</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=Readex+Pro:wght@300;400;500;600&display=swap">
-<style>
-/* Layout: RTL story page. A deep petrol hero band carries the live phone; tatreez stitch is the brand motif; the user journey is a numbered phone gallery */
-:root{
-  --ground:#FAF1EE; --surface:#FFFFFF; --surface-2:#F3E6E2; --line:#EAD7D2;
-  --ink:#1B2430; --ink-soft:#5E6573;
-  --petrol:#0F4C55; --petrol-soft:#D6EAE6; --on-petrol:#FFFFFF;
-  --band:#0F4C55; --on-band:#FFFFFF; --band-soft:#BFDCD8; --band-2:#14606B;
-  --pome:#B8364F; --pome-soft:#F8DDE2;
-  --saffron:#E2A23A; --saffron-soft:#FBEBCF;
-  --skin:#E6B48C; --skin-2:#C98E63; --hair:#3A2622; --frame:#1B2430;
-  --display:"Reem Kufi","Readex Pro",Tahoma,sans-serif;
-  --body:"Readex Pro","Segoe UI",Tahoma,sans-serif;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --ground:#0E1719; --surface:#162427; --surface-2:#1E3135; --line:#2A4045;
-  --ink:#EEF2F1; --ink-soft:#A3B2B3;
-  --petrol:#62B9B3; --petrol-soft:#183A3C; --on-petrol:#062224;
-  --band:#0A2E33; --on-band:#F2F7F6; --band-soft:#9CC6C2; --band-2:#0F3D43;
-  --pome:#F07D93; --pome-soft:#3E1E27;
-  --saffron:#F0B95E; --saffron-soft:#3A2C14;
-  --frame:#04090A; color-scheme:dark}}
-:root[data-theme="dark"]{
-  --ground:#0E1719; --surface:#162427; --surface-2:#1E3135; --line:#2A4045;
-  --ink:#EEF2F1; --ink-soft:#A3B2B3;
-  --petrol:#62B9B3; --petrol-soft:#183A3C; --on-petrol:#062224;
-  --band:#0A2E33; --on-band:#F2F7F6; --band-soft:#9CC6C2; --band-2:#0F3D43;
-  --pome:#F07D93; --pome-soft:#3E1E27;
-  --saffron:#F0B95E; --saffron-soft:#3A2C14;
-  --frame:#04090A; color-scheme:dark}
-*{box-sizing:border-box}
-body{background:var(--ground);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.75;margin:0}
-.page{direction:rtl;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 48px;max-width:1160px;margin:0 auto}
-h1,h2,h3{font-family:var(--display);font-weight:700;line-height:1.3;text-wrap:balance;margin:0}
-p{margin:0}
-a{color:inherit}
-button{font-family:inherit;cursor:pointer}
-button:focus-visible,a:focus-visible{outline:3px solid var(--saffron);outline-offset:2px}
-svg.ic{width:1.2em;height:1.2em;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
+    />
+    <title>سَنَد</title>
+    <meta
+      name="description"
+      content="سند: معلومات قانونية بالعامية وخطة أمان ضد الابتزاز الإلكتروني للنساء. نسخة تجريبية."
+    />
+    <meta name="theme-color" content="#AEBBD3" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <link
+      rel="preload"
+      href="assets/fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="assets/fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
 
-.stitch{height:16px;background-repeat:repeat-x;background-position:center;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='16'%3E%3Cg stroke='%23E2A23A' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M16 1l3 3M19 1l-3 3M12 6l3 3M15 6l-3 3M20 6l3 3M23 6l-3 3M16 11l3 3M19 11l-3 3'/%3E%3C/g%3E%3Cg stroke='%23F8DDE2' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M1 6l3 3M4 6l-3 3M36 6l3 3M39 6l-3 3'/%3E%3C/g%3E%3C/svg%3E")}
-.stitch.dark{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='16'%3E%3Cg stroke='%23B8364F' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M16 1l3 3M19 1l-3 3M12 6l3 3M15 6l-3 3M20 6l3 3M23 6l-3 3M16 11l3 3M19 11l-3 3'/%3E%3C/g%3E%3Cg stroke='%2362B9B3' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M1 6l3 3M4 6l-3 3M36 6l3 3M39 6l-3 3'/%3E%3C/g%3E%3C/svg%3E")}
-
-/* hero band */
-.band{background:var(--band);color:var(--on-band);border-radius:36px;overflow:hidden;position:relative}
-.band-inner{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:24px;align-items:center;padding:28px clamp(20px,4vw,56px) 0}
-.band header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:12px}
-.logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-size:24px;font-weight:700}
-.logo-mark{width:40px;height:40px;border-radius:13px;background:var(--saffron);color:#1B2430;display:grid;place-items:center}
-.pill{font-size:12.5px;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:4px 12px;color:var(--band-soft)}
-.hero-text{padding-block:28px 56px}
-.hero-text h1{font-size:clamp(46px,8vw,92px);line-height:1.1}
-.hero-text .sub{font-family:var(--display);font-size:clamp(20px,2.6vw,28px);color:var(--saffron);margin-top:10px;line-height:1.5}
-.hero-text .lead{font-size:17px;color:var(--band-soft);max-width:32em;margin-top:18px}
-.hero-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:26px}
-.btn{display:inline-flex;align-items:center;gap:8px;border-radius:14px;padding:12px 20px;font-size:15px;font-weight:500;text-decoration:none;border:1px solid rgba(255,255,255,.3);color:var(--on-band)}
-.btn.primary{background:var(--saffron);color:#1B2430;border-color:var(--saffron)}
-.trust{display:flex;gap:16px;flex-wrap:wrap;margin-top:26px;font-size:13.5px;color:var(--band-soft)}
-.trust span{display:flex;align-items:center;gap:6px}
-.trust svg{color:var(--saffron)}
-
-.stage{position:relative;align-self:end;display:flex;justify-content:center;padding-top:16px;min-height:600px}
-.stage .art-back{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);height:auto}
-.stage .phone{position:relative;margin-bottom:-120px;animation:rise .9s cubic-bezier(.2,.8,.2,1) both}
-.float{position:absolute;z-index:2;background:var(--surface);color:var(--ink);border-radius:16px;padding:9px 12px;font-size:12.5px;display:flex;align-items:center;gap:8px;box-shadow:0 10px 30px rgba(0,0,0,.18);animation:bob 6s ease-in-out infinite}
-.float .dot{width:28px;height:28px;border-radius:9px;display:grid;place-items:center}
-.float{max-width:150px;font-size:11.5px;line-height:1.45}
-.f1{top:170px;right:0}
-.f2{top:300px;left:0;animation-delay:-2s}
-.f3{top:450px;right:0;animation-delay:-4s}
-@keyframes rise{from{transform:translateY(60px);opacity:0}to{transform:none;opacity:1}}
-@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
-.band .stitch{position:relative;z-index:3;background-color:var(--band)}
-
-/* phone */
-.phone{width:276px;max-width:100%;height:584px;border-radius:42px;background:var(--frame);padding:9px;flex-shrink:0;box-shadow:0 24px 60px rgba(15,76,85,.25)}
-.screen{height:100%;border-radius:34px;background:var(--surface);overflow:hidden;display:flex;flex-direction:column;position:relative;font-size:13px;line-height:1.6;color:var(--ink);text-align:right;direction:rtl}
-.sbar{display:flex;justify-content:space-between;padding:10px 22px 4px;font-size:11px;color:var(--ink-soft);direction:ltr}
-.sbody{flex:1;overflow-y:auto;padding:6px 16px 12px;display:flex;flex-direction:column;gap:11px;scrollbar-width:none}
-.sbody::-webkit-scrollbar{display:none}
-.shead{display:flex;align-items:center;justify-content:space-between;gap:8px}
-.exit{display:inline-flex;align-items:center;gap:4px;border:none;border-radius:10px;background:var(--pome-soft);color:var(--pome);font-size:11px;font-weight:500;padding:6px 9px;flex-shrink:0}
-.nav{display:flex;justify-content:space-around;border-top:1px solid var(--line);padding:7px 4px 12px;background:var(--surface)}
-.nav button{background:none;border:none;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;padding:4px 6px;border-radius:10px}
-.nav button.on{color:var(--petrol);font-weight:500}
-.nav button.sos{color:var(--pome)}
-.mini-h{font-family:var(--display);font-size:18px;font-weight:700;line-height:1.4}
-.muted{color:var(--ink-soft)}
-.hello{display:flex;align-items:center;gap:10px}
-.hello svg.av{width:42px;height:42px;border-radius:14px;background:var(--saffron-soft);flex-shrink:0}
-.mic-card{background:var(--petrol);color:var(--on-petrol);border-radius:20px;padding:13px;display:flex;align-items:center;gap:12px;position:relative;overflow:hidden}
-.mic-card::after{content:"";position:absolute;inset:auto -20px -30px auto;width:90px;height:90px;border-radius:50%;border:12px solid rgba(255,255,255,.08)}
-.mic-dot{width:46px;height:46px;border-radius:50%;background:var(--saffron);color:#1B2430;display:grid;place-items:center;flex-shrink:0}
-.mic-dot .ic{width:24px;height:24px}
-.topics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.topic{border-radius:18px;padding:10px;display:flex;flex-direction:column;gap:4px;font-weight:500;font-size:12.5px;border:none;text-align:right;color:var(--ink);line-height:1.4;position:relative;overflow:hidden;min-height:98px}
-.topic small{font-weight:400;color:var(--ink-soft);font-size:10.5px}
-.topic svg.ill{width:44px;height:44px}
-.t-pome{background:var(--pome-soft)} .t-petrol{background:var(--petrol-soft)} .t-saff{background:var(--saffron-soft)} .t-ink{background:var(--surface-2)}
-.tip{border:1.5px dashed var(--saffron);border-radius:16px;padding:10px 12px;display:flex;gap:10px;align-items:flex-start}
-.tip svg{color:var(--saffron);margin-top:3px}
-
-.bubble-u{align-self:flex-start;max-width:84%;background:var(--petrol);color:var(--on-petrol);padding:9px 12px;border-radius:16px 16px 4px 16px}
-.bubble-a{align-self:flex-end;max-width:92%;background:var(--surface-2);padding:10px 12px;border-radius:16px 16px 16px 4px}
-.bubble-a ol{margin:6px 0 0;padding-right:18px}
-.cite{margin-top:8px;background:var(--surface);border-radius:12px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start;border:1px solid var(--line)}
-.cite svg{color:var(--petrol);margin-top:3px}
-.cite b{display:block;color:var(--petrol);font-weight:500;font-size:12px}
-.cite span{font-size:11px;color:var(--ink-soft)}
-.acts{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-.chip{display:inline-flex;align-items:center;gap:4px;font-size:11px;border-radius:10px;padding:6px 9px;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
-.chip.fill{background:var(--petrol);color:var(--on-petrol);border-color:var(--petrol)}
-.typing{display:flex;align-items:center;gap:8px;padding:10px 12px;border-top:1px solid var(--line)}
-.typing .mic{width:38px;height:38px;border-radius:50%;background:var(--saffron);color:#1B2430;display:grid;place-items:center;flex-shrink:0;border:none}
-.typing .field{flex:1;height:38px;border-radius:19px;background:var(--surface-2);display:flex;align-items:center;padding:0 12px;color:var(--ink-soft);font-size:12px}
-.wave{display:flex;align-items:center;gap:2px;height:16px}
-.wave i{width:3px;border-radius:2px;background:var(--petrol);display:block}
-
-.sos-head{background:var(--pome-soft);border-radius:18px;padding:12px;display:flex;gap:10px;align-items:center}
-.sos-head .mini-h{color:var(--pome)}
-.sos-head svg.ill{width:58px;height:58px;flex-shrink:0}
-.prog{height:6px;border-radius:3px;background:var(--surface);overflow:hidden;margin-top:6px}
-.prog i{display:block;height:100%;width:20%;background:var(--pome);border-radius:3px;transition:width .3s}
-.steps{display:flex;flex-direction:column;gap:6px}
-.step{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;padding:8px 10px;background:var(--surface);text-align:right;color:var(--ink);font-size:12.5px;line-height:1.5;width:100%}
-.step .box{width:20px;height:20px;border-radius:6px;border:2px solid var(--line);display:grid;place-items:center;flex-shrink:0;margin-top:1px;color:transparent}
-.step.done .box{background:var(--petrol);border-color:var(--petrol);color:var(--on-petrol)}
-.step.done b{text-decoration:line-through;text-decoration-color:var(--ink-soft)}
-.step small{display:block;color:var(--ink-soft);font-size:10.5px}
-
-.welcome{align-items:center;text-align:center;justify-content:center}
-.welcome svg.art{width:100%;max-width:240px}
-.dots{display:flex;gap:5px;justify-content:center}
-.dots i{width:6px;height:6px;border-radius:3px;background:var(--line)}
-.dots i.on{width:18px;background:var(--petrol)}
-.wbtns{display:flex;flex-direction:column;gap:8px;width:100%}
-.wbtn{border-radius:14px;padding:11px;font-size:13px;font-weight:500;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;justify-content:center;gap:6px;align-items:center;width:100%}
-.wbtn.primary{background:var(--petrol);color:var(--on-petrol);border-color:var(--petrol)}
-
-.countries{display:grid;grid-template-columns:1fr 1fr;gap:7px}
-.country{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:9px 10px;font-size:12.5px;text-align:right;display:flex;justify-content:space-between;align-items:center}
-.country .tick{width:18px;height:18px;border-radius:50%;border:1.5px solid var(--line);display:grid;place-items:center;color:transparent}
-.country.sel{border-color:var(--petrol);background:var(--petrol-soft)}
-.country.sel .tick{background:var(--petrol);border-color:var(--petrol);color:var(--on-petrol)}
-.note{font-size:11px;color:var(--ink-soft);display:flex;gap:6px;align-items:flex-start}
-
-.stabs{display:flex;gap:6px}
-.stab{flex:1;border:none;border-radius:10px;padding:7px 4px;font-size:11.5px;background:var(--surface-2);color:var(--ink-soft)}
-.stab.on{background:var(--ink);color:var(--surface)}
-.org{border:1px solid var(--line);border-radius:16px;padding:10px;display:flex;gap:10px;align-items:flex-start}
-.org .oi{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex-shrink:0}
-.org b{font-weight:500;display:block;line-height:1.4}
-.org small{color:var(--ink-soft);font-size:10.5px;display:block}
-.org .acts{margin-top:6px}
-.badge{display:inline-block;font-size:10px;border-radius:6px;padding:1px 6px;background:var(--petrol-soft);color:var(--petrol);margin-top:3px}
-
-.set{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
-.set:last-child{border-bottom:none}
-.set .si{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;flex-shrink:0;background:var(--surface-2);color:var(--ink)}
-.set div{flex:1;min-width:0}
-.set b{font-weight:500;display:block;line-height:1.4;font-size:12.5px}
-.set small{color:var(--ink-soft);font-size:10.5px;display:block;line-height:1.4}
-.tg{width:40px;height:24px;border-radius:12px;border:none;background:var(--line);position:relative;flex-shrink:0;padding:0}
-.tg::after{content:"";position:absolute;top:3px;right:3px;width:18px;height:18px;border-radius:50%;background:#fff;transition:right .2s}
-.tg[aria-checked="true"]{background:var(--petrol)}
-.tg[aria-checked="true"]::after{right:19px}
-.disguise{display:flex;gap:8px}
-.dg{flex:1;border:1.5px solid var(--line);border-radius:14px;padding:8px 4px;background:var(--surface);color:var(--ink);font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:4px}
-.dg .gi{width:34px;height:34px;border-radius:10px;display:grid;place-items:center}
-.dg.sel{border-color:var(--petrol);background:var(--petrol-soft)}
-
-.weather{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;text-align:center;padding:20px;background:linear-gradient(var(--petrol-soft),var(--surface))}
-.weather .temp{font-size:64px;font-weight:300;line-height:1;border:none;background:none;color:var(--ink);font-family:var(--body)}
-.wdays{display:flex;gap:14px;margin-top:22px;font-size:11px;color:var(--ink-soft)}
-.wdays div{display:flex;flex-direction:column;align-items:center;gap:2px}
-
-/* sections */
-section{padding-block:72px 0}
-.sec-h{display:flex;flex-direction:column;gap:10px;max-width:40em;margin-bottom:32px}
-.sec-h h2{font-size:clamp(30px,4.4vw,44px)}
-.sec-h p{color:var(--ink-soft);font-size:17px}
-.sec-h .kick{font-family:var(--display);color:var(--pome);font-size:18px}
-
-.mission{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:40px;align-items:center}
-.mission .art{width:100%;max-width:420px;justify-self:center}
-.mission blockquote{margin:0;font-family:var(--display);font-size:clamp(24px,3.2vw,36px);line-height:1.55;color:var(--petrol)}
-.mission .why{margin-top:16px;color:var(--ink-soft);font-size:15.5px;max-width:34em}
-.goals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
-.goal{background:var(--surface);border-radius:22px;padding:18px;display:flex;flex-direction:column;gap:8px;border:1px solid var(--line)}
-.goal .gi{width:46px;height:46px;border-radius:15px;display:grid;place-items:center}
-.goal h3{font-size:18px}
-.goal p{color:var(--ink-soft);font-size:14.5px;line-height:1.7}
-
-.story{background:var(--surface);border-radius:32px;padding:clamp(20px,4vw,40px);border:1px solid var(--line)}
-.story-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin-top:8px}
-.beat{display:flex;flex-direction:column;gap:8px}
-.beat .t{font-family:var(--display);font-size:15px;color:var(--pome)}
-.beat p{font-size:14.5px;color:var(--ink-soft)}
-.beat b{color:var(--ink);font-weight:500}
-.story-tag{font-size:12px;color:var(--ink-soft);margin-top:18px}
-
-.gallery{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:44px 20px;justify-items:center}
-.gallery figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:14px}
-.gallery figcaption{text-align:center;max-width:270px}
-.gallery figcaption .n{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--surface);font-family:var(--display);font-size:14px;margin-bottom:6px}
-.gallery figcaption b{display:block;font-family:var(--display);font-size:19px;font-weight:700}
-.gallery figcaption span{font-size:14px;color:var(--ink-soft)}
-
-.flow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
-.fstep{background:var(--surface);border:1px solid var(--line);border-radius:24px;padding:22px;display:flex;flex-direction:column;gap:8px}
-.fstep .n{font-family:var(--display);font-size:36px;color:var(--saffron);line-height:1}
-.fstep h3{font-size:19px}
-.fstep p{color:var(--ink-soft);font-size:15px}
-.local{margin-top:16px;display:flex;align-items:center;gap:12px;background:var(--petrol-soft);border-radius:18px;padding:14px 18px;font-size:15px}
-.local svg{color:var(--petrol);width:26px;height:26px}
-
-.values{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
-.val{border-top:3px solid var(--petrol);padding-top:14px}
-.val:nth-child(2){border-color:var(--pome)} .val:nth-child(3){border-color:var(--saffron)} .val:nth-child(4){border-color:var(--ink)}
-.val h3{font-size:18px}
-.val p{color:var(--ink-soft);font-size:15px}
-
-.cta{margin-top:72px;background:var(--band);color:var(--on-band);border-radius:32px;padding:clamp(24px,5vw,48px);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center}
-.cta h2{font-size:clamp(26px,3.6vw,38px)}
-.cta p{color:var(--band-soft);margin-top:8px}
-footer{padding-top:24px;color:var(--ink-soft);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
-
-@media (max-width:900px){
-  .band-inner,.mission{grid-template-columns:minmax(0,1fr)}
-  .hero-text{padding-bottom:8px}
-  .goals,.flow{grid-template-columns:minmax(0,1fr)}
-  .story-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
-  .cta{grid-template-columns:minmax(0,1fr)}
-}
-@media (max-width:480px){
-  .story-row{grid-template-columns:minmax(0,1fr)}
-  .f2,.f3{display:none}
-  .f1{top:40px;right:0}
-}
-.theme-btn{width:40px;height:40px;border-radius:13px;border:1px solid rgba(255,255,255,.3);background:transparent;color:var(--on-band);display:grid;place-items:center;padding:0}
-.theme-btn svg{width:20px;height:20px}
-:root[data-theme="light"]{color-scheme:light}
-@media (prefers-reduced-motion:reduce){*,*::after{animation:none!important;transition:none!important}}
-</style>
-
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
-    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
-    <symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 4v16M7 20h10M5 7h14M5 7l-3 6a3 3 0 0 0 6 0zM19 7l-3 6a3 3 0 0 0 6 0z"/></symbol>
-    <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4zM10 20v-5h4v5"/></symbol>
-    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></symbol>
-    <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3l10 18H2zM12 10v4M12 17v.5"/></symbol>
-    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
-    <symbol id="i-exit" viewBox="0 0 24 24"><path d="M10 4h8v16h-8M14 12H3M6 9l-3 3 3 3"/></symbol>
-    <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6"/></symbol>
-    <symbol id="i-phone" viewBox="0 0 24 24"><path d="M5 4h4l2 5-3 2a11 11 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></symbol>
-    <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/></symbol>
-    <symbol id="i-hands" viewBox="0 0 24 24"><path d="M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z"/><path d="M9 11h6M12 8v6"/></symbol>
-    <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3z"/></symbol>
-    <symbol id="i-cpu" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/></symbol>
-    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.5-7-12a7 7 0 0 1 14 0c0 5.5-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/></symbol>
-    <symbol id="i-msg" viewBox="0 0 24 24"><path d="M4 20l1.5-4A8 8 0 1 1 9 19.5z"/></symbol>
-    <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></symbol>
-    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></symbol>
-    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
-    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/></symbol>
-    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></symbol>
-    <symbol id="i-note" viewBox="0 0 24 24"><path d="M5 4h14v16H5zM9 9h6M9 13h6"/></symbol>
-    <symbol id="i-brain" viewBox="0 0 24 24"><path d="M9 4a3 3 0 0 0-3 3 3 3 0 0 0-1 5 3 3 0 0 0 2 5 3 3 0 0 0 5 1V5a3 3 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 1 5 3 3 0 0 1-2 5 3 3 0 0 1-5 1"/></symbol>
-
-    <!-- women: --c1 dress, --c2 scarf/hair-cover, collar stitch uses --c3 -->
-    <symbol id="w-hijab" viewBox="0 0 120 150">
-      <path d="M10 150c0-36 22-56 50-56s50 20 50 56z" style="fill:var(--c1)"/>
-      <path d="M44 100l16 22 16-22" fill="none" style="stroke:var(--c3)" stroke-width="3" stroke-dasharray="3 3"/>
-      <path d="M26 66c0-28 15-43 34-43s34 15 34 43v28c-9 12-21 17-34 17s-25-5-34-17z" style="fill:var(--c2)"/>
-      <ellipse cx="60" cy="65" rx="19" ry="22" style="fill:var(--skin)"/>
-      <circle cx="51" cy="72" r="3.5" fill="#E8907F" opacity=".45"/><circle cx="69" cy="72" r="3.5" fill="#E8907F" opacity=".45"/>
-      <path d="M50 64q3 3 6 0M64 64q3 3 6 0M55 76q5 4 10 0" fill="none" stroke="#3A2622" stroke-width="2" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="w-hair" viewBox="0 0 120 150">
-      <path d="M34 76c-5-34 10-52 26-52s31 18 26 52c-2 16-6 26-6 26H40s-4-10-6-26z" style="fill:var(--hair)"/>
-      <path d="M10 150c0-36 22-56 50-56s50 20 50 56z" style="fill:var(--c1)"/>
-      <path d="M46 100q14 14 28 0" fill="none" style="stroke:var(--c3)" stroke-width="3" stroke-dasharray="3 3"/>
-      <rect x="53" y="82" width="14" height="16" rx="6" style="fill:var(--skin-2)"/>
-      <ellipse cx="60" cy="64" rx="18" ry="21" style="fill:var(--skin)"/>
-      <path d="M41 60c4-16 30-20 38 2-10-4-24-10-38-2z" style="fill:var(--hair)"/>
-      <circle cx="51" cy="72" r="3.5" fill="#E8907F" opacity=".45"/><circle cx="69" cy="72" r="3.5" fill="#E8907F" opacity=".45"/>
-      <path d="M50 65q3 3 6 0M64 65q3 3 6 0M55 76q5 4 10 0" fill="none" stroke="#3A2622" stroke-width="2" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="pome" viewBox="0 0 60 60">
-      <path d="M24 10l3 6 3-6 3 6 3-6v8H24z" style="fill:var(--pome)"/>
-      <circle cx="30" cy="36" r="20" style="fill:var(--pome)"/>
-      <path d="M20 30a12 12 0 0 1 8-8" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="3" stroke-linecap="round"/>
-    </symbol>
-    <symbol id="olive" viewBox="0 0 100 60">
-      <path d="M4 56C30 40 60 24 96 6" fill="none" style="stroke:var(--petrol)" stroke-width="3" stroke-linecap="round"/>
-      <ellipse cx="26" cy="38" rx="11" ry="4.5" transform="rotate(-50 26 38)" style="fill:var(--petrol)"/>
-      <ellipse cx="34" cy="46" rx="11" ry="4.5" transform="rotate(10 34 46)" style="fill:var(--petrol)"/>
-      <ellipse cx="52" cy="22" rx="11" ry="4.5" transform="rotate(-60 52 22)" style="fill:var(--petrol)"/>
-      <ellipse cx="62" cy="30" rx="11" ry="4.5" transform="rotate(5 62 30)" style="fill:var(--petrol)"/>
-      <ellipse cx="80" cy="10" rx="10" ry="4" transform="rotate(-55 80 10)" style="fill:var(--petrol)"/>
-      <circle cx="45" cy="34" r="4.5" style="fill:var(--saffron)"/>
-      <circle cx="72" cy="18" r="4" style="fill:var(--saffron)"/>
-    </symbol>
-  </defs>
-</svg>
-
-<div class="page" lang="ar" dir="rtl">
-
-  <div class="band">
-    <div class="band-inner">
-      <header>
-        <div class="logo"><span class="logo-mark"><svg class="ic"><use href="#i-hands"/></svg></span>سَنَد</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="pill">نموذج أولي للهاكاثون</span>
-          <button class="theme-btn" id="theme-btn" aria-label="الوضع الليلي"><svg class="ic" viewBox="0 0 24 24"><path id="theme-ic" d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"/></svg></button>
-        </div>
-      </header>
-      <div class="hero-text">
-        <h1>سَنَد</h1>
-        <p class="sub">إنتِ مش لحالك. حقك معروف، والمساعدة قريبة.</p>
-        <p class="lead">مستشارة قانونية بالعامية، بتجاوبك من نص القانون ومع رقم المادة. وإذا حدا عم يبتزّك، بتعطيكِ خطة أمان خطوة بخطوة وبتوصلك بالجهة الصح.</p>
-        <div class="hero-actions">
-          <a class="btn primary" href="#screens"><svg class="ic"><use href="#i-eye"/></svg>شوفي الشاشات</a>
-          <a class="btn" href="#goal"><svg class="ic"><use href="#i-heart"/></svg>شو هدفنا</a>
-        </div>
-        <div class="trust">
-          <span><svg class="ic"><use href="#i-lock"/></svg>بدون تسجيل دخول</span>
-          <span><svg class="ic"><use href="#i-cpu"/></svg>بيشتغل على جهاز محلي</span>
-          <span><svg class="ic"><use href="#i-mic"/></svg>بالصوت والعامية</span>
-        </div>
-      </div>
-
-      <div class="stage">
-        <svg class="art-back" viewBox="0 0 520 460" aria-hidden="true">
-          <path d="M60 460V220a200 200 0 0 1 400 0v240z" style="fill:var(--band-2)"/>
-          <path d="M84 460V224a176 176 0 0 1 352 0v236" fill="none" style="stroke:var(--saffron)" stroke-width="2" stroke-dasharray="4 7" opacity=".6"/>
-          <use href="#olive" x="300" y="60" width="180" height="108"/>
-          <use href="#pome" x="40" y="150" width="60" height="60"/>
-          <use href="#w-hair" x="-6" y="250" width="170" height="212" style="--c1:var(--saffron);--c3:#fff"/>
-          <use href="#w-hijab" x="358" y="250" width="170" height="212" style="--c1:var(--pome);--c2:#1B2430;--c3:var(--saffron)"/>
-        </svg>
-        <div class="float f1"><span class="dot" style="background:var(--petrol-soft);color:var(--petrol)"><svg class="ic"><use href="#i-file"/></svg></span><span>الجواب من نص القانون<br><b style="font-weight:500">مع رقم المادة</b></span></div>
-        <div class="float f2"><span class="dot" style="background:var(--pome-soft);color:var(--pome)"><svg class="ic"><use href="#i-shield"/></svg></span><span>خطة أمان<br><b style="font-weight:500">بـ ٥ خطوات</b></span></div>
-        <div class="float f3"><span class="dot" style="background:var(--saffron-soft);color:var(--saffron)"><svg class="ic"><use href="#i-lock"/></svg></span><span>ولا كلمة<br><b style="font-weight:500">بتطلع من جهازك</b></span></div>
-
-        <div class="phone" id="hero-phone">
-          <div class="screen" id="hero-screen" data-host>
-            <div class="sbar"><span>9:41</span><span>●●● 5G</span></div>
-            <div class="sbody">
-              <div class="shead">
-                <div class="hello">
-                  <svg class="av" viewBox="0 0 120 150" aria-hidden="true"><use href="#w-hijab" style="--c1:var(--petrol);--c2:var(--pome);--c3:var(--saffron)"/></svg>
-                  <div><span class="muted" style="font-size:11px">مرحبا فيكِ</span><div class="mini-h" style="font-size:16px">شو بدك تعرفي اليوم؟</div></div>
-                </div>
-                <button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button>
-              </div>
-              <div class="mic-card">
-                <span class="mic-dot"><svg class="ic"><use href="#i-mic"/></svg></span>
-                <div><b style="font-weight:500">احكي مشكلتك بصوتك</b><br><span style="font-size:11px;opacity:.85">بلهجتك، وما حدا رح يسمع غيرك</span></div>
-              </div>
-              <div class="topics">
-                <button class="topic t-pome" data-go="sos">
-                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4l16 6v12c0 9-7 17-16 20-9-3-16-11-16-20V10z" style="fill:var(--pome)"/><path d="M17 24l5 5 9-10" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  ابتزاز إلكتروني<small>مساعدة فورية</small></button>
-                <button class="topic t-petrol" data-go="chat">
-                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><circle cx="18" cy="16" r="7" style="fill:var(--petrol)"/><path d="M5 44c0-10 6-16 13-16s13 6 13 16z" style="fill:var(--petrol)"/><circle cx="34" cy="22" r="5" style="fill:var(--saffron)"/><path d="M25 44c0-7 4-12 9-12s9 5 9 12z" style="fill:var(--saffron)"/></svg>
-                  نفقة وحضانة<small>حقوقك وحقوق ولادك</small></button>
-                <button class="topic t-saff" data-go="chat">
-                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><rect x="5" y="14" width="38" height="26" rx="5" style="fill:var(--saffron)"/><path d="M17 14V9h14v5" fill="none" style="stroke:var(--ink)" stroke-width="3"/><rect x="20" y="24" width="8" height="6" rx="2" style="fill:var(--surface)"/></svg>
-                  حقوق العمل<small>راتب، إجازة، فصل</small></button>
-                <button class="topic t-ink" data-go="chat">
-                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 6v34M14 42h20" style="stroke:var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M8 14h32" style="stroke:var(--ink)" stroke-width="3" stroke-linecap="round"/><path d="M3 26l5-12 5 12a5 5 0 0 1-10 0z" style="fill:var(--pome)"/><path d="M35 26l5-12 5 12a5 5 0 0 1-10 0z" style="fill:var(--petrol)"/></svg>
-                  طلاق وميراث<small>خطوات وأوراق</small></button>
-              </div>
-              <div class="tip"><svg class="ic"><use href="#i-bulb"/></svg><div><b style="font-weight:500">بتعرفي؟</b><br><span class="muted">رسائل التهديد نفسها دليل. لا تمسحيها، صوّريها واحتفظي فيها.</span></div></div>
-            </div>
-            <div class="nav">
-              <button class="on" data-go="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
-              <button data-go="chat"><svg class="ic"><use href="#i-chat"/></svg>اسألي</button>
-              <button data-go="support"><svg class="ic"><use href="#i-hands"/></svg>الدعم</button>
-              <button class="sos" data-go="sos"><svg class="ic"><use href="#i-alert"/></svg>طوارئ</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="stitch" aria-hidden="true"></div>
-  </div>
-
-  <section id="goal">
-    <div class="mission">
-      <svg class="art" viewBox="0 0 420 380" role="img" aria-label="رسمة لامرأتين تحت قوس، وحدة حاطة إيدها على كتف التانية">
-        <circle cx="210" cy="200" r="170" style="fill:var(--pome-soft)"/>
-        <path d="M80 380V210a130 130 0 0 1 260 0v170z" style="fill:var(--petrol-soft)"/>
-        <use href="#olive" x="250" y="40" width="150" height="90"/>
-        <use href="#pome" x="40" y="70" width="70" height="70"/>
-        <use href="#w-hair" x="90" y="150" width="160" height="200" style="--c1:var(--petrol);--c3:var(--saffron)"/>
-        <use href="#w-hijab" x="190" y="130" width="170" height="214" style="--c1:var(--saffron);--c2:var(--pome);--c3:#fff"/>
-        <rect x="40" y="340" width="340" height="40" rx="8" style="fill:var(--ground)"/>
-      </svg>
-      <div>
-        <div class="sec-h" style="margin-bottom:0"><span class="kick">هدفنا</span></div>
-        <blockquote>ما بدنا ولا امرأة تضل لحالها قدام مشكلة، بس لأنها ما بتعرف حقها أو خايفة تحكي.</blockquote>
-        <p class="why">مبادرة «قاوم» بمصر بتقول إنها بتستقبل حوالي ٥٠٠ طلب مساعدة باليوم من نساء عم ينبتزّوا. الحاجة أكبر من قدرة المتطوعين، وأغلب الأدوات الموجودة ما بتحكي عربي بالعامية.</p>
-      </div>
-    </div>
-    <div class="goals">
-      <div class="goal"><span class="gi" style="background:var(--petrol-soft);color:var(--petrol)"><svg class="ic" style="width:24px;height:24px"><use href="#i-scale"/></svg></span><h3>تعرفي حقك</h3><p>جواب قانوني مفهوم بلهجتك، من نص القانون، ومعه رقم المادة حتى تتأكدي بنفسك.</p></div>
-      <div class="goal"><span class="gi" style="background:var(--pome-soft);color:var(--pome)"><svg class="ic" style="width:24px;height:24px"><use href="#i-shield"/></svg></span><h3>تتصرفي صح بوقت الخطر</h3><p>خطة أمان فورية للابتزاز: شو تعملي، شو لا تعملي، وكيف توثّقي الأدلة.</p></div>
-      <div class="goal"><span class="gi" style="background:var(--saffron-soft);color:var(--saffron)"><svg class="ic" style="width:24px;height:24px"><use href="#i-phone"/></svg></span><h3>توصلي لحدا يساعدك</h3><p>توصيل مباشر بوحدات الجرائم الإلكترونية، والمساعدة القانونية المجانية، والدعم النفسي.</p></div>
-    </div>
-  </section>
-
-  <section>
-    <div class="story">
-      <div class="sec-h"><span class="kick">قصة من الحياة</span><h2>ريم، ٢٢ سنة، الساعة ١١ بالليل</h2></div>
-      <div class="story-row">
-        <div class="beat"><span class="t">الرسالة</span><p>حساب غريب بعتلها صورة إلها وكتب: <b>«بدي ٥٠٠ دينار أو بنشرها.»</b> قلبها وقع، وما بتعرف لمين تحكي.</p></div>
-        <div class="beat"><span class="t">سند</span><p>فتحت سند وحكت بصوتها. أول شي سمعته: <b>«إنتِ مش غلطانة.»</b> وبعدها ظهرت خطة أمان بخمس خطوات.</p></div>
-        <div class="beat"><span class="t">الأدلة</span><p>ما ردّت وما دفعت. صوّرت الرسائل واسم الحساب، وبلّغت عنه بإنستغرام.</p></div>
-        <div class="beat"><span class="t">الجهة الصح</span><p>من صفحة الدعم وصلت لوحدة الجرائم الإلكترونية، ومعها كل الأدلة جاهزة.</p></div>
-      </div>
-      <p class="story-tag">قصة تخيلية لتوضيح طريقة استخدام التطبيق.</p>
-    </div>
-  </section>
-
-  <section id="screens">
-    <div class="sec-h">
-      <span class="kick">رحلة المستخدمة</span>
-      <h2>من أول لحظة لحد ما توصل للمساعدة</h2>
-      <p>كل شاشة مصممة لامرأة ممكن تكون خايفة، أو مستعجلة، أو ما بتعرف تقرأ منيح. الشاشات تفاعلية، جرّبي تضغطي عليها.</p>
-    </div>
-    <div class="gallery">
-
-      <figure>
-        <div class="phone"><div class="screen" data-host>
-          <div class="sbar"><span>9:41</span><span>●●● 5G</span></div>
-          <div class="sbody welcome">
+    <!-- Styles, in cascade order: tokens -> base -> layout -> components -> one file per screen -->
+    <link rel="stylesheet" href="styles/fonts.css" />
+    <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/base.css" />
+    <link rel="stylesheet" href="styles/layout.css" />
+    <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/screens/welcome.css" />
+    <link rel="stylesheet" href="styles/screens/country.css" />
+    <link rel="stylesheet" href="styles/screens/home.css" />
+    <link rel="stylesheet" href="styles/screens/chat.css" />
+    <link rel="stylesheet" href="styles/screens/sos.css" />
+    <link rel="stylesheet" href="styles/screens/support.css" />
+    <link rel="stylesheet" href="styles/screens/lawyer.css" />
+    <link rel="stylesheet" href="styles/screens/settings.css" />
+    <link rel="stylesheet" href="styles/screens/disguise.css" />
+  </head>
+  <body>
+    <div class="device">
+      <main class="app" id="app">
+        <!-- 1. welcome -->
+        <section class="screen welcome" data-screen="welcome">
+          <div class="body">
+            <h1 class="brush wm">سَنَد</h1>
+            <p class="wm-sub">أهلاً فيكِ</p>
             <svg class="art" viewBox="0 0 300 220" role="img" aria-label="رسمة لثلاث نساء تحت قوس">
-              <path d="M30 220V100a120 120 0 0 1 240 0v120z" style="fill:var(--pome-soft)"/>
-              <use href="#olive" x="170" y="0" width="110" height="66"/>
-              <use href="#pome" x="20" y="40" width="40" height="40"/>
-              <use href="#w-hair" x="6" y="80" width="112" height="140" style="--c1:var(--saffron);--c3:#fff"/>
-              <use href="#w-hair" x="182" y="80" width="112" height="140" style="--c1:var(--pome);--c3:var(--saffron);--hair:#6B3E2E"/>
-              <use href="#w-hijab" x="84" y="50" width="132" height="170" style="--c1:var(--petrol);--c2:#1B2430;--c3:var(--saffron)"/>
+              <path d="M30 220V100a120 120 0 0 1 240 0v120z" fill="#fff" fill-opacity=".1" />
+              <use href="#olive" x="170" y="0" width="110" height="66" />
+              <use href="#pome" x="20" y="40" width="40" height="40" />
+              <use
+                href="#w-hair"
+                x="6"
+                y="80"
+                width="112"
+                height="140"
+                style="--c1: var(--accent); --c3: #fff"
+              />
+              <use
+                href="#w-hair"
+                x="182"
+                y="80"
+                width="112"
+                height="140"
+                style="--c1: #5e6f9a; --c3: var(--accent); --hair: #6b3e2e"
+              />
+              <use
+                href="#w-hijab"
+                x="84"
+                y="50"
+                width="132"
+                height="170"
+                style="--c1: #1c2654; --c2: #f6f1e3; --c3: var(--accent)"
+              />
             </svg>
-            <div class="dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
-            <div class="mini-h" style="font-size:20px">أهلاً فيكِ بسَنَد</div>
-            <p class="muted">اسألي عن حقوقك أو اطلبي مساعدة بسرية تامة. ما في تسجيل دخول، وما بنحفظ ولا كلمة.</p>
-            <div class="wbtns">
-              <button class="wbtn primary"><svg class="ic"><use href="#i-mic"/></svg>ابدئي بالحكي</button>
-              <button class="wbtn">اكتبي سؤالك</button>
+            <div class="dots" aria-hidden="true">
+              <i class="on"></i>
+              <i></i>
             </div>
+            <p class="lead">
+              اسألي عن حقوقك أو اطلبي مساعدة بسرية تامة. ما في تسجيل دخول إجباري، وما بنحفظ ولا كلمة من
+              المحادثة.
+            </p>
+            <div class="stack">
+              <button class="btn primary" data-go="country">ابدئي كضيفة</button>
+              <button class="btn google" data-action="google">
+                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
+                  <path
+                    fill="#FFC107"
+                    d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"
+                  />
+                  <path
+                    fill="#FF3D00"
+                    d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"
+                  />
+                  <path
+                    fill="#4CAF50"
+                    d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"
+                  />
+                  <path
+                    fill="#1976D2"
+                    d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"
+                  />
+                </svg>
+                الدخول بحساب Google
+              </button>
+            </div>
+            <p class="fine">الدخول بـ Google اختياري، بس بيحفظ بلدك وإعداداتك.</p>
           </div>
-        </div></div>
-        <figcaption><span class="n">١</span><b>الترحيب</b><span>رسمة دافية ورسالة أمان من أول ثانية، وبدون أي حساب.</span></figcaption>
-      </figure>
+        </section>
 
-      <figure>
-        <div class="phone"><div class="screen" data-host>
-          <div class="sbar"><span>9:41</span><span>●●● 5G</span></div>
-          <div class="sbody">
-            <div class="dots" aria-hidden="true" style="justify-content:flex-start"><i></i><i class="on"></i><i></i></div>
-            <svg viewBox="0 0 240 90" style="width:100%" aria-hidden="true">
-              <rect x="0" y="10" width="240" height="80" rx="20" style="fill:var(--petrol-soft)"/>
-              <path d="M30 70c20-30 40-10 60-30s40-20 60 0 40 10 60-10" fill="none" style="stroke:var(--petrol)" stroke-width="2.5" stroke-dasharray="5 5"/>
-              <g transform="translate(140 18)"><path d="M14 40S0 27 0 15a14 14 0 0 1 28 0c0 12-14 25-14 25z" style="fill:var(--pome)"/><circle cx="14" cy="15" r="5" fill="#fff"/></g>
+        <!-- 2. country -->
+        <section class="screen" data-screen="country" hidden>
+          <div class="top">
+            <button class="iconbtn" data-go="welcome" aria-label="رجوع">
+              <svg class="ic"><use href="#i-back" /></svg>
+            </button>
+            <div class="dots" aria-hidden="true">
+              <i></i>
+              <i class="on"></i>
+            </div>
+            <span style="width: 40px"></span>
+          </div>
+          <div class="body">
+            <svg viewBox="0 0 300 100" style="width: 100%" aria-hidden="true">
+              <rect x="0" y="8" width="300" height="92" rx="24" style="fill: var(--primary-soft)" />
+              <path
+                d="M30 80c25-35 50-12 75-35s50-22 75 0 50 12 85-12"
+                fill="none"
+                style="stroke: var(--primary)"
+                stroke-width="2.5"
+                stroke-dasharray="5 6"
+              />
+              <g transform="translate(176 18)">
+                <path d="M16 46S0 31 0 17a16 16 0 0 1 32 0c0 14-16 29-16 29z" style="fill: var(--emphasis)" />
+                <circle cx="16" cy="17" r="6" fill="#fff" />
+              </g>
             </svg>
-            <div class="mini-h">من وين إنتِ؟</div>
-            <p class="muted" style="font-size:12px">القوانين بتختلف من بلد لبلد، فحتى نجاوبك صح لازم نعرف بلدك.</p>
-            <div class="countries">
-              <button class="country sel">الأردن<span class="tick"><svg class="ic" style="width:12px;height:12px"><use href="#i-check"/></svg></span></button>
-              <button class="country">فلسطين<span class="tick"><svg class="ic" style="width:12px;height:12px"><use href="#i-check"/></svg></span></button>
-              <button class="country">سوريا<span class="tick"><svg class="ic" style="width:12px;height:12px"><use href="#i-check"/></svg></span></button>
-              <button class="country">لبنان<span class="tick"><svg class="ic" style="width:12px;height:12px"><use href="#i-check"/></svg></span></button>
-              <button class="country">العراق<span class="tick"><svg class="ic" style="width:12px;height:12px"><use href="#i-check"/></svg></span></button>
-              <button class="country">مصر<span class="tick"><svg class="ic" style="width:12px;height:12px"><use href="#i-check"/></svg></span></button>
+            <h2 class="h" style="font-size: 24px">من وين إنتِ؟</h2>
+            <p class="muted">القوانين بتختلف من مكان لمكان، فحتى نجاوبك صح لازم نعرف وين ساكنة.</p>
+            <div class="countries" id="countries">
+              <button class="country sel" data-country="ps-wb">
+                <span>
+                  فلسطين: الضفة الغربية
+                  <small>قانون الجرائم الإلكترونية ٢٠١٨</small>
+                </span>
+                <span class="tick">
+                  <svg class="ic ic-14"><use href="#i-check" /></svg>
+                </span>
+              </button>
+              <button class="country" data-country="ps-gaza">
+                <span>
+                  فلسطين: قطاع غزة
+                  <small>قانون الجرائم الإلكترونية ٢٠١٨</small>
+                </span>
+                <span class="tick">
+                  <svg class="ic ic-14"><use href="#i-check" /></svg>
+                </span>
+              </button>
+              <button class="country" disabled>
+                <span>
+                  بلاد تانية
+                  <small>قريباً</small>
+                </span>
+                <span class="tick"></span>
+              </button>
             </div>
-            <p class="note"><svg class="ic"><use href="#i-lock"/></svg>البلد بينحفظ على جهازك بس.</p>
-            <button class="wbtn primary">متابعة</button>
+            <p class="note">
+              <svg class="ic"><use href="#i-lock" /></svg>
+              اختيارك بينحفظ على جهازك بس.
+            </p>
+            <button class="btn primary" data-go="home">متابعة</button>
           </div>
-        </div></div>
-        <figcaption><span class="n">٢</span><b>اختيار البلد</b><span>حتى يجاوب سند من قانون بلدك، ومش من قانون عام.</span></figcaption>
-      </figure>
+        </section>
 
-      <figure>
-        <div class="phone"><div class="screen" data-host id="tpl-chat">
-          <div class="sbar"><span>9:42</span><span>●●● 5G</span></div>
-          <div class="sbody">
-            <div class="shead">
-              <div style="display:flex;align-items:center;gap:8px"><span class="logo-mark" style="width:32px;height:32px;border-radius:10px"><svg class="ic"><use href="#i-hands"/></svg></span><div><b style="font-weight:500">سند</b><br><span style="font-size:10.5px;color:var(--petrol)">محادثة محلية · الأردن</span></div></div>
-              <button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button>
+        <!-- 3. home -->
+        <section class="screen" data-screen="home" hidden>
+          <div class="top">
+            <div class="hello">
+              <svg class="av" viewBox="0 0 120 150" aria-hidden="true">
+                <use
+                  href="#w-hijab"
+                  style="--c1: var(--primary); --c2: var(--emphasis); --c3: var(--accent)"
+                />
+              </svg>
+              <div>
+                <b
+                  id="hello-name"
+                  style="font-weight: 600; font-size: 16px; display: block; line-height: 1.3"
+                >
+                  مرحبا فيكِ
+                </b>
+                <span class="muted" style="font-size: 12.5px">إنتِ بأمان هون</span>
+              </div>
             </div>
-            <div class="bubble-u"><div class="wave" aria-hidden="true"><i style="height:6px;background:var(--on-petrol)"></i><i style="height:12px;background:var(--on-petrol)"></i><i style="height:8px;background:var(--on-petrol)"></i><i style="height:14px;background:var(--on-petrol)"></i><i style="height:7px;background:var(--on-petrol)"></i><i style="height:11px;background:var(--on-petrol)"></i><span style="font-size:10px;margin-right:6px">٠:١٢</span></div>طلّقني وما عم يدفع نفقة للولاد من ٣ شهور، شو بقدر أعمل؟</div>
-            <div class="bubble-a">
-              هاد حقك وحق ولادك، والقانون بيحميه. فيكِ:
-              <ol><li>ترفعي دعوى نفقة بالمحكمة الشرعية</li><li>تطلبي نفقة عن الشهور الماضية كمان</li><li>إذا ما دفع بعد الحكم، بينحجز على راتبه</li></ol>
-              <div class="cite"><svg class="ic"><use href="#i-file"/></svg><div><b>قانون الأحوال الشخصية</b><span>مثال للعرض: المادة ١٨٧. اضغطي لتقري النص</span></div></div>
-              <div class="acts"><span class="chip fill"><svg class="ic"><use href="#i-phone"/></svg>محامي مجاني</span><span class="chip"><svg class="ic"><use href="#i-file"/></svg>الأوراق المطلوبة</span></div>
+            <button class="iconbtn" data-go="settings" aria-label="الإعدادات">
+              <svg class="ic ic-20"><use href="#i-gear" /></svg>
+            </button>
+          </div>
+          <div class="body">
+            <div class="hero2">
+              <div class="hrow">
+                <div>
+                  <h2 class="h">شو بدك تعرفي اليوم؟</h2>
+                  <p>احكي أو اكتبي مشكلتك بلهجتك، وما حدا رح يسمع غيرك.</p>
+                </div>
+                <svg class="fig" viewBox="0 0 120 150" aria-hidden="true">
+                  <use href="#w-hijab" style="--c1: var(--accent); --c2: #f6f1e3; --c3: #18214a" />
+                </svg>
+              </div>
+              <button class="ask-pill" data-ask="">
+                <span class="am">
+                  <svg class="ic ic-22"><use href="#i-mic" /></svg>
+                </span>
+                <span style="flex: 1">اكتبي سؤالك هون...</span>
+                <span class="as">
+                  <svg class="ic ic-18"><use href="#i-send" /></svg>
+                </span>
+              </button>
             </div>
+            <div class="quick">
+              <button class="q hot" data-go="sos">
+                <span class="qi">
+                  <svg class="ic ic-24"><use href="#i-shield" /></svg>
+                </span>
+                خطة أمان
+              </button>
+              <button class="q" data-go="lawyer">
+                <span class="qi">
+                  <svg class="ic ic-24"><use href="#i-scale" /></svg>
+                </span>
+                محامية
+              </button>
+              <button class="q" data-go="support">
+                <span class="qi">
+                  <svg class="ic ic-24"><use href="#i-hands" /></svg>
+                </span>
+                الدعم
+              </button>
+              <button class="q" data-go="settings">
+                <span class="qi">
+                  <svg class="ic ic-24"><use href="#i-lock" /></svg>
+                </span>
+                الخصوصية
+              </button>
+            </div>
+            <h3 class="h sect">مواضيع بتهمّك</h3>
+            <div class="hscroll">
+              <button class="tcard" data-ask="حدا نشر صوري الخاصة بدون إذني، شو بعمل؟">
+                <span class="ti">
+                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true">
+                    <rect x="6" y="10" width="36" height="28" rx="6" style="fill: var(--primary)" />
+                    <circle cx="18" cy="21" r="4" style="fill: var(--accent)" />
+                    <path
+                      d="M10 34l10-9 7 6 5-4 8 7"
+                      fill="none"
+                      stroke="#fff"
+                      stroke-width="3"
+                      stroke-linejoin="round"
+                    />
+                  </svg>
+                </span>
+                نشروا صوري
+                <small>الخصوصية وحقك</small>
+              </button>
+              <button class="tcard" data-ask="بعتولي صور ومقاطع إباحية بدون ما أطلب، هاد جريمة؟">
+                <span class="ti">
+                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true">
+                    <path d="M8 10h32v22H20l-9 7v-7H8z" style="fill: var(--accent)" />
+                    <path
+                      d="M18 17l12 8M30 17l-12 8"
+                      stroke="#fff"
+                      stroke-width="3.5"
+                      stroke-linecap="round"
+                    />
+                  </svg>
+                </span>
+                رسائل مزعجة
+                <small>محتوى بدون رضاكِ</small>
+              </button>
+              <button class="tcard" data-ask="بنتي عمرها ١٦ وفي حدا عم يهددها أونلاين، شو بنعمل؟">
+                <span class="ti">
+                  <svg class="ill" viewBox="0 0 48 48" aria-hidden="true">
+                    <circle cx="18" cy="16" r="7" style="fill: var(--ink)" />
+                    <path d="M5 44c0-10 6-16 13-16s13 6 13 16z" style="fill: var(--ink)" />
+                    <circle cx="34" cy="22" r="5" style="fill: var(--emphasis)" />
+                    <path d="M25 44c0-7 4-12 9-12s9 5 9 12z" style="fill: var(--emphasis)" />
+                  </svg>
+                </span>
+                بنتي بخطر
+                <small>إذا الضحية قاصر</small>
+              </button>
+              <button class="tcard" data-ask="طليقي ما عم يدفع نفقة الولاد، شو بعمل؟">
+                <span class="ti">
+                  <svg class="ic ic-24"><use href="#i-file" /></svg>
+                </span>
+                النفقة
+                <small>حق الولاد</small>
+              </button>
+              <button class="tcard" data-ask="جوزي طلّقني، شو حقوقي؟">
+                <span class="ti">
+                  <svg class="ic ic-24"><use href="#i-scale" /></svg>
+                </span>
+                الطلاق
+                <small>حقوقك بعده</small>
+              </button>
+              <button class="tcard" data-ask="بيهددني ياخد الولاد مني، شو بعمل؟">
+                <span class="ti">
+                  <svg class="ic ic-24"><use href="#i-user" /></svg>
+                </span>
+                الحضانة
+                <small>مين بيقرر</small>
+              </button>
+            </div>
+            <div class="sec">
+              <h3 class="h">محامية متاحة الآن</h3>
+              <span class="muted" style="font-size: 12px">اسم للعرض</span>
+            </div>
+            <div class="lawmini">
+              <svg class="av" viewBox="0 0 120 150" aria-hidden="true">
+                <use href="#w-hijab" style="--c1: #18214a; --c2: var(--emphasis); --c3: #fff" />
+              </svg>
+              <div style="flex: 1; min-width: 0">
+                <b>أ. سلمى</b>
+                <small>نفقة وحضانة</small>
+                <span class="avail">
+                  <i></i>
+                  متاحة الآن
+                </span>
+              </div>
+              <button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button>
+            </div>
+            <button class="teaser" data-go="lawyer">
+              <span style="flex: 1">
+                <span class="tag">قصة تخيلية</span>
+                <b>«٤ شهور وما دفع ولا شيكل للولاد»</b>
+                <small>اقري كيف عرفت حقها ورفعت دعوى نفقة</small>
+              </span>
+              <svg class="ic chev"><use href="#i-back" /></svg>
+            </button>
+            <div class="tip">
+              <svg class="ic"><use href="#i-bulb" /></svg>
+              <div>
+                <b style="font-weight: 600">بتعرفي؟</b>
+                <br />
+                <span class="muted">
+                  رسائل التهديد نفسها دليل. لا تمسحيها، صوّريها واحتفظي فيها بمكان آمن.
+                </span>
+              </div>
+            </div>
+            <p class="note" style="justify-content: center">
+              <svg class="ic"><use href="#i-lock" /></svg>
+              كل اللي بتكتبيه بيضل على جهازك.
+            </p>
           </div>
-          <div class="typing"><button class="mic" aria-label="سجّلي بصوتك"><svg class="ic"><use href="#i-mic"/></svg></button><div class="field">احكي أو اكتبي سؤالك...</div></div>
-          <div class="nav">
-            <button data-go="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
-            <button class="on" data-go="chat"><svg class="ic"><use href="#i-chat"/></svg>اسألي</button>
-            <button data-go="support"><svg class="ic"><use href="#i-hands"/></svg>الدعم</button>
-            <button class="sos" data-go="sos"><svg class="ic"><use href="#i-alert"/></svg>طوارئ</button>
-          </div>
-        </div></div>
-        <figcaption><span class="n">٣</span><b>الاستشارة</b><span>بتحكي بصوتها، والجواب بيجي بخطوات قصيرة ومعه اسم القانون ورقم المادة.</span></figcaption>
-      </figure>
+          <nav class="tabs" data-tabs="home"></nav>
+        </section>
 
-      <figure>
-        <div class="phone"><div class="screen" data-host id="tpl-sos">
-          <div class="sbar"><span>9:43</span><span>●●● 5G</span></div>
-          <div class="sbody">
-            <div class="shead"><b style="font-weight:500">خطة أمان</b><button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button></div>
+        <!-- 4. chat -->
+        <section class="screen" data-screen="chat" hidden>
+          <div class="top">
+            <button class="iconbtn" data-go="home" aria-label="رجوع للرئيسية">
+              <svg class="ic"><use href="#i-back" /></svg>
+            </button>
+            <div class="chat-head">
+              <span class="logo-mark">
+                <svg class="ic"><use href="#i-hands" /></svg>
+              </span>
+              <div>
+                <b class="fw-5">سند</b>
+                <br />
+                <span style="font-size: 12px; color: var(--primary)" id="chat-sub">
+                  محادثة على جهازك · الضفة الغربية
+                </span>
+              </div>
+            </div>
+            <button class="iconbtn xbtn" data-exit aria-label="خروج سريع" title="خروج سريع">
+              <svg class="ic"><use href="#i-exit" /></svg>
+            </button>
+          </div>
+          <div class="modes" role="tablist" aria-label="مين بيجاوبك">
+            <button class="mode on" data-mode="ai" role="tab" aria-selected="true">
+              <svg class="ic"><use href="#i-chat" /></svg>
+              اسألي سند
+            </button>
+            <button class="mode" data-mode="lawyer" role="tab" aria-selected="false">
+              <span class="live" aria-hidden="true"></span>
+              محامية الآن
+            </button>
+          </div>
+          <div class="body" id="chat-body">
+            <div class="msgs" id="msgs">
+              <div class="a">
+                أهلاً فيكِ. احكيلي شو صار معك، وأنا بجاوبك من نص القانون ومع رقم المادة. كل اللي بتكتبيه بيضل
+                على جهازك.
+              </div>
+              <div class="suggest" id="suggest">
+                <button class="chip" data-ask="حدا عم يهددني ينشر صوري إذا ما بعتله مصاري">
+                  حدا بيهددني بصوري
+                </button>
+                <button class="chip" data-ask="شو عقوبة الابتزاز الإلكتروني؟">شو عقوبة الابتزاز؟</button>
+                <button class="chip" data-ask="حدا نشر فيديو إلي بدون إذني">نشروا فيديو إلي</button>
+              </div>
+            </div>
+            <p class="disclaim">معلومات عامة من نص القانون، مش بديل عن محامي.</p>
+          </div>
+          <form class="composer" id="composer" autocomplete="off">
+            <button type="button" class="round mic" data-action="mic" aria-label="سجّلي بصوتك">
+              <svg class="ic"><use href="#i-mic" /></svg>
+            </button>
+            <textarea id="q" rows="1" placeholder="اكتبي سؤالك هون..." aria-label="سؤالك"></textarea>
+            <button type="submit" class="round send" aria-label="إرسال">
+              <svg class="ic"><use href="#i-send" /></svg>
+            </button>
+          </form>
+        </section>
+
+        <!-- 5. sos -->
+        <section class="screen" data-screen="sos" hidden>
+          <div class="top"><h2 class="h" style="font-size: 20px">خطة أمان</h2></div>
+          <div class="body">
             <div class="sos-head">
-              <svg class="ill" viewBox="0 0 60 60" aria-hidden="true"><circle cx="30" cy="30" r="28" style="fill:var(--surface)"/><path d="M30 46s-14-8.5-14-19a7.5 7.5 0 0 1 14-4 7.5 7.5 0 0 1 14 4c0 10.5-14 19-14 19z" style="fill:var(--pome)"/><path d="M16 50c4-6 10-6 14-4 4-2 10-2 14 4" fill="none" style="stroke:var(--saffron)" stroke-width="3" stroke-linecap="round"/></svg>
-              <div style="flex:1"><div class="mini-h" style="font-size:17px">إنتِ مش غلطانة</div><span class="muted" style="font-size:11.5px">خلينا نمشي بالخطوات سوا. علّمي على كل خطوة بتخلصيها.</span><div class="prog" aria-hidden="true"><i></i></div></div>
+              <svg class="ill" viewBox="0 0 60 60" aria-hidden="true">
+                <circle cx="30" cy="30" r="28" style="fill: var(--surface)" />
+                <path
+                  d="M30 46s-14-8.5-14-19a7.5 7.5 0 0 1 14-4 7.5 7.5 0 0 1 14 4c0 10.5-14 19-14 19z"
+                  style="fill: var(--emphasis)"
+                />
+                <path
+                  d="M16 50c4-6 10-6 14-4 4-2 10-2 14 4"
+                  fill="none"
+                  style="stroke: var(--accent)"
+                  stroke-width="3"
+                  stroke-linecap="round"
+                />
+              </svg>
+              <div style="flex: 1">
+                <div class="brush">إنتِ مش غلطانة</div>
+                <span class="muted" style="font-size: 13px">
+                  خلينا نمشي بالخطوات سوا. علّمي على كل خطوة بتخلصيها.
+                </span>
+                <div class="prog" aria-hidden="true"><i id="prog"></i></div>
+              </div>
             </div>
-            <div class="steps">
-              <button class="step done"><span class="box"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">لا تبعتي مصاري ولا صور</b><small>الدفع ما بيوقّف المبتز، بيخليه يطلب أكتر</small></span></button>
-              <button class="step"><span class="box"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">لا تمسحي المحادثة</b><small>هي دليلك قدام الشرطة</small></span></button>
-              <button class="step"><span class="box"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">صوّري الشاشة</b><small>الرسائل، واسم الحساب، والرابط</small></span></button>
-              <button class="step"><span class="box"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">بلّغي عن الحساب بالمنصة</b><small>إنستغرام وفيسبوك وواتساب فيهم تبليغ خاص</small></span></button>
-              <button class="step"><span class="box"><svg class="ic" style="width:14px;height:14px"><use href="#i-check"/></svg></span><span><b style="font-weight:500">تواصلي مع وحدة الجرائم الإلكترونية</b><small>رقمها موجود بصفحة الدعم</small></span></button>
+            <div class="steps" id="steps">
+              <button class="step">
+                <span class="box">
+                  <svg class="ic ic-16"><use href="#i-check" /></svg>
+                </span>
+                <span>
+                  <b class="fw-5">لا تبعتي مصاري ولا صور</b>
+                  <small>الدفع ما بيوقّف المبتز، غالباً بيخليه يطلب أكتر.</small>
+                </span>
+              </button>
+              <button class="step">
+                <span class="box">
+                  <svg class="ic ic-16"><use href="#i-check" /></svg>
+                </span>
+                <span>
+                  <b class="fw-5">لا تمسحي المحادثة</b>
+                  <small>هي دليلك قدام الشرطة والمحكمة.</small>
+                </span>
+              </button>
+              <button class="step">
+                <span class="box">
+                  <svg class="ic ic-16"><use href="#i-check" /></svg>
+                </span>
+                <span>
+                  <b class="fw-5">صوّري الشاشة</b>
+                  <small>الرسائل، واسم الحساب، ورابطه، والتاريخ.</small>
+                </span>
+              </button>
+              <button class="step">
+                <span class="box">
+                  <svg class="ic ic-16"><use href="#i-check" /></svg>
+                </span>
+                <span>
+                  <b class="fw-5">بلّغي عن الحساب بالمنصة</b>
+                  <small>إنستغرام وفيسبوك وواتساب فيهم تبليغ عن الابتزاز.</small>
+                </span>
+              </button>
+              <button class="step">
+                <span class="box">
+                  <svg class="ic ic-16"><use href="#i-check" /></svg>
+                </span>
+                <span>
+                  <b class="fw-5">تواصلي مع جهة رسمية</b>
+                  <small>الابتزاز جريمة حسب المادة ١٥ من قانون الجرائم الإلكترونية.</small>
+                </span>
+              </button>
             </div>
+            <div class="done-card" id="done-card" hidden>
+              <svg class="ic" style="color: var(--primary); width: 26px; height: 26px">
+                <use href="#i-shield" />
+              </svg>
+              <div>
+                <b class="fw-5">عملتي كل الخطوات. برافو عليكِ.</b>
+                <br />
+                <span class="muted" style="font-size: 13px">
+                  هلأ روحي لصفحة الدعم وتواصلي مع جهة بتساعدك.
+                </span>
+              </div>
+            </div>
+            <button class="btn primary" data-go="support">
+              <svg class="ic"><use href="#i-hands" /></svg>
+              مين بيقدر يساعدني
+            </button>
+            <button class="btn" data-ask="حدا عم يبتزني، شو بيقول القانون؟">
+              <svg class="ic"><use href="#i-scale" /></svg>
+              شو بيقول القانون؟
+            </button>
           </div>
-          <div class="nav">
-            <button data-go="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
-            <button data-go="chat"><svg class="ic"><use href="#i-chat"/></svg>اسألي</button>
-            <button data-go="support"><svg class="ic"><use href="#i-hands"/></svg>الدعم</button>
-            <button class="sos on" data-go="sos"><svg class="ic"><use href="#i-alert"/></svg>طوارئ</button>
-          </div>
-        </div></div>
-        <figcaption><span class="n">٤</span><b>خطة الأمان</b><span>خطوات واضحة لما تكون خايفة وما عم تقدر تفكّر. علّمي عليها وشوفي الشريط يتعبّى.</span></figcaption>
-      </figure>
+          <nav class="tabs" data-tabs="sos"></nav>
+        </section>
 
-      <figure>
-        <div class="phone"><div class="screen" data-host id="tpl-support">
-          <div class="sbar"><span>9:44</span><span>●●● 5G</span></div>
-          <div class="sbody">
-            <div class="shead"><div class="mini-h">مين بيقدر يساعدك</div><button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button></div>
-            <div class="stabs">
+        <!-- 6. support -->
+        <section class="screen" data-screen="support" hidden>
+          <div class="top"><h2 class="h" style="font-size: 20px">مين بيقدر يساعدك</h2></div>
+          <div class="body">
+            <div class="stabs" id="stabs">
               <button class="stab on" data-cat="all">الكل</button>
+              <button class="stab" data-cat="safe">أمني</button>
               <button class="stab" data-cat="law">قانوني</button>
               <button class="stab" data-cat="mind">نفسي</button>
-              <button class="stab" data-cat="safe">أمني</button>
             </div>
-            <div class="org" data-cat="safe"><span class="oi" style="background:var(--pome-soft);color:var(--pome)"><svg class="ic"><use href="#i-shield"/></svg></span><div><b>وحدة الجرائم الإلكترونية</b><small>للابتزاز والتهديد والتحرش أونلاين</small><span class="badge">رسمية</span><div class="acts"><span class="chip fill"><svg class="ic"><use href="#i-phone"/></svg>اتصلي</span><span class="chip"><svg class="ic"><use href="#i-pin"/></svg>العنوان</span></div></div></div>
-            <div class="org" data-cat="law"><span class="oi" style="background:var(--petrol-soft);color:var(--petrol)"><svg class="ic"><use href="#i-scale"/></svg></span><div><b>مساعدة قانونية مجانية</b><small>محامين بيتابعوا قضايا النفقة والحضانة والعنف</small><span class="badge">مجانية</span><div class="acts"><span class="chip fill"><svg class="ic"><use href="#i-msg"/></svg>واتساب</span></div></div></div>
-            <div class="org" data-cat="mind"><span class="oi" style="background:var(--saffron-soft);color:var(--saffron)"><svg class="ic"><use href="#i-brain"/></svg></span><div><b>خط الدعم النفسي</b><small>حدا يسمعك بسرية، بأي وقت</small><span class="badge">٢٤ ساعة</span><div class="acts"><span class="chip fill"><svg class="ic"><use href="#i-phone"/></svg>اتصلي</span></div></div></div>
-            <p class="note"><svg class="ic"><use href="#i-pin"/></svg>الجهات بتتغير حسب البلد اللي اخترتيه. هاي أمثلة للعرض.</p>
-          </div>
-          <div class="nav">
-            <button data-go="home"><svg class="ic"><use href="#i-home"/></svg>الرئيسية</button>
-            <button data-go="chat"><svg class="ic"><use href="#i-chat"/></svg>اسألي</button>
-            <button class="on" data-go="support"><svg class="ic"><use href="#i-hands"/></svg>الدعم</button>
-            <button class="sos" data-go="sos"><svg class="ic"><use href="#i-alert"/></svg>طوارئ</button>
-          </div>
-        </div></div>
-        <figcaption><span class="n">٥</span><b>جهات الدعم</b><span>قانوني ونفسي وأمني بمكان واحد، وبضغطة وحدة بتتصلي.</span></figcaption>
-      </figure>
-
-      <figure>
-        <div class="phone"><div class="screen" data-host>
-          <div class="sbar"><span>9:45</span><span>●●● 5G</span></div>
-          <div class="sbody">
-            <div class="shead"><div class="mini-h">الخصوصية والأمان</div><button class="exit" data-exit aria-label="خروج سريع"><svg class="ic"><use href="#i-exit"/></svg>خروج</button></div>
-            <p class="muted" style="font-size:12px">شكل التطبيق على شاشتك. اختاري شي ما بيلفت النظر:</p>
-            <div class="disguise">
-              <button class="dg sel"><span class="gi" style="background:var(--saffron-soft);color:var(--saffron)"><svg class="ic"><use href="#i-sun"/></svg></span>الطقس</button>
-              <button class="dg"><span class="gi" style="background:var(--surface-2);color:var(--ink)"><svg class="ic"><use href="#i-calc"/></svg></span>حاسبة</button>
-              <button class="dg"><span class="gi" style="background:var(--petrol-soft);color:var(--petrol)"><svg class="ic"><use href="#i-note"/></svg></span>ملاحظات</button>
+            <div class="org" data-cat="safe">
+              <span class="oi" style="background: var(--emphasis-soft); color: var(--emphasis)">
+                <svg class="ic"><use href="#i-shield" /></svg>
+              </span>
+              <div>
+                <b>وحدة الجرائم الإلكترونية بالشرطة</b>
+                <small>للابتزاز والتهديد ونشر الصور</small>
+                <span class="badge">رسمية</span>
+                <div class="acts">
+                  <button class="chip fill" data-action="soon">
+                    <svg class="ic"><use href="#i-phone" /></svg>
+                    اتصلي
+                  </button>
+                  <button class="chip" data-action="soon">
+                    <svg class="ic"><use href="#i-pin" /></svg>
+                    أقرب مركز
+                  </button>
+                </div>
+              </div>
             </div>
-            <div>
-              <div class="set"><span class="si"><svg class="ic"><use href="#i-lock"/></svg></span><div><b>قفل برمز سري</b><small>ما حدا بيفتح سند غيرك</small></div><button class="tg" role="switch" aria-checked="true" aria-label="قفل برمز سري"></button></div>
-              <div class="set"><span class="si"><svg class="ic"><use href="#i-trash"/></svg></span><div><b>امسحي المحادثة عند الخروج</b><small>ما بيضل أي أثر على الجهاز</small></div><button class="tg" role="switch" aria-checked="true" aria-label="مسح المحادثة عند الخروج"></button></div>
-              <div class="set"><span class="si"><svg class="ic"><use href="#i-mic"/></svg></span><div><b>الجواب بالصوت</b><small>سند بيقرألك الجواب بالعامية</small></div><button class="tg" role="switch" aria-checked="false" aria-label="الجواب بالصوت"></button></div>
+            <div class="org" data-cat="law">
+              <span class="oi" style="background: var(--primary-soft); color: var(--primary)">
+                <svg class="ic"><use href="#i-scale" /></svg>
+              </span>
+              <div>
+                <b>مساعدة قانونية مجانية للنساء</b>
+                <small>محاميات بيتابعوا قضايا العنف والابتزاز والأحوال الشخصية</small>
+                <span class="badge">مجانية</span>
+                <div class="acts">
+                  <button class="chip fill" data-action="soon">
+                    <svg class="ic"><use href="#i-msg" /></svg>
+                    واتساب
+                  </button>
+                </div>
+              </div>
             </div>
+            <div class="org" data-cat="mind">
+              <span class="oi" style="background: var(--primary-soft); color: var(--accent)">
+                <svg class="ic"><use href="#i-brain" /></svg>
+              </span>
+              <div>
+                <b>خط الدعم النفسي</b>
+                <small>حدا يسمعك بسرية</small>
+                <span class="badge">سري</span>
+                <div class="acts">
+                  <button class="chip fill" data-action="soon">
+                    <svg class="ic"><use href="#i-phone" /></svg>
+                    اتصلي
+                  </button>
+                </div>
+              </div>
+            </div>
+            <p class="note">
+              <svg class="ic"><use href="#i-pin" /></svg>
+              أرقام التواصل بتنضاف بعد ما نتأكد منها مع الجهات نفسها. هاي النسخة للعرض.
+            </p>
           </div>
-        </div></div>
-        <figcaption><span class="n">٦</span><b>الخصوصية</b><span>التطبيق بيتخفّى بشكل طقس أو حاسبة، وبيتقفل برمز، وبيمسح كل شي لحاله.</span></figcaption>
-      </figure>
+          <nav class="tabs" data-tabs="support"></nav>
+        </section>
 
-      <figure>
-        <div class="phone"><div class="screen">
-          <div class="sbar"><span>9:46</span><span>●●● 5G</span></div>
-          <div class="weather">
-            <svg viewBox="0 0 120 80" width="120" height="80" aria-hidden="true"><circle cx="70" cy="32" r="20" style="fill:var(--saffron)"/><path d="M30 70h56a16 16 0 0 0 0-32 22 22 0 0 0-42 6A13 13 0 0 0 30 70z" style="fill:var(--surface)"/></svg>
-            <span class="temp">١٨°</span>
-            <b style="font-weight:500">غائم جزئياً</b>
-            <span class="muted">العظمى ٢١° · الصغرى ١٢°</span>
-            <div class="wdays"><div>السبت<b>٢٠°</b></div><div>الأحد<b>١٩°</b></div><div>الاثنين<b>١٧°</b></div><div>الثلاثاء<b>١٨°</b></div></div>
+        <!-- lawyer -->
+        <section class="screen" data-screen="lawyer" hidden>
+          <div class="top"><h2 class="h" style="font-size: 20px">محامية إلك</h2></div>
+          <div class="body">
+            <div class="lhero">
+              <svg class="art" viewBox="0 0 160 170" role="img" aria-label="رسمة محامية بثوب المحاماة">
+                <circle cx="80" cy="92" r="72" style="fill: var(--surface)" />
+                <use
+                  href="#w-hijab"
+                  x="10"
+                  y="20"
+                  width="140"
+                  height="150"
+                  style="--c1: #17163a; --c2: var(--primary); --c3: #fff"
+                />
+                <use href="#olive" x="96" y="4" width="64" height="38" />
+              </svg>
+              <div>
+                <b style="font-weight: 500; font-size: 16px; display: block">قضايا الطلاق والنفقة والحضانة</b>
+                <span class="muted" style="font-size: 13px">
+                  محاميات متطوعات بيوقفوا معك من أول سؤال لحد المحكمة، وبسرية تامة.
+                </span>
+              </div>
+            </div>
+            <div class="paths">
+              <button class="path ai" data-chat="ai">
+                <span class="pi">
+                  <svg class="ic"><use href="#i-chat" /></svg>
+                </span>
+                اسألي سند
+                <small>جواب فوري لأسئلتك العامة</small>
+              </button>
+              <button class="path law" data-chat="lawyer">
+                <span class="pi">
+                  <svg class="ic"><use href="#i-phone" /></svg>
+                </span>
+                محامية الآن
+                <small>لقضيتك إنتِ بالتفصيل</small>
+              </button>
+            </div>
+            <div class="sec">
+              <h3 class="h">محاميات متاحات</h3>
+              <span class="muted" style="font-size: 11.5px">أسماء للعرض</span>
+            </div>
+            <div class="lawyers">
+              <div class="lawyer">
+                <div class="lh">
+                  <svg
+                    class="av"
+                    viewBox="0 0 120 150"
+                    style="background: var(--primary-soft)"
+                    aria-hidden="true"
+                  >
+                    <use href="#w-hijab" style="--c1: #17163a; --c2: var(--emphasis); --c3: #fff" />
+                  </svg>
+                  <div>
+                    <b>أ. سلمى</b>
+                    <small>نفقة وحضانة · ١٢ سنة خبرة</small>
+                  </div>
+                </div>
+                <span class="avail">
+                  <i></i>
+                  متاحة الآن
+                </span>
+                <button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button>
+              </div>
+              <div class="lawyer">
+                <div class="lh">
+                  <svg
+                    class="av"
+                    viewBox="0 0 120 150"
+                    style="background: var(--primary-soft)"
+                    aria-hidden="true"
+                  >
+                    <use href="#w-hair" style="--c1: #17163a; --c3: #fff" />
+                  </svg>
+                  <div>
+                    <b>أ. رنا</b>
+                    <small>طلاق وعنف أسري · ٨ سنين</small>
+                  </div>
+                </div>
+                <span class="avail">
+                  <i></i>
+                  متاحة الآن
+                </span>
+                <button class="chip fill" data-chat="lawyer" data-lawyer="رنا">احكي معها</button>
+              </div>
+              <div class="lawyer">
+                <div class="lh">
+                  <svg
+                    class="av"
+                    viewBox="0 0 120 150"
+                    style="background: var(--emphasis-soft)"
+                    aria-hidden="true"
+                  >
+                    <use href="#w-hijab" style="--c1: #17163a; --c2: var(--accent); --c3: #fff" />
+                  </svg>
+                  <div>
+                    <b>أ. هبة</b>
+                    <small>ميراث وحقوق عمل · ١٥ سنة</small>
+                  </div>
+                </div>
+                <span class="avail busy">
+                  <i></i>
+                  بترجع الساعة ٤
+                </span>
+                <button class="chip" data-action="callback">اطلبي اتصال</button>
+              </div>
+            </div>
+            <div class="sec">
+              <h3 class="h">قصص نساء متلك</h3>
+              <span class="muted" style="font-size: 11.5px">قصص تخيلية</span>
+            </div>
+            <div class="story" style="background: var(--primary-soft)">
+              <span class="tag" style="background: var(--surface); color: var(--primary)">نفقة</span>
+              <h4>«٤ شهور وما دفع ولا شيكل للولاد»</h4>
+              <p>
+                أم لتلات ولاد، طليقها وقّف يدفع. كانت مفكرة إنو ما في إشي بتقدر تعمله. حكت مع محامية عبر سند،
+                وعرفت إنو نفقة الولاد حق إلهم، وجهّزت أوراقها ورفعت دعوى بالمحكمة الشرعية.
+              </p>
+              <div class="out">
+                <svg class="ic"><use href="#i-check" /></svg>
+                <span>صدر حكم بالنفقة، وصارت تعرف شو تعمل إذا ما التزم بالدفع.</span>
+              </div>
+              <button class="chip fill" data-chat="lawyer" data-topic="نفقة" style="align-self: flex-start">
+                عندي مشكلة متلها
+              </button>
+            </div>
+            <div class="story" style="background: var(--emphasis-soft)">
+              <span class="tag" style="background: var(--surface); color: var(--emphasis)">طلاق</span>
+              <h4>«طلّقني وقال ما إلك ولا إشي»</h4>
+              <p>
+                بعد ١٠ سنين زواج، طلّقها فجأة وقلها إنها ما إلها حقوق. المحامية شرحتلها حقوقها بعد الطلاق، متل
+                المهر المؤجل ونفقة العدة، وساعدتها تعرف شو بينطبق على حالتها.
+              </p>
+              <div class="out">
+                <svg class="ic"><use href="#i-check" /></svg>
+                <span>طالبت بحقوقها بالمحكمة، بدل ما تتنازل عنها وهي مش عارفة.</span>
+              </div>
+              <button class="chip fill" data-chat="lawyer" data-topic="طلاق" style="align-self: flex-start">
+                عندي مشكلة متلها
+              </button>
+            </div>
+            <div class="story" style="background: var(--primary-soft)">
+              <span class="tag" style="background: var(--surface); color: var(--ink)">حضانة</span>
+              <h4>«هددني ياخد الولاد مني»</h4>
+              <p>
+                كل ما تختلف معه، يهددها ياخد الولاد. كانت خايفة تطلب الطلاق. المحامية فهّمتها قواعد الحضانة
+                بمنطقتها، وإنو التهديد مش هو اللي بيقرر، المحكمة هي اللي بتقرر.
+              </p>
+              <div class="out">
+                <svg class="ic"><use href="#i-check" /></svg>
+                <span>صارت تعرف حقها، وأخدت قرارها وهي مش خايفة.</span>
+              </div>
+              <button class="chip fill" data-chat="lawyer" data-topic="حضانة" style="align-self: flex-start">
+                عندي مشكلة متلها
+              </button>
+            </div>
+            <p class="note">
+              <svg class="ic"><use href="#i-lock" /></svg>
+              القصص تخيلية، مستوحاة من مشاكل شائعة، وما فيها أسماء حقيقية.
+            </p>
           </div>
-        </div></div>
-        <figcaption><span class="n">٧</span><b>الخروج السريع</b><span>من أي شاشة، ضغطة وحدة بتقلب التطبيق لصفحة طقس عادية إذا قرّب حدا.</span></figcaption>
-      </figure>
+          <nav class="tabs" data-tabs="lawyer"></nav>
+        </section>
 
+        <!-- 7. settings -->
+        <section class="screen" data-screen="settings" hidden>
+          <div class="top">
+            <button class="iconbtn" data-go="home" aria-label="رجوع">
+              <svg class="ic"><use href="#i-back" /></svg>
+            </button>
+            <h2 class="h" style="font-size: 20px">الخصوصية والأمان</h2>
+            <span style="width: 40px"></span>
+          </div>
+          <div class="body">
+            <div class="card">
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-user" /></svg>
+                </span>
+                <div>
+                  <b id="acct-name">إنتِ داخلة كضيفة</b>
+                  <small id="acct-sub">ما في أي حساب مربوط</small>
+                </div>
+                <button class="chip" data-action="google" id="acct-btn">ربط Google</button>
+              </div>
+            </div>
+            <p class="muted" style="font-size: 13px">المظهر:</p>
+            <div class="themes" id="themes" role="radiogroup" aria-label="المظهر">
+              <button data-theme-set="auto" role="radio">
+                <svg class="ic"><use href="#i-auto" /></svg>
+                تلقائي
+              </button>
+              <button data-theme-set="light" role="radio">
+                <svg class="ic"><use href="#i-sun" /></svg>
+                نهاري
+              </button>
+              <button data-theme-set="dark" role="radio">
+                <svg class="ic"><use href="#i-moon" /></svg>
+                ليلي
+              </button>
+            </div>
+            <p class="muted" style="font-size: 13px">شكل التطبيق لما تطلعي منه بسرعة:</p>
+            <div class="disguise" id="disguise">
+              <button class="dg sel" data-dg="weather">
+                <span class="gi" style="background: var(--primary-soft); color: var(--accent)">
+                  <svg class="ic"><use href="#i-sun" /></svg>
+                </span>
+                الطقس
+              </button>
+              <button class="dg" data-dg="calc">
+                <span class="gi" style="background: var(--surface-2)">
+                  <svg class="ic"><use href="#i-calc" /></svg>
+                </span>
+                حاسبة
+              </button>
+              <button class="dg" data-dg="notes">
+                <span class="gi" style="background: var(--primary-soft); color: var(--primary)">
+                  <svg class="ic"><use href="#i-note" /></svg>
+                </span>
+                ملاحظات
+              </button>
+            </div>
+            <p class="fine" id="dg-hint" style="margin-top: -4px"></p>
+            <div class="card">
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-trash" /></svg>
+                </span>
+                <div>
+                  <b>امسحي كل شي عند الخروج</b>
+                  <small>المحادثة وخطة الأمان بينمسحوا لما تضغطي «خروج»</small>
+                </div>
+                <button
+                  class="tg"
+                  role="switch"
+                  aria-checked="true"
+                  data-setting="wipe"
+                  aria-label="مسح المحادثة وخطة الأمان عند الخروج"
+                ></button>
+              </div>
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-lock" /></svg>
+                </span>
+                <div>
+                  <b>قفل برمز سري</b>
+                  <small>لسا مش شغّال بهالنسخة</small>
+                </div>
+                <span class="badge badge-flat">قريباً</span>
+              </div>
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-chat" /></svg>
+                </span>
+                <div>
+                  <b>أجوبة أذكى عبر الإنترنت</b>
+                  <small>سؤالك بينبعت لسيرفر سند عشان جواب أوضح، من نص القانون. مطفية افتراضياً.</small>
+                </div>
+                <button
+                  class="tg"
+                  role="switch"
+                  aria-checked="false"
+                  data-setting="aiOnline"
+                  id="ai-toggle"
+                  aria-label="أجوبة أذكى عبر الإنترنت"
+                ></button>
+                <span class="badge badge-flat" id="ai-soon">قريباً</span>
+              </div>
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-shield" /></svg>
+                </span>
+                <div>
+                  <b>إحصاءات مجهولة</b>
+                  <small>
+                    بنعدّ كم مرة انفتح التطبيق وشو الأسئلة الشائعة، بدون اسمك ولا أسئلتك ولا أي رقم تعريف.
+                  </small>
+                </div>
+                <button
+                  class="tg"
+                  role="switch"
+                  aria-checked="true"
+                  data-setting="stats"
+                  id="stats-toggle"
+                  aria-label="إحصاءات مجهولة"
+                ></button>
+              </div>
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-pin" /></svg>
+                </span>
+                <div>
+                  <b>المكان</b>
+                  <small id="set-country">فلسطين: الضفة الغربية</small>
+                </div>
+                <button class="chip" data-go="country">تغيير</button>
+              </div>
+            </div>
+            <button class="btn" data-action="reset">
+              <svg class="ic"><use href="#i-trash" /></svg>
+              امسحي كل بياناتي من الجهاز
+            </button>
+          </div>
+        </section>
+
+        <!-- disguise -->
+        <section class="screen" data-screen="disguise" hidden>
+          <div class="weather" id="disguise-view"></div>
+        </section>
+
+        <button class="qx" data-exit aria-label="خروج سريع">
+          <svg class="ic"><use href="#i-exit" /></svg>
+          خروج سريع
+        </button>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </main>
     </div>
-  </section>
 
-  <section>
-    <div class="sec-h">
-      <span class="kick">التقنية</span>
-      <h2>كيف بيجاوب سند</h2>
-      <p>سند ما بيخترع أجوبة. بيدوّر بنصوص القوانين الرسمية، وبعدين بيشرحها بلهجتك.</p>
-    </div>
-    <div class="flow">
-      <div class="fstep"><span class="n">١</span><h3>بتحكي مشكلتك</h3><p>بصوتك أو بالكتابة، وباللهجة اللي بتريحك.</p></div>
-      <div class="fstep"><span class="n">٢</span><h3>بيدوّر بالقانون</h3><p>بيلاقي المواد القانونية الأقرب لسؤالك من ملفات قوانين بلدك.</p></div>
-      <div class="fstep"><span class="n">٣</span><h3>بيجاوبك مع المصدر</h3><p>خطوات قصيرة، ورقم المادة، وزر بيوصلك بحدا يساعدك.</p></div>
-    </div>
-    <div class="local"><svg class="ic"><use href="#i-cpu"/></svg><span>الموديل بيشتغل محلياً عبر LM Studio، فولا رسالة بتطلع لشركة برّا.</span></div>
-  </section>
-
-  <section>
-    <div class="sec-h"><span class="kick">مبادئنا</span><h2>شو ما بنتنازل عنه</h2></div>
-    <div class="values">
-      <div class="val"><h3>الخصوصية أولاً</h3><p>ما في حساب، ولا سجل محادثات، ولا شي بيطلع من الجهاز.</p></div>
-      <div class="val"><h3>ما بنحكم عليكِ</h3><p>كل جواب بيبلّش بالطمأنة، وبعدين بالمعلومة.</p></div>
-      <div class="val"><h3>لكل امرأة</h3><p>الصوت والعامية حتى للي ما بتعرف تقرأ.</p></div>
-      <div class="val"><h3>كل جواب إله مصدر</h3><p>رقم المادة القانونية ظاهر دايماً، وما في معلومة بدون مرجع.</p></div>
-    </div>
-  </section>
-
-  <div class="cta">
-    <div><h2>سند، لأنو كل امرأة بتستاهل حدا يوقف جنبها</h2><p>نموذج أولي جاهز للعرض، والخطوة الجاية ربطه بقوانين حقيقية وموديل محلي.</p></div>
-    <a class="btn primary" href="#screens"><svg class="ic"><use href="#i-eye"/></svg>جرّبي الشاشات</a>
-  </div>
-
-  <footer>
-    <span>سَنَد: نموذج أولي للعرض بالهاكاثون</span>
-    <span>المعلومات القانونية والجهات بالشاشات أمثلة للعرض، ومش استشارة قانونية.</span>
-  </footer>
-</div>
-
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0F4C55">
-
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(console.error);
-}
-</script>
-
-<template id="tpl-weather">
-  <div class="sbar"><span>9:47</span><span>●●● 5G</span></div>
-  <div class="weather">
-    <svg viewBox="0 0 120 80" width="120" height="80" aria-hidden="true"><circle cx="70" cy="32" r="20" style="fill:var(--saffron)"/><path d="M30 70h56a16 16 0 0 0 0-32 22 22 0 0 0-42 6A13 13 0 0 0 30 70z" style="fill:var(--surface)"/></svg>
-    <button class="temp" data-back title="اضغطي مرتين للرجوع">١٨°</button>
-    <b style="font-weight:500">غائم جزئياً</b>
-    <span class="muted">العظمى ٢١° · الصغرى ١٢°</span>
-    <div class="wdays"><div>السبت<b>٢٠°</b></div><div>الأحد<b>١٩°</b></div><div>الاثنين<b>١٧°</b></div><div>الثلاثاء<b>١٨°</b></div></div>
-    <span class="muted" style="font-size:10px;margin-top:20px">للعرض: اضغطي مرتين على الحرارة للرجوع</span>
-  </div>
-</template>
-
-<script>
-(function(){
-  var hero = document.getElementById('hero-screen');
-  var homeHTML = hero.innerHTML;
-  var saved = new WeakMap();
-
-  function setScreen(name){
-    if(name==='home'){ hero.innerHTML = homeHTML; return; }
-    var src = document.getElementById('tpl-'+name);
-    if(!src) return;
-    hero.innerHTML = src.innerHTML;
-    hero.querySelectorAll('.nav button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-go')===name); });
-    updateProgress(hero);
-  }
-
-  function updateProgress(host){
-    if(!host) return;
-    var steps = host.querySelectorAll('.step');
-    if(!steps.length) return;
-    var done = host.querySelectorAll('.step.done').length;
-    var bar = host.querySelector('.prog i');
-    if(bar) bar.style.width = Math.round(done/steps.length*100)+'%';
-  }
-  document.querySelectorAll('[data-host]').forEach(updateProgress);
-
-  document.addEventListener('click', function(e){
-    var t = e.target;
-    var go = t.closest('[data-go]');
-    if(go && hero.contains(go)){ setScreen(go.getAttribute('data-go')); return; }
-    var ex = t.closest('[data-exit]');
-    if(ex){
-      var host = ex.closest('[data-host]');
-      saved.set(host, host.innerHTML);
-      host.innerHTML = document.getElementById('tpl-weather').innerHTML;
-      return;
-    }
-    var st = t.closest('.step');
-    if(st){ st.classList.toggle('done'); updateProgress(st.closest('[data-host]')); return; }
-    var c = t.closest('.country');
-    if(c){ c.parentNode.querySelectorAll('.country').forEach(function(x){ x.classList.toggle('sel', x===c); }); return; }
-    var d = t.closest('.dg');
-    if(d){ d.parentNode.querySelectorAll('.dg').forEach(function(x){ x.classList.toggle('sel', x===d); }); return; }
-    var tg = t.closest('.tg');
-    if(tg){ tg.setAttribute('aria-checked', tg.getAttribute('aria-checked')==='true' ? 'false' : 'true'); return; }
-    var sb = t.closest('.stab');
-    if(sb){
-      var box = sb.closest('.sbody'); var cat = sb.getAttribute('data-cat');
-      box.querySelectorAll('.stab').forEach(function(x){ x.classList.toggle('on', x===sb); });
-      box.querySelectorAll('.org').forEach(function(o){ o.hidden = !(cat==='all' || o.getAttribute('data-cat')===cat); });
-    }
-  });
-  document.addEventListener('dblclick', function(e){
-    var back = e.target.closest('[data-back]');
-    if(!back) return;
-    var host = back.closest('[data-host]');
-    if(saved.has(host)){ host.innerHTML = saved.get(host); updateProgress(host); }
-  });
-
-  /* day / night toggle */
-  var MOON="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z";
-  var SUN="M12 8a4 4 0 1 0 0 8a4 4 0 1 0 0-8zM12 2v2M12 20v2M2 12h2M20 12h2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5";
-  var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
-  var theme = 'auto'; try{ theme = localStorage.getItem('sanad:theme') || 'auto'; }catch(e){}
-  function isDark(){ return theme==='dark' || (theme==='auto' && mq && mq.matches); }
-  function applyTheme(){
-    if(theme==='auto') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', theme);
-    var d=isDark(); document.getElementById('theme-ic').setAttribute('d', d?SUN:MOON);
-    document.getElementById('theme-btn').setAttribute('aria-label', d?'الوضع النهاري':'الوضع الليلي');
-  }
-  document.getElementById('theme-btn').addEventListener('click', function(){ theme = isDark() ? 'light' : 'dark'; try{ localStorage.setItem('sanad:theme', theme); }catch(e){} applyTheme(); });
-  if(mq){ var f=function(){ if(theme==='auto') applyTheme(); }; if(mq.addEventListener) mq.addEventListener('change', f); else if(mq.addListener) mq.addListener(f); }
-  applyTheme();
-})();
-</script>
-
+    <!-- The icon sprite (assets/sprite.svg) is inlined here at startup by src/main.js. -->
+    <script type="module" src="src/main.js"></script>
+  </body>
 </html>

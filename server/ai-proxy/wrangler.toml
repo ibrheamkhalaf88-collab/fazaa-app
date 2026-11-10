@@ -1,0 +1,21 @@
+# Deploy:  cd server/ai-proxy && npx wrangler deploy
+# Secret:  npx wrangler secret put GEMINI_API_KEY   (or NVIDIA_API_KEY / ANTHROPIC_API_KEY, matching PROVIDER)
+#          Never put a key in this file.
+name = "sanad-ai"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+[vars]
+# Exact origins of the deployed app, comma separated, no trailing slash.
+ALLOWED_ORIGINS = "https://sanad.pages.dev"
+# Which model provider to call: "gemini" (default) | "nvidia" | "anthropic".
+PROVIDER = "gemini"
+# Optional: override the model (defaults live in providers.js; names change often).
+# MODEL = "gemini-2.5-flash"
+
+# Strongly recommended before public launch: per-IP rate limit (Cloudflare Rate Limiting binding).
+# [[unsafe.bindings]]
+# name = "RATE_LIMITER"
+# type = "ratelimit"
+# namespace_id = "1001"
+# simple = { limit = 20, period = 60 }

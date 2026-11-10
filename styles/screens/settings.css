@@ -1,0 +1,144 @@
+/* Screen: privacy and settings (also disguise picker). */
+
+.card {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 4px 14px;
+  border-radius: 20px;
+}
+
+.set {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.set:last-child {
+  border-bottom: none;
+}
+
+.set .si {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  background: var(--primary-soft);
+  color: var(--ink);
+}
+
+.set div {
+  flex: 1;
+  min-width: 0;
+}
+
+.set b {
+  font-weight: 500;
+  display: block;
+  line-height: 1.4;
+  font-size: 14.5px;
+}
+
+.set small {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  display: block;
+  line-height: 1.5;
+}
+
+.tg {
+  width: 50px;
+  height: 30px;
+  border-radius: 15px;
+  border: none;
+  background: var(--line);
+  position: relative;
+  flex-shrink: 0;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.tg::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #fff;
+  transition: right 0.2s;
+}
+
+.tg[aria-checked="true"] {
+  background: var(--primary);
+}
+
+.tg[aria-checked="true"]::after {
+  right: 23px;
+}
+
+.themes {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.themes button {
+  border: none;
+  background: none;
+  border-radius: 999px;
+  padding: 9px 4px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  color: var(--ink-soft);
+  min-height: 40px;
+}
+
+.themes button.on {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.disguise {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.dg {
+  border: 1.5px solid transparent;
+  padding: 12px 4px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  border-radius: 20px;
+}
+
+.dg .gi {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+}
+
+.dg.sel {
+  border-color: var(--primary);
+  background: var(--primary-soft);
+}

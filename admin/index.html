@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="color-scheme" content="light dark" />
+    <title>سند | لوحة التحكم</title>
+    <link rel="stylesheet" href="../styles/fonts.css" />
+    <link rel="stylesheet" href="admin.css" />
+  </head>
+  <body>
+    <div class="shell" id="shell" hidden>
+      <aside class="side">
+        <div class="brand">
+          سَنَد
+          <small>لوحة التحكم</small>
+        </div>
+        <nav id="nav" class="nav" aria-label="الأقسام"></nav>
+        <div class="side-foot">
+          <div class="me">
+            <b id="me-name"></b>
+            <span id="me-mail" class="muted"></span>
+            <span id="me-role" class="pill"></span>
+          </div>
+          <div class="tools">
+            <button id="theme" class="ghost" type="button" aria-label="تبديل المظهر"></button>
+            <button id="sound" class="ghost" type="button" aria-pressed="false" hidden></button>
+          </div>
+        </div>
+      </aside>
+      <main class="main">
+        <div id="banner" class="banner" role="alert" hidden></div>
+        <div id="view"></div>
+      </main>
+    </div>
+    <p id="boot" class="boot">جاري التحميل...</p>
+    <script type="module" src="admin.js"></script>
+  </body>
+</html>

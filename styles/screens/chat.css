@@ -1,0 +1,347 @@
+/* Screen: chat ("اسألي"): messages, citations, composer, lawyer mode. */
+
+.composer {
+  transition:
+    background-color 0.25s,
+    color 0.25s;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  margin: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 7px;
+  border-radius: 28px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-color: transparent;
+  background: var(--accent);
+  color: #18214a;
+}
+
+.msgs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.u {
+  align-self: flex-start;
+  max-width: 85%;
+  padding: 10px 15px;
+  border-radius: 22px 22px 6px 22px;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+
+.a {
+  align-self: flex-end;
+  max-width: 94%;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 13px 15px;
+  border-radius: 22px 22px 22px 6px;
+  border: none;
+}
+
+.a ol {
+  margin: 6px 0 0;
+  padding-right: 20px;
+}
+
+.a li {
+  margin-bottom: 3px;
+}
+
+.a li::marker {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.cite {
+  margin-top: 10px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  border: none;
+}
+
+.cite summary {
+  list-style: none;
+  padding: 11px 12px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.cite summary::-webkit-details-marker {
+  display: none;
+}
+
+.cite summary svg {
+  margin-top: 3px;
+  color: var(--ink);
+}
+
+.cite b {
+  display: block;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+
+.cite span {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+
+.cite .law {
+  padding: 10px 12px 12px;
+  font-size: 13px;
+  line-height: 1.9;
+  white-space: pre-wrap;
+  border-top: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.cite .law a {
+  color: var(--ink);
+}
+
+.suggest {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.composer textarea {
+  flex: 1;
+  resize: none;
+  border: none;
+  border-radius: 20px;
+  background: none;
+  padding: 10px 8px;
+  font: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  max-height: 120px;
+  min-height: 44px;
+  line-height: 1.5;
+}
+
+.composer textarea:focus {
+  outline: none;
+}
+
+.composer:focus-within {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+  outline-color: var(--ink);
+}
+
+.composer textarea::placeholder {
+  color: var(--ink-soft);
+}
+
+.round {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.disclaim {
+  font-size: 12px;
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  border-radius: 999px;
+  padding: 4px;
+  margin: 4px 18px 4px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+.mode {
+  border: none;
+  background: none;
+  border-radius: 999px;
+  padding: 9px 6px;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  min-height: 40px;
+}
+
+.mode.on {
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: var(--shadow);
+}
+
+.mode .live {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: blink 1.6s infinite;
+  background: var(--accent);
+}
+
+.sys {
+  align-self: center;
+  font-size: 12px;
+  color: var(--ink-soft);
+  border-radius: 999px;
+  padding: 5px 12px;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.lw {
+  align-self: flex-end;
+  max-width: 94%;
+  background: var(--primary-soft);
+  padding: 13px 15px;
+  border-radius: 22px 22px 22px 6px;
+}
+
+.lw .who {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+
+.lw .who svg {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.connect {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 22px;
+  padding: 12px;
+  align-self: stretch;
+}
+
+.connect svg.av {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--primary-soft);
+  flex-shrink: 0;
+}
+
+.round.send {
+  background: var(--primary);
+  color: var(--on-primary);
+  border-color: transparent;
+}
+
+.round.mic {
+  background: var(--accent);
+  color: #18214a;
+}
+
+/* small lines inside an answer bubble */
+.note-line {
+  margin-top: 8px;
+}
+.note-line.general {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.gap-top {
+  margin-top: 8px;
+}
+.src {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+.sec {
+  margin-top: 12px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+/* sign-up / sign-in card shown inside the chat when she asks for a lawyer */
+.authbox {
+  align-self: stretch;
+  display: grid;
+  gap: 10px;
+  background: var(--surface);
+  border: 1.5px solid var(--line);
+  border-radius: 22px;
+  padding: 14px;
+}
+.authbox .field {
+  display: grid;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.authbox .field[hidden] {
+  display: none;
+}
+.authbox input {
+  font: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  background: var(--surface-2);
+  border: 1.5px solid var(--line);
+  border-radius: 14px;
+  padding: 10px 12px;
+  min-height: 44px;
+}
+.authbox input:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+}
+.authbox .muted {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.authbox .err {
+  min-height: 1em;
+  font-size: 13px;
+  color: var(--ink);
+  font-weight: 600;
+}

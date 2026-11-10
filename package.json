@@ -1,0 +1,21 @@
+{
+  "name": "sanad",
+  "version": "0.2.0",
+  "description": "سند: women's legal-rights PWA (Palestine). Offline-first, privacy-first.",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "npx --yes serve . -l 8080",
+    "test": "node --test",
+    "test:e2e": "node tests/e2e/smoke.mjs && node tests/e2e/live-lawyer.mjs",
+    "format": "npx --yes prettier --write .",
+    "format:check": "npx --yes prettier --check .",
+    "dev:admin": "node scripts/dev-server.mjs"
+  },
+  "devDependencies": {
+    "playwright": "^1.50.0"
+  }
+}

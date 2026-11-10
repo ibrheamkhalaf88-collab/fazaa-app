@@ -1,0 +1,474 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { handleRequest, purgeExpired } from "../server/api/worker.js";
+import { createMemoryStore } from "../server/api/store/memory.js";
+import { toBase64 } from "../server/api/crypto.js";
+
+const ORIGIN = "https://sanad.example";
+const KEY = toBase64(crypto.getRandomValues(new Uint8Array(32)));
+const ENV = { MESSAGE_KEY: KEY, ALLOWED_ORIGINS: ORIGIN, DEVELOPER_EMAILS: "dev@sanad.example" };
+
+/** Fresh world: store + a function that calls the API as a given staff email (or anonymous). */
+function world() {
+  const store = createMemoryStore();
+  let clock = 1_000_000;
+  const call = (method, path, { body, token, as, env = ENV } = {}) =>
+    handleRequest(
+      new Request(`https://sanad.example/api${path}`, {
+        method,
+        headers: {
+          origin: ORIGIN,
+          "content-type": "application/json",
+          ...(token ? { authorization: `Bearer ${token}` } : {}),
+        },
+        body: body === undefined ? undefined : JSON.stringify(body),
+      }),
+      env,
+      { store, now: (clock += 1000), staffEmail: async () => as ?? null },
+    );
+  return { store, call };
+}
+const j = async (res) => res.json();
+
+let seq = 0;
+/** Sign a woman up (alias + PIN + contact), then open a case as her. Returns { caseId, token, username }. */
+async function openCase(
+  w,
+  message = "طليقي ما بدفع نفقة",
+  { username = `sara_${++seq}`, region = "ps-gaza" } = {},
+) {
+  const up = await w.call("POST", "/v1/users", {
+    body: { username, pin: "123456", name: "سارة محمد", phone: "0599123456", region },
+  });
+  assert.equal(up.status, 201);
+  const { token } = await j(up);
+  const res = await w.call("POST", "/v1/cases", { token, body: { topic: "نفقة", message } });
+  assert.equal(res.status, 201);
+  return { ...(await j(res)), token, username };
+}
+async function addLawyer(w, email = "salma@sanad.example", name = "سلمى الأحمد") {
+  const res = await w.call("PUT", "/v1/staff/team", {
+    as: "dev@sanad.example",
+    body: { email, role: "lawyer", name },
+  });
+  assert.equal(res.status, 200);
+  return email;
+}
+
+test("not configured without MESSAGE_KEY", async () => {
+  const w = world();
+  assert.equal(
+    (await w.call("POST", "/v1/cases", { body: {}, env: { ALLOWED_ORIGINS: ORIGIN } })).status,
+    503,
+  );
+});
+
+test("rejects an origin that is not allowed", async () => {
+  const w = world();
+  const res = await handleRequest(
+    new Request("https://sanad.example/api/v1/cases", {
+      method: "POST",
+      headers: { origin: "https://evil.example" },
+      body: "{}",
+    }),
+    ENV,
+    { store: w.store },
+  );
+  assert.equal(res.status, 403);
+});
+
+test("a case is created with a token; the message is stored ENCRYPTED, never as plain text", async () => {
+  const w = world();
+  const { caseId } = await openCase(w, "رسالة سرية جداً");
+  const [row] = await w.store.listMessages(caseId);
+  assert.ok(!row.body.includes("سرية"));
+  assert.ok(row.iv.length > 0);
+});
+
+test("only the token holder can read or write her case; wrong id and wrong token look the same", async () => {
+  const w = world();
+  const { caseId, token } = await openCase(w);
+  const other = await openCase(w, "ثانية");
+  assert.equal((await w.call("GET", `/v1/cases/${caseId}/messages`)).status, 401);
+  assert.equal((await w.call("GET", `/v1/cases/${caseId}/messages`, { token: other.token })).status, 401);
+  assert.equal((await w.call("GET", `/v1/cases/nope/messages`, { token })).status, 401);
+  const ok = await j(await w.call("GET", `/v1/cases/${caseId}/messages`, { token }));
+  assert.equal(ok.status, "open");
+  assert.equal(ok.messages[0].text, "طليقي ما بدفع نفقة");
+});
+
+test("validates message and size", async () => {
+  const w = world();
+  const { token } = await openCase(w);
+  assert.equal((await w.call("POST", "/v1/cases", { token, body: { message: "  " } })).status, 400);
+  const big = await w.call("POST", "/v1/cases", { token, body: { message: "ا".repeat(9000) } });
+  assert.equal(big.status, 413);
+});
+
+test("staff endpoints need a verified staff identity", async () => {
+  const w = world();
+  assert.equal((await w.call("GET", "/v1/staff/queue")).status, 401);
+  assert.equal((await w.call("GET", "/v1/staff/queue", { as: "stranger@x.org" })).status, 401);
+});
+
+test("full flow: lawyer is added, claims, answers; the woman sees the lawyer's first name", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId, token } = await openCase(w);
+
+  const queue = await j(await w.call("GET", "/v1/staff/queue", { as: lawyer }));
+  assert.deepEqual(Object.keys(queue.queue[0]).sort(), ["createdAt", "id", "region", "topic"]); // no text in the queue
+  assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer })).status, 200);
+
+  await w.call("POST", `/v1/staff/cases/${caseId}/messages`, {
+    as: lawyer,
+    body: { text: "أهلاً، احكيلي أكثر" },
+  });
+  const seen = await j(await w.call("GET", `/v1/cases/${caseId}/messages`, { token }));
+  assert.equal(seen.lawyer, "سلمى");
+  assert.deepEqual(
+    seen.messages.map((m) => m.from),
+    ["user", "lawyer"],
+  );
+
+  await w.call("POST", `/v1/cases/${caseId}/messages`, { token, body: { text: "عندي ولدين" } });
+  const mine = await j(await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: lawyer }));
+  assert.equal(mine.messages.length, 3);
+});
+
+test("two lawyers cannot take the same case; the second cannot read it", async () => {
+  const w = world();
+  const a = await addLawyer(w, "a@sanad.example", "أ");
+  const b = await addLawyer(w, "b@sanad.example", "ب");
+  const { caseId } = await openCase(w);
+  assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: a })).status, 200);
+  assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: b })).status, 409);
+  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: b })).status, 403);
+  assert.equal(
+    (await w.call("POST", `/v1/staff/cases/${caseId}/messages`, { as: b, body: { text: "x" } })).status,
+    403,
+  );
+  assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: b })).status, 403);
+});
+
+test("a lawyer cannot read a case she has not claimed", async () => {
+  const w = world();
+  const a = await addLawyer(w);
+  const { caseId } = await openCase(w);
+  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: a })).status, 403);
+});
+
+test("DEVELOPERS CANNOT READ CASE CONTENT, claim or answer cases; lawyers cannot see stats or manage staff", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId } = await openCase(w);
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
+  const dev = "dev@sanad.example";
+  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: dev })).status, 403);
+  assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: dev })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/queue", { as: dev })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/stats", { as: lawyer })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/team", { as: lawyer })).status, 403);
+  assert.equal(
+    (await w.call("PUT", "/v1/staff/team", { as: lawyer, body: { email: "x@y.org", role: "developer" } }))
+      .status,
+    403,
+  );
+});
+
+test("developer stats contain counts only (no ids, topics or text)", async () => {
+  const w = world();
+  await openCase(w, "نص سري");
+  const st = await j(await w.call("GET", "/v1/staff/stats", { as: "dev@sanad.example" }));
+  assert.deepEqual(Object.keys(st).sort(), [
+    "avgClaimWaitMs",
+    "byRegion",
+    "byStatus",
+    "lawyers",
+    "messages",
+    "oldestWaitingMs",
+    "retention",
+    "series",
+  ]);
+  assert.ok(!JSON.stringify(st).includes("سري"));
+});
+
+test("developer manages the team; cannot remove self; bad input rejected", async () => {
+  const w = world();
+  const dev = "dev@sanad.example";
+  assert.equal(
+    (await w.call("PUT", "/v1/staff/team", { as: dev, body: { email: "nope", role: "lawyer" } })).status,
+    400,
+  );
+  assert.equal(
+    (await w.call("PUT", "/v1/staff/team", { as: dev, body: { email: "a@b.org", role: "admin" } })).status,
+    400,
+  );
+  await addLawyer(w, "A@B.org", "سلمى");
+  const { team } = await j(await w.call("GET", "/v1/staff/team", { as: dev }));
+  assert.equal(team[0].email, "a@b.org");
+  assert.equal((await w.call("DELETE", `/v1/staff/team?email=${dev}`, { as: dev })).status, 400);
+  assert.equal((await w.call("DELETE", "/v1/staff/team?email=a@b.org", { as: dev })).status, 200);
+});
+
+test("a closed case rejects new messages from both sides", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId, token } = await openCase(w);
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
+  await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: lawyer });
+  assert.equal(
+    (await w.call("POST", `/v1/cases/${caseId}/messages`, { token, body: { text: "x" } })).status,
+    409,
+  );
+  assert.equal(
+    (await w.call("POST", `/v1/staff/cases/${caseId}/messages`, { as: lawyer, body: { text: "x" } })).status,
+    409,
+  );
+  assert.equal((await j(await w.call("GET", `/v1/cases/${caseId}/messages`, { token }))).status, "closed");
+});
+
+test("retention: purgeExpired deletes old closed cases", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId } = await openCase(w);
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
+  await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: lawyer });
+  assert.equal(await purgeExpired({}, w.store, Date.now() + 8 * 86_400_000), 1);
+  assert.equal(await w.store.getCase(caseId), null);
+});
+
+test("private notes: encrypted at rest, only the lawyer who owns the case can read or write them", async () => {
+  const w = world();
+  const a = await addLawyer(w, "a@sanad.example", "أ");
+  const b = await addLawyer(w, "b@sanad.example", "ب");
+  const { caseId, token } = await openCase(w);
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: a });
+  assert.equal(
+    (await w.call("PUT", `/v1/staff/cases/${caseId}/note`, { as: a, body: { note: "ملاحظة سرية للمحامية" } }))
+      .status,
+    200,
+  );
+  assert.equal(
+    (await j(await w.call("GET", `/v1/staff/cases/${caseId}/note`, { as: a }))).note,
+    "ملاحظة سرية للمحامية",
+  );
+  assert.ok(!(await w.store.getNote(caseId)).body.includes("سرية"));
+  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/note`, { as: b })).status, 403);
+  assert.equal(
+    (await w.call("GET", `/v1/staff/cases/${caseId}/note`, { as: "dev@sanad.example" })).status,
+    403,
+  );
+  // never shown to the woman
+  const seen = JSON.stringify(await j(await w.call("GET", `/v1/cases/${caseId}/messages`, { token })));
+  assert.ok(!seen.includes("سرية"));
+});
+
+test("audit log: developer-only, records who did what but never message text", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId } = await openCase(w, "كلام سري جداً");
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
+  await w.call("POST", `/v1/staff/cases/${caseId}/messages`, { as: lawyer, body: { text: "رد سري" } });
+  await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: lawyer });
+  assert.equal((await w.call("GET", "/v1/staff/audit", { as: lawyer })).status, 403);
+  const { audit } = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@sanad.example" }));
+  assert.deepEqual(
+    audit.map((a) => a.action),
+    ["close", "claim", "staff-add"],
+  );
+  assert.ok(!JSON.stringify(audit).includes("سري"));
+});
+
+test("stats include the daily series and the average claim wait", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId } = await openCase(w);
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
+  const st = await j(await w.call("GET", "/v1/staff/stats", { as: "dev@sanad.example" }));
+  assert.equal(
+    st.series.reduce((n, d) => n + d.created, 0),
+    1,
+  );
+  assert.ok(st.avgClaimWaitMs > 0);
+});
+
+test("ping: only whitelisted events, region optional, nothing but counters is stored", async () => {
+  const w = world();
+  assert.equal(
+    (await w.call("POST", "/v1/ping", { body: { event: "visit", region: "ps-gaza" } })).status,
+    204,
+  );
+  assert.equal((await w.call("POST", "/v1/ping", { body: { event: "visit", region: "mars" } })).status, 204); // unknown region -> "none"
+  assert.equal((await w.call("POST", "/v1/ping", { body: { event: "steal-data" } })).status, 400);
+  assert.equal((await w.call("POST", "/v1/ping", { body: { event: "topic:نفقة" } })).status, 400); // topics are server-made only
+  assert.equal(
+    (
+      await w.call("POST", "/v1/ping", {
+        body: { event: "ask_ai", region: "ps-wb", ms: 99999999, text: "سؤال سري" },
+      })
+    ).status,
+    204,
+  );
+  const a = await w.store.analytics(2_000_000);
+  assert.equal(a.totals.visit, 2);
+  assert.equal(a.aiAvgMs, 60000); // latency clamped
+  assert.ok(!JSON.stringify(a).includes("سري"));
+});
+
+test("opening a case counts a lawyer request and a normalised topic (free text never becomes a key)", async () => {
+  const w = world();
+  const { token } = await openCase(w);
+  const other = await openCase(w);
+  await w.call("POST", "/v1/cases", { token, body: { topic: "اسمي سعاد وبسكن في ...", message: "x" } });
+  const a = await w.store.analytics(2_000_000);
+  assert.equal(a.totals.lawyer_request, 3);
+  assert.deepEqual(a.topics, { نفقة: 2, أخرى: 1 });
+  assert.ok(other.caseId);
+});
+
+test("developer analytics: usage + who signed in; lawyers cannot read it", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  await w.call("GET", "/v1/staff/me", { as: lawyer });
+  await w.call("POST", "/v1/ping", { body: { event: "visit", region: "ps-wb" } });
+  assert.equal((await w.call("GET", "/v1/staff/analytics", { as: lawyer })).status, 403);
+  const a = await j(await w.call("GET", "/v1/staff/analytics?days=30", { as: "dev@sanad.example" }));
+  assert.equal(a.series.length, 30);
+  assert.equal(a.totals.visit, 1);
+  const row = a.staff.find((m) => m.email === lawyer);
+  assert.equal(row.sessions, 1);
+  assert.ok(row.lastSeen > 0);
+});
+
+test("lawyer work dashboard: team counts and her own numbers, no content; developers are refused", async () => {
+  const w = world();
+  const lawyer = await addLawyer(w);
+  const { caseId } = await openCase(w, "كلام سري");
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
+  await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: lawyer });
+  const work = await j(await w.call("GET", "/v1/staff/work", { as: lawyer }));
+  assert.deepEqual(work.me, { claimed: 1, closed: 1 });
+  assert.equal(work.byRegion["ps-gaza"], 1);
+  assert.ok(!JSON.stringify(work).includes("سري"));
+  assert.equal((await w.call("GET", "/v1/staff/work", { as: "dev@sanad.example" })).status, 403);
+});
+
+/* ---------------- women's accounts ---------------- */
+const signup = (w, over = {}) =>
+  w.call("POST", "/v1/users", {
+    body: {
+      username: "dana",
+      pin: "246810",
+      name: "دانا خليل",
+      phone: "+970599000111",
+      region: "ps-wb",
+      ...over,
+    },
+  });
+
+test("asking for a lawyer needs a signed-in account", async () => {
+  const w = world();
+  const res = await w.call("POST", "/v1/cases", { body: { topic: "نفقة", message: "مرحبا" } });
+  assert.equal(res.status, 401);
+});
+
+test("signup validates alias, 6-digit PIN, name, phone and region; alias is unique", async () => {
+  const w = world();
+  for (const bad of [
+    { username: "ab" },
+    { username: "has space" },
+    { pin: "1234" },
+    { pin: "abcdef" },
+    { name: "" },
+    { phone: "12" },
+    { region: "x" },
+  ])
+    assert.equal((await signup(w, bad)).status, 400, JSON.stringify(bad));
+  assert.equal((await signup(w)).status, 201);
+  assert.equal((await signup(w, { username: "DANA" })).status, 409);
+});
+
+test("PIN is stored hashed; name and phone are stored ENCRYPTED", async () => {
+  const w = world();
+  await signup(w);
+  const u = await w.store.getUserByName("dana");
+  const blob = JSON.stringify(u);
+  assert.ok(
+    !blob.includes("246810") &&
+      !blob.includes("دانا") &&
+      !blob.includes("0599000111") &&
+      !blob.includes("970599"),
+  );
+});
+
+test("login: right PIN works, wrong PIN and unknown alias look the same, 5 failures lock for 15 minutes", async () => {
+  const w = world();
+  await signup(w);
+  const login = (username, pin) => w.call("POST", "/v1/login", { body: { username, pin } });
+  assert.equal((await login("dana", "246810")).status, 200);
+  const wrong = await login("dana", "000000");
+  const unknown = await login("nobody", "000000");
+  assert.equal(wrong.status, 401);
+  assert.deepEqual(await j(wrong), await j(unknown));
+  for (let i = 0; i < 4; i++) await login("dana", "000000");
+  assert.equal((await login("dana", "246810")).status, 429); // locked even with the right PIN
+});
+
+test("session: /me lists only her cases; logout and account deletion end access", async () => {
+  const w = world();
+  const a = await openCase(w, "أنا أ");
+  const b = await openCase(w, "أنا ب");
+  const mine = await j(await w.call("GET", "/v1/me", { token: a.token }));
+  assert.deepEqual(
+    mine.cases.map((c) => c.id),
+    [a.caseId],
+  );
+  assert.equal((await w.call("GET", `/v1/cases/${a.caseId}/messages`, { token: b.token })).status, 401);
+  assert.equal((await w.call("POST", "/v1/logout", { token: a.token })).status, 204);
+  assert.equal((await w.call("GET", "/v1/me", { token: a.token })).status, 401);
+  assert.equal((await w.call("DELETE", "/v1/me", { token: b.token })).status, 204);
+  assert.equal(await w.store.getCase(b.caseId), null);
+  assert.equal(await w.store.getUserByName(b.username), null);
+});
+
+test("contact card: only the lawyer who claimed the case, and it is audited", async () => {
+  const w = world();
+  const a = await addLawyer(w, "a@sanad.example", "أ");
+  const b = await addLawyer(w, "b@sanad.example", "ب");
+  const { caseId } = await openCase(w);
+  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: a })).status, 403); // not claimed yet
+  await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: a });
+  const card = await j(await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: a }));
+  assert.equal(card.name, "سارة محمد");
+  assert.equal(card.phone, "0599123456");
+  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: b })).status, 403);
+  assert.equal(
+    (await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: "dev@sanad.example" })).status,
+    403,
+  );
+  const audit = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@sanad.example" }));
+  assert.ok(audit.audit.some((r) => r.action === "view-contact" && r.target === caseId));
+  assert.ok(!JSON.stringify(audit).includes("سارة"));
+});
+
+test("developers see accounts and activity but never names or phones", async () => {
+  const w = world();
+  const { username } = await openCase(w);
+  await w.call("POST", "/v1/login", { body: { username, pin: "123456" } });
+  const res = await j(await w.call("GET", "/v1/staff/users", { as: "dev@sanad.example" }));
+  assert.equal(res.total >= 1, true);
+  assert.ok(res.users.every((u) => !("name" in u) && !("phone" in u) && !("body" in u)));
+  assert.ok(!JSON.stringify(res).includes("سارة") && !JSON.stringify(res).includes("0599123456"));
+  assert.equal((await w.call("GET", "/v1/staff/users", { as: await addLawyer(w) })).status, 403);
+  const an = await j(await w.call("GET", "/v1/staff/analytics", { as: "dev@sanad.example" }));
+  assert.ok(an.totals.signup >= 1 && an.totals.login >= 1);
+});
+
+test("retention: accounts with no login for 180 days are deleted with their cases", async () => {
+  const w = world();
+  const { caseId, username } = await openCase(w);
+  await purgeExpired({}, w.store, Date.now() + 200 * 86_400_000);
+  assert.equal(await w.store.getUserByName(username), null);
+  assert.equal(await w.store.getCase(caseId), null);
+});

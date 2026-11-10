@@ -1,0 +1,105 @@
+/* Screen: safety plan (emergency). */
+
+.sos-head {
+  padding: 18px 16px 16px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  border-radius: 24px;
+  background: var(--surface);
+}
+
+.sos-head svg.ill {
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+}
+
+.sos-head .brush {
+  color: var(--emphasis);
+  font-size: 25px;
+}
+
+.prog {
+  margin-top: 10px;
+  overflow: hidden;
+  -webkit-mask: none;
+  mask: none;
+  height: 9px;
+  border-radius: 5px;
+  background: var(--surface-2);
+}
+
+.prog i {
+  display: block;
+  height: 100%;
+  width: 0;
+  transition: width 0.35s;
+  border-radius: 5px;
+  background: var(--accent);
+}
+
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1.5px solid transparent;
+  padding: 14px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  text-align: right;
+  font-size: 15px;
+  line-height: 1.5;
+  width: 100%;
+  border-radius: 20px;
+}
+
+.step .box {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid var(--line);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: transparent;
+  transition: background 0.2s;
+}
+
+.step.done {
+  box-shadow: none;
+  background: var(--primary-soft);
+}
+
+.step.done .box {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--on-primary);
+}
+
+.step.done b {
+  text-decoration: line-through;
+  text-decoration-color: var(--ink-soft);
+}
+
+.step small {
+  display: block;
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+.done-card {
+  border-radius: 20px;
+  padding: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: var(--primary-soft);
+}

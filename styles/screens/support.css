@@ -1,0 +1,59 @@
+/* Screen: support organisations. */
+
+.stabs {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+
+.stab {
+  flex: 1;
+  border: none;
+  border-radius: 999px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--ink-soft);
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.stab.on {
+  background: var(--ink);
+  color: var(--ground);
+  font-weight: 500;
+}
+
+.org {
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-radius: 20px;
+}
+
+.org .oi {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.org b {
+  font-weight: 600;
+  display: block;
+  line-height: 1.4;
+}
+
+.org small {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  display: block;
+}

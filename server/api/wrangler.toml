@@ -1,0 +1,35 @@
+# Staff API. Deploy:  cd server/api && npx wrangler deploy
+name = "sanad-api"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Serve it on the SAME domain as the site so Cloudflare Access can guard /api/v1/staff/*.
+# routes = [{ pattern = "sanad.example.com/api/*", zone_name = "example.com" }]
+
+[vars]
+ALLOWED_ORIGINS = "https://sanad.example.com"
+# Cloudflare Zero Trust -> Access -> Applications. Team domain + the Application Audience (AUD) tag.
+ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
+ACCESS_AUD = ""
+# First developer(s): they can then add lawyers from the dashboard. Comma separated.
+DEVELOPER_EMAILS = ""
+RETENTION_CLOSED_DAYS = "7"
+RETENTION_IDLE_DAYS = "30"
+RETENTION_USER_DAYS = "180"   # accounts with no login for this long are deleted with their cases
+
+# Secret (never in this file):  openssl rand -base64 32 | npx wrangler secret put MESSAGE_KEY
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sanad"
+database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+
+[triggers]
+crons = ["17 3 * * *"] # daily purge
+
+# Strongly recommended: per-IP rate limit
+# [[unsafe.bindings]]
+# name = "RATE_LIMITER"
+# type = "ratelimit"
+# namespace_id = "1002"
+# simple = { limit = 30, period = 60 }
