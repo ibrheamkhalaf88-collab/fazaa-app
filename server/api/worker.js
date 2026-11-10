@@ -598,7 +598,33 @@ export async function handleRequest(request, env, deps) {
     if (path === "/v1/staff/mine" && request.method === "GET")
       return need("lawyer") || reply(json({ cases: await store.listMine(staff.email) }));
 
+    /* ---- developer: read-only view of every conversation (each opening is audited) ---- */
+    if (path === "/v1/staff/conversations" && request.method === "GET") {
+      const denied = need("developer");
+      if (denied) return denied;
+      const team = new Map((await store.listStaff()).map((s) => [s.email, s]));
+      const cases = (await store.listAllCases(200)).map((k) => ({
+        ...k,
+        lawyer: k.lawyerEmail ? team.get(k.lawyerEmail)?.name || k.lawyerEmail : null,
+      }));
+      return reply(json({ cases }));
+    }
+
     const c = m(/^\/v1\/staff\/cases\/([\w-]+)\/(claim|messages|close|note|client)$/);
+    if (c && staff.role === "developer") {
+      const [, id, action] = c;
+      if (action !== "messages" || request.method !== "GET") return reply(fail(403, "wrong-role"));
+      const kase = await store.getCase(id);
+      if (!kase) return reply(fail(404, "no-case"));
+      const after = Number(url.searchParams.get("after")) || 0;
+      // log the opening, not every refresh
+      if (!after) await store.addAudit({ actor: staff.email, action: "dev-read-case", target: id, now });
+      const rows = await store.listMessages(id, after);
+      const messages = await Promise.all(
+        rows.map(async (r) => ({ id: r.id, from: r.sender, text: await open(r), at: r.createdAt })),
+      );
+      return reply(json({ status: kase.status, topic: kase.topic, region: kase.region, messages }));
+    }
     if (c) {
       const denied = need("lawyer");
       if (denied) return denied;

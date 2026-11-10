@@ -92,6 +92,23 @@ export function createD1Store(db) {
         createdAt: r.created_at,
       }));
     },
+    /** Every case, most recently active first (developers' read-only view). */
+    async listAllCases(limit = 200) {
+      return (
+        await q(
+          "SELECT id, topic, region, status, lawyer_email, created_at, last_activity FROM cases ORDER BY last_activity DESC LIMIT ?",
+          limit,
+        ).all()
+      ).results.map((r) => ({
+        id: r.id,
+        topic: r.topic,
+        region: r.region,
+        status: r.status,
+        lawyerEmail: r.lawyer_email,
+        createdAt: r.created_at,
+        lastActivity: r.last_activity,
+      }));
+    },
     async listQueue() {
       const { results } = await q(
         "SELECT id, topic, region, created_at FROM cases WHERE status = 'open' ORDER BY created_at LIMIT 100",

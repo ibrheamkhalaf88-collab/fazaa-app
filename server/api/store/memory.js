@@ -68,6 +68,21 @@ export function createMemoryStore() {
         .slice(0, 200)
         .map(({ id, sender, iv, body, createdAt }) => ({ id, sender, iv, body, createdAt }));
     },
+    /** Every case, most recently active first (developers' read-only view). */
+    async listAllCases(limit = 200) {
+      return [...cases.values()]
+        .sort((a, b) => b.lastActivity - a.lastActivity)
+        .slice(0, limit)
+        .map(({ id, topic, region, status, lawyerEmail, createdAt, lastActivity }) => ({
+          id,
+          topic,
+          region,
+          status,
+          lawyerEmail,
+          createdAt,
+          lastActivity,
+        }));
+    },
     async listQueue() {
       return [...cases.values()]
         .filter((c) => c.status === "open")

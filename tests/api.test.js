@@ -158,13 +158,28 @@ test("a lawyer cannot read a case she has not claimed", async () => {
   assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: a })).status, 403);
 });
 
-test("DEVELOPERS CANNOT READ CASE CONTENT, claim or answer cases; lawyers cannot see stats or manage staff", async () => {
+test("developers READ every conversation (audited) but cannot claim, answer, close or see contact; lawyers cannot see stats or manage staff", async () => {
   const w = world();
   const lawyer = await addLawyer(w);
   const { caseId } = await openCase(w);
   await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
   const dev = "dev@sanad.example";
-  assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: dev })).status, 403);
+  const read = await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: dev });
+  assert.equal(read.status, 200);
+  assert.equal((await read.json()).messages[0].text, "طليقي ما بدفع نفقة");
+  const list = await (await w.call("GET", "/v1/staff/conversations", { as: dev })).json();
+  assert.equal(list.cases[0].id, caseId);
+  assert.equal(list.cases[0].lawyer, "سلمى");
+  const audit = await (await w.call("GET", "/v1/staff/audit", { as: dev })).json();
+  assert.ok(audit.audit.some((a) => a.action === "dev-read-case" && a.target === caseId));
+  for (const [method, action] of [
+    ["POST", "messages"],
+    ["POST", "close"],
+    ["GET", "client"],
+    ["GET", "note"],
+  ])
+    assert.equal((await w.call(method, `/v1/staff/cases/${caseId}/${action}`, { as: dev, body: method === "POST" ? { text: "x" } : undefined })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/conversations", { as: lawyer })).status, 403);
   assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: dev })).status, 403);
   assert.equal((await w.call("GET", "/v1/staff/queue", { as: dev })).status, 403);
   assert.equal((await w.call("GET", "/v1/staff/stats", { as: lawyer })).status, 403);
