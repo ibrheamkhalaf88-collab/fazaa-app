@@ -22,10 +22,10 @@ quoted a West-Bank-only article, and vice versa.
 
 Planned corpus (each needs verbatim text from an official source + a legal reviewer):
 
-| Topic                                                    | West Bank                                 | Gaza                                                |
-| -------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| Personal status (divorce, custody, alimony, inheritance) | Jordanian Personal Status Law No. 61/1976 | Family Rights Law of 1954 (verify exact instrument) |
-| Penal                                                    | Jordanian Penal Code 16/1960              | Mandate-era Criminal Code Ordinance 1936            |
-| Cyber crimes                                             | Decree-Law 10/2018 (in corpus)            | **unconfirmed** - see TODO in `law/index.js`        |
+| Topic                                                    | West Bank                                                               | Gaza                                                                          |
+| -------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Personal status (divorce, custody, alimony, inheritance) | Jordanian Personal Status Law No. 61/1976 (selected articles in corpus) | Family Rights Law of 1954 (selected articles in corpus; verify with a lawyer) |
+| Penal                                                    | Jordanian Penal Code 16/1960                                            | Mandate-era Criminal Code Ordinance 1936                                      |
+| Cyber crimes                                             | Decree-Law 10/2018 (in corpus)                                          | **unconfirmed** - see TODO in `law/index.js`                                  |
 
 Do not enable a law for a region until a lawyer confirms it is in force there.

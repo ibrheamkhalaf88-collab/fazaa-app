@@ -67,13 +67,15 @@ test("when retrieval finds no article, the model is NEVER called", async () => {
   assert.equal(api.calls.length, 0);
 });
 
-test("family-law question: not in the corpus, so no model call", async () => {
-  const api = anthropic(GOOD);
+test("family-law question: only family-law articles reach the model; a cyber-law citation is rejected", async () => {
+  const api = anthropic(GOOD); // GOOD cites article 15, which was not retrieved for this question
   const res = await handleRequest(req({ question: "طليقي ما عم يدفع نفقة" }), ENV, {
     fetchImpl: api.fetchImpl,
   });
-  assert.deepEqual(await res.json(), { answer: null });
-  assert.equal(api.calls.length, 0);
+  assert.equal(res.status, 502);
+  const prompt = api.calls[0].body.messages[0].content;
+  assert.match(prompt, /<article id="psl:/);
+  assert.ok(!prompt.includes('<article id="15"'));
 });
 
 test("happy path: calls Anthropic with the key, the forced tool and only retrieved articles", async () => {

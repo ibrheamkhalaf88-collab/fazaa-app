@@ -11,7 +11,7 @@
  * RELEASING: bump CACHE_VERSION on every deploy. tests/precache.test.js fails if a file
  * in the app is missing from PRECACHE, so a forgotten file cannot ship unnoticed.
  */
-const CACHE_VERSION = "sanad-v9";
+const CACHE_VERSION = "sanad-v10";
 
 const PRECACHE = [
   "./",
@@ -65,7 +65,10 @@ const PRECACHE = [
   "src/data/answers.js",
   "src/data/intents.js",
   "src/data/law/index.js",
+  "src/data/law/basic-law-2003.js",
   "src/data/law/cyber-crimes-2018.js",
+  "src/data/law/family-rights-gaza-1954.js",
+  "src/data/law/personal-status-wb-1976.js",
   "src/features/chat/chat.js",
   "src/features/chat/lawyer-session.js",
   "src/features/chat/lawyer-live.js",

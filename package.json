@@ -16,7 +16,8 @@
     "dev:admin": "node scripts/dev-server.mjs",
     "lint": "eslint .",
     "check": "npm run format:check && npm run lint && npm test",
-    "ai:eval": "node scripts/ai-eval.mjs"
+    "ai:eval": "node scripts/ai-eval.mjs",
+    "law:verify": "node scripts/verify-law.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

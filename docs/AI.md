@@ -75,8 +75,12 @@ disabled, or state this clearly in the AI opt-in text. Model names change; check
 
 ## Honest limits (read before launch)
 
-- The corpus is only the 2018 Cyber Crimes decree (articles 15, 16, 22, 52). AI adds value there only;
-  family-law questions are answered by canned rules or "not covered".
+- The corpus is small and selective: Cyber Crimes decree (4 articles), West Bank Personal Status Law 1976
+  (23 articles: maintenance, divorce, custody), Gaza Family Rights Law 1954 (9 articles: maintenance, divorce),
+  Basic Law 2003 (5 articles). Anything outside these gets "not covered" with no model call.
+- Gaza texts come from an unofficial PDF copy (the official one has damaged glyphs). A lawyer must verify them.
+- Known gaps: Gaza custody, the 2019 marriage-age amendment, Gaza application of the cyber decree.
+- Run `npm run law:verify` on a machine with internet: it compares each West Bank / Basic Law article with maqam.
 - The proxy was tested with **mocks**, not against the live API. Run a real end-to-end test and review 50+ answers
   with a lawyer before enabling for the public.
 - Applicability differs between Gaza and the West Bank (and decrees have been amended); get a legal audit.
