@@ -151,6 +151,29 @@ async function keepAnswer(store, answer, region, env, now) {
   }
 }
 
+/**
+ * Daily cap on AI calls, so nobody can burn the provider quota with forged requests.
+ * Over the cap the app simply falls back to its offline rules.
+ */
+async function takeAiSlot(store, env, now) {
+  const limit = Number(env.AI_DAILY_LIMIT || 3000);
+  const day = new Date(now).toISOString().slice(0, 10);
+  const row = await store.getSetting("ai-usage");
+  const used = row && row.iv === day ? Number(row.body) || 0 : 0;
+  if (used >= limit) return false;
+  await store.setSetting({ key: "ai-usage", iv: day, body: String(used + 1), now, by: "system" });
+  return true;
+}
+
+async function aiUsage(store, env, now) {
+  const row = await store.getSetting("ai-usage");
+  const day = new Date(now).toISOString().slice(0, 10);
+  return {
+    usedToday: row && row.iv === day ? Number(row.body) || 0 : 0,
+    dailyLimit: Number(env.AI_DAILY_LIMIT || 3000),
+  };
+}
+
 const parseAnswer = (row) => ({ ...row, body: undefined, answer: JSON.parse(row.body) });
 
 /**
@@ -193,6 +216,7 @@ export async function handleRequest(request, env, deps) {
     if (error || question.length < LIMITS_FOR_QUESTION.min || question.length > LIMITS_FOR_QUESTION.max)
       return reply(fail(400, "bad-question"));
     const country = REGIONS.includes(value.country) ? value.country : "ps-wb";
+    if (!(await takeAiSlot(store, env, now))) return reply(fail(429, "daily-limit"));
     const saved = await loadAi(store, open);
     const live = aiEnv(env, saved);
     const { status, body } = await answerQuestion(question, country, live, fetchImpl);
@@ -265,7 +289,9 @@ export async function handleRequest(request, env, deps) {
     if (path === "/v1/staff/ai-config" && request.method === "GET") {
       const denied = need("developer");
       if (denied) return denied;
-      return reply(json(aiSummary(env, await loadAi(store, open))));
+      return reply(
+        json({ ...aiSummary(env, await loadAi(store, open)), ...(await aiUsage(store, env, now)) }),
+      );
     }
 
     if (path === "/v1/staff/ai-config" && request.method === "PUT") {
@@ -295,7 +321,9 @@ export async function handleRequest(request, env, deps) {
         target: `${provider}${model ? ` / ${model}` : ""}${typedKey ? " (new key)" : ""}`,
         now,
       });
-      return reply(json(aiSummary(env, await loadAi(store, open))));
+      return reply(
+        json({ ...aiSummary(env, await loadAi(store, open)), ...(await aiUsage(store, env, now)) }),
+      );
     }
 
     if (path === "/v1/staff/ai-config" && request.method === "DELETE") {

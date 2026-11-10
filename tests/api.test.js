@@ -666,3 +666,27 @@ test("a failed or empty AI call keeps nothing", async () => {
   await post(async () => geminiReply({ covered: false }));
   assert.equal((await w.store.listAiAnswers({ verdict: "all" })).length, 0);
 });
+
+test("/v1/answer stops at the daily cap, and the cap resets the next day", async () => {
+  const w = world();
+  await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
+  const env = { ...ENV, AI_DAILY_LIMIT: "2" };
+  const ask = (now) =>
+    handleRequest(
+      new Request("https://sanad.example/api/v1/answer", {
+        method: "POST",
+        headers: { origin: ORIGIN, "content-type": "application/json" },
+        body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+      }),
+      env,
+      { store: w.store, now, fetchImpl: async () => new Response("x", { status: 500 }) },
+    );
+  const day1 = Date.UTC(2026, 10, 10, 12);
+  assert.equal((await ask(day1)).status, 502);
+  assert.equal((await ask(day1)).status, 502);
+  assert.equal((await ask(day1)).status, 429); // third call today is refused before any model call
+  assert.equal((await ask(day1 + 86_400_000)).status, 502); // next day: allowed again
+  const cfg = await j(await w.call("GET", "/v1/staff/ai-config", { as: DEV, env }));
+  assert.equal(cfg.dailyLimit, 2);
+  assert.ok(cfg.usedToday >= 0);
+});

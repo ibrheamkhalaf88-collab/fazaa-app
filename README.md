@@ -63,6 +63,8 @@ archive/                   old landing page (reference only)
 | add or reword a rule-based answer | `src/data/answers.js` (+ keywords in `src/data/intents.js`), then `npm test`                  |
 | add a law                         | `src/data/law/` (see `docs/CONTENT.md`)                                                       |
 | change a screen's layout          | its markup in `index.html` + `styles/screens/<name>.css`                                      |
+| how the AI improves; scope check  | `docs/AI-DEVELOPMENT.md`, `ai-data/`, `npm run ai:eval`                                       |
+| security status                   | `docs/SECURITY.md`                                                                            |
 | turn on online AI                 | `docs/AI.md` (deploy the worker, set `AI_ENDPOINT` in `src/config.js`)                        |
 | ship a new version                | bump `CACHE_VERSION` in `sw.js` (the tests tell you if a file is missing from the cache list) |
 

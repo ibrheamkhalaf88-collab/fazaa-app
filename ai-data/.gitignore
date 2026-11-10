@@ -1,0 +1,3 @@
+# Real exports come from the dashboard and describe real women's cases: never commit them.
+exports/*
+!exports/.gitkeep

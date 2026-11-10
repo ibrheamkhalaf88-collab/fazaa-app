@@ -1,0 +1,23 @@
+{
+  "note": "INVENTED example of one item in the dashboard export (إعدادات: تصدير المراجَعة). Real exports go in ../exports/ (git-ignored).",
+  "items": [
+    {
+      "id": 1,
+      "at": 1790000000000,
+      "region": "ps-wb",
+      "provider": "gemini",
+      "model": "gemini-2.5-flash-lite",
+      "verdict": "good",
+      "reviewedBy": "lawyer@example.org",
+      "reviewedAt": 1790003600000,
+      "answer": {
+        "lead": "مش ذنبك، والابتزاز الإلكتروني جريمة.",
+        "steps": ["لا تدفعي ولا تردّي", "احفظي الأدلة بصور", "بلّغي الحساب وتواصلي مع محامية"],
+        "note": "القانون بيعاقب على التهديد والابتزاز عبر الشبكة الإلكترونية.",
+        "cites": ["15", "22"],
+        "sos": false,
+        "topic": "ابتزاز"
+      }
+    }
+  ]
+}

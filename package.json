@@ -15,7 +15,8 @@
     "format:check": "npx --yes prettier --check .",
     "dev:admin": "node scripts/dev-server.mjs",
     "lint": "eslint .",
-    "check": "npm run format:check && npm run lint && npm test"
+    "check": "npm run format:check && npm run lint && npm test",
+    "ai:eval": "node scripts/ai-eval.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

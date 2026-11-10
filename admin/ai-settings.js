@@ -45,6 +45,8 @@ export function aiSettingsView(ctx) {
     if (cfg.updatedAt)
       status.append(el("span", "muted", ` · آخر تعديل ${dateTime(cfg.updatedAt)} (${cfg.updatedBy})`));
 
+    status.append(el("span", "muted", ` · استهلاك اليوم: ${cfg.usedToday ?? 0} من ${cfg.dailyLimit ?? "—"}`));
+
     const provider = el("select");
     provider.id = "ai-provider";
     for (const p of cfg.providers) provider.append(new Option(p.label, p.id));
