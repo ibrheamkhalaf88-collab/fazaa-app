@@ -203,8 +203,7 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
 
     const list = messageList();
     const welcome = list.firstElementChild.cloneNode(true);
-    list.innerHTML = "";
-    list.appendChild(welcome);
+    list.replaceChildren(welcome);
 
     const suggest = el("div", "suggest");
     suggest.id = "suggest";

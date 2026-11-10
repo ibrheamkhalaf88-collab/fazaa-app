@@ -16,6 +16,8 @@ const LIMITS = { lead: 300, step: 240, note: 600, steps: 5, cites: 4, topic: 40 
 const clean = (v, max) =>
   typeof v === "string"
     ? v
+        // strip control characters and angle brackets on purpose
+        // eslint-disable-next-line no-control-regex
         .replace(/[\u0000-\u001F\u007F<>]/g, " ")
         .replace(/\s+/g, " ")
         .trim()

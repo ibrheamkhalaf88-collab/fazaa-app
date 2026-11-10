@@ -5,13 +5,13 @@ with the article number**, a step-by-step safety plan against online blackmail, 
 
 Built for people who may be in danger, so three things come before features:
 
-| Principle              | What it means in the code                                                                                                                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Never invent law**   | Every answer cites an article from `src/data/law/`. If nothing covers the question, the app says so (`renderNotCovered`). AI output is rejected if it cites anything else (`src/ai/validate.js`). |
-| **Private by default** | Everything stays on the device. Online AI is **opt-in** and off by default. No analytics, no third-party requests (fonts are self-hosted).                                                        |
-| **Fast, quiet escape** | One tap or `Esc` swaps the app for a weather/calculator/notes screen and wipes the chat. The calculator really works; a secret code returns to the app.                                           |
+| Principle              | What it means in the code                                                                                                                                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Never invent law**   | Every answer cites an article from `src/data/law/`. If nothing covers the question, the app says so (`renderNotCovered`). AI output is rejected if it cites anything else (`src/ai/validate.js`).                         |
+| **Private by default** | Questions are answered on the device. Online AI is **opt-in**. Anonymous counters (no ids, no text) are **opt-out** and off until configured. An account exists only when she asks for a lawyer. No third-party requests. |
+| **Fast, quiet escape** | One tap or `Esc` swaps the app for a weather/calculator/notes screen and wipes the chat. The calculator really works; a secret code returns to the app.                                                                   |
 
-Status: **prototype**. Lawyer chat, phone numbers and Google sign-in are demos (clearly labelled in the UI). See `docs/ROADMAP.md`.
+Status: **prototype**. The app works fully offline with the rule engine. The real lawyer chat, staff dashboards and analytics are built and tested but switched off until the API is deployed (`API_BASE`, `TELEMETRY_ENDPOINT` in `src/config.js`). Until then the lawyer tab is a labelled demo; phone numbers and the Google button are placeholders. See `docs/ROADMAP.md`.
 
 ## Run it
 
@@ -19,8 +19,11 @@ No build step. It is plain HTML, CSS and ES modules.
 
 ```bash
 npm start            # serves on http://localhost:8080  (or: python -m http.server 8080)
-npm test             # 80+ unit tests, no dependencies, ~1 s
+npm test             # 150 unit tests, no dependencies, ~1 s
 npm run test:e2e     # real-browser tests (needs: npm install  -> installs Playwright)
+npm run lint         # ESLint (also forbids innerHTML)
+npm run check        # format + lint + unit tests: run this before every commit
+npm run dev:admin    # app + staff API + dashboards on http://localhost:8787 (admin at /admin/, SEED=1 for demo data)
 ```
 
 > Open it through a server, **not** by double-clicking `index.html`: browsers block ES modules and `fetch` on `file://`.
@@ -37,17 +40,17 @@ _headers                   security + cache headers (Cloudflare Pages / Netlify)
 styles/                    tokens -> base -> layout -> components -> one file per screen
 src/
   main.js                  wiring only: builds the pieces, opens the first screen
-  config.js                the few settings an operator edits (AI endpoint, calculator code)
+  config.js                the few settings an operator edits (AI endpoint, API_BASE, telemetry, calculator code)
   core/                    store (localStorage), state, router, dom helpers, toast
   ui/actions.js            one delegated click handler driven by data-* attributes
-  features/                chat, sos, disguise (+calculator), settings, nav   <- one folder per feature
+  features/                chat, account, sos, disguise (+calculator), settings, nav, telemetry   <- one folder per feature
   ai/                      how an answer is produced (see docs/AI.md)
   data/                    the law text, keywords, and the rule-based answers  <- content lives here
-server/api/                staff API (Worker + D1): cases, lawyer/developer roles, retention
+server/api/                API (Worker + D1): women's accounts, cases, lawyer/developer roles, analytics, retention
 admin/                     staff dashboard (lawyers and developers), see docs/ADMIN.md
 server/ai-proxy/           optional Cloudflare Worker for online AI (keeps the API key off the device)
 tests/                     unit tests (node:test) + e2e/ (Playwright)
-docs/                      ARCHITECTURE, AI, DEPLOYMENT, CONTENT, ROADMAP
+docs/                      ARCHITECTURE, AI, ADMIN, DEPLOYMENT, CONTENT, ROADMAP
 assets/                    fonts, icon sprite, app icons
 archive/                   old landing page (reference only)
 ```
@@ -65,9 +68,5 @@ archive/                   old landing page (reference only)
 
 ## Contributing
 
-Read `docs/ARCHITECTURE.md` first (10 minutes). Rules of the house:
-
-1. Legal text is never paraphrased; it is copied from the source and fingerprinted in `tests/law-integrity.test.js`.
-2. User text and AI text are rendered with `textContent` only (`core/dom.js` `el()`); never `innerHTML`.
-3. No new third-party request without a written reason; the CSP in `_headers` will block it anyway.
-4. `npm test` and `npm run test:e2e` pass before merging. Format with `npm run format`.
+New to the project? Read **`CONTRIBUTING.md`** (setup in 5 minutes, the map of the code, and the rules of the house),
+then `docs/ARCHITECTURE.md`.

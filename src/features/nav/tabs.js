@@ -1,4 +1,4 @@
-import { $$ } from "../../core/dom.js";
+import { $$, el, icon } from "../../core/dom.js";
 
 /** [screen, icon id, label]. The SOS tab is styled as the raised centre button (components.css). */
 const TABS = [
@@ -13,9 +13,14 @@ const TABS = [
 export function renderTabs() {
   for (const nav of $$("nav[data-tabs]")) {
     const current = nav.getAttribute("data-tabs");
-    nav.innerHTML = TABS.map(([screen, ic, label]) => {
-      const cls = [screen === "sos" ? "sos" : "", screen === current ? "on" : ""].join(" ").trim();
-      return `<button data-go="${screen}" class="${cls}"><svg class="ic"><use href="#${ic}"/></svg>${label}</button>`;
-    }).join("");
+    nav.replaceChildren(
+      ...TABS.map(([screen, ic, label]) => {
+        const cls = [screen === "sos" ? "sos" : "", screen === current ? "on" : ""].join(" ").trim();
+        const button = el("button", cls);
+        button.setAttribute("data-go", screen);
+        button.append(icon(ic), document.createTextNode(label));
+        return button;
+      }),
+    );
   }
 }

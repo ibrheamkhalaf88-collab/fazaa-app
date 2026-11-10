@@ -23,6 +23,8 @@ import { bindActions } from "./ui/actions.js";
 async function inlineSprite() {
   try {
     const res = await fetch(new URL("../assets/sprite.svg", import.meta.url));
+    // our own same-origin SVG file, not user text
+    // eslint-disable-next-line no-restricted-properties
     if (res.ok) document.body.insertAdjacentHTML("afterbegin", await res.text());
   } catch {
     /* offline on very first load: icons stay blank, the app still works */

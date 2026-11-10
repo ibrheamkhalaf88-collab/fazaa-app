@@ -1,4 +1,4 @@
-import { chip, el } from "../../core/dom.js";
+import { el } from "../../core/dom.js";
 import { lawyerSay } from "./lawyer-ui.js";
 import { append, systemNote } from "./messages.js";
 

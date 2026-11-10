@@ -8,7 +8,8 @@ poor networks, work offline, and be auditable by a lawyer-or-engineer reading th
 1. Fetch `assets/sprite.svg` and inline it into `<body>` (so `<use href="#id">` works under a strict CSP).
 2. Build the pieces with plain factory functions, passing dependencies in (no globals, no singletons):
    `createStore` -> `createState` -> `createRouter` -> `createAnswerer` -> `createChat` / `createSos` /
-   `createTheme` / `createDisguise` / `createSettings`.
+   `createTheme` / `createDisguise` / `createSettings`, plus `createTelemetry` (anonymous counters) and `createAccount` +
+   `createLiveLawyerSession` (only when `API_BASE` is set; otherwise the scripted demo session is used).
 3. Bind one delegated click handler (`src/ui/actions.js`) and the composer / keyboard inputs.
 4. Show the last screen (never the disguise), register `sw.js`.
 
@@ -17,7 +18,7 @@ poor networks, work offline, and be auditable by a lawyer-or-engineer reading th
 ```
 main.js
   ui/actions.js            click -> feature call, via data-* attributes
-  features/*               chat, sos, disguise, settings, nav   (own their DOM)
+  features/*               chat, account, sos, disguise, settings, nav, telemetry   (own their DOM)
   ai/*                     question -> Answer (no DOM)
   data/*                   law text, keywords, canned answers   (no logic)
   core/*                   dom, store, state, router, toast     (no feature knowledge)
@@ -29,7 +30,8 @@ main.js
 
 `core/store.js` wraps `localStorage` (namespace `sanad:`, JSON, never throws; falls back to memory when storage
 is blocked). `core/state.js` holds `{theme, country, wipe, pin, dg, user, aiOnline}` and notifies subscribers.
-Chat messages are **not** persisted. "Erase all" resets state and bumps the chat `epoch` so a late async reply
+Chat messages are **not** persisted. The only things that identify her to the server are the session token
+(`sanad:session`, created when she signs up for a lawyer) and nothing else; wiping the app removes it. "Erase all" resets state and bumps the chat `epoch` so a late async reply
 cannot reappear.
 
 ## Navigation

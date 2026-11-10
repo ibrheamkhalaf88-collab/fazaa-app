@@ -53,6 +53,8 @@ export function createDisguise({ state, store, router, wipe }) {
 
     const dg = state.get("dg");
     const city = state.get("country") === "ps-gaza" ? "غزة" : "رام الله";
+    // DISGUISES are fixed templates written in this file, never user text.
+    // eslint-disable-next-line no-restricted-properties
     $("#disguise-view").innerHTML = DISGUISES[dg].replace("رام الله", city);
     calculator.reset();
     renderCalculator();

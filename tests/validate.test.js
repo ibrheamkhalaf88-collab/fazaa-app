@@ -35,6 +35,7 @@ test("rejects missing lead, missing steps, non-objects", () => {
 
 test("strips markup and control characters", () => {
   const a = validateAnswer({ ...good(), lead: "مرحبا <img src=x onerror=alert(1)> بك\u0000" }, ALLOWED);
+  // eslint-disable-next-line no-control-regex
   assert.ok(!/[<>\u0000]/.test(a.lead));
 });
 

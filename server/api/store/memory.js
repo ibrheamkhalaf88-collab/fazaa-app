@@ -16,7 +16,7 @@ export function createMemoryStore() {
   const seen = new Map();
   const lawyerDaily = new Map();
   const users = new Map();
-  let sessions = new Map();
+  const sessions = new Map();
   const bumpLawyer = (now, email, field) => {
     const k = `${dayKey(now)}|${email}`;
     const r = lawyerDaily.get(k) || { day: dayKey(now), email, claimed: 0, closed: 0 };
