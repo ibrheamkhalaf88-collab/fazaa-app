@@ -12,7 +12,7 @@ ALLOWED_ORIGINS = "https://sanad.example.com"
 ACCESS_TEAM_DOMAIN = "yourteam.cloudflareaccess.com"
 ACCESS_AUD = ""
 # First developer(s): they can then add lawyers from the dashboard. Comma separated.
-DEVELOPER_EMAILS = ""
+DEVELOPER_EMAILS = "ibrheamkhalaf88@gmail.com"
 AI_DAILY_LIMIT = "3000"        # max online-AI answers per day (protects the provider quota)
 RETENTION_CLOSED_DAYS = "7"
 RETENTION_IDLE_DAYS = "30"
@@ -23,7 +23,7 @@ RETENTION_USER_DAYS = "180"   # accounts with no login for this long are deleted
 [[d1_databases]]
 binding = "DB"
 database_name = "sanad"
-database_id = "REPLACE_WITH_ID_FROM_wrangler_d1_create"
+database_id = "e3a61665-5eff-4f5a-8049-453dd4efbb8f"
 
 [triggers]
 crons = ["17 3 * * *"] # daily purge
