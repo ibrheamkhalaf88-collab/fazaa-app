@@ -12,6 +12,10 @@ rmSync(out, { recursive: true, force: true });
 mkdirSync(join(out, "src", "core"), { recursive: true });
 cpSync(join(root, "admin"), join(out, "admin"), { recursive: true });
 cpSync(join(root, "src", "core", "dom.js"), join(out, "src", "core", "dom.js")); // the only shared module
+// The dashboard links ../styles/fonts.css, which loads ../assets/fonts/*.woff2.
+mkdirSync(join(out, "styles"), { recursive: true });
+cpSync(join(root, "styles", "fonts.css"), join(out, "styles", "fonts.css"));
+cpSync(join(root, "assets", "fonts"), join(out, "assets", "fonts"), { recursive: true });
 
 writeFileSync(
   join(out, "_headers"),
