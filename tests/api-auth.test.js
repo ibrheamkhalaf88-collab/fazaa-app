@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { passwordProblem, readCookie, resolveStaff, sessionCookie, tempPassword } from "../server/api/auth.js";
+import {
+  passwordProblem,
+  readCookie,
+  resolveStaff,
+  sessionCookie,
+  tempPassword,
+} from "../server/api/auth.js";
 import { createMemoryStore } from "../server/api/store/memory.js";
 
 test("temporary passwords: 14 characters, no look-alikes, different every time", () => {
@@ -25,7 +31,14 @@ test("password rules", () => {
 
 test("session cookie is HttpOnly, Secure, SameSite=Strict and scoped to the staff API", () => {
   const c = sessionCookie("tok", 60);
-  for (const part of ["fz_staff=tok", "HttpOnly", "Secure", "SameSite=Strict", "Path=/api/v1/staff", "Max-Age=60"])
+  for (const part of [
+    "fz_staff=tok",
+    "HttpOnly",
+    "Secure",
+    "SameSite=Strict",
+    "Path=/api/v1/staff",
+    "Max-Age=60",
+  ])
     assert.ok(c.includes(part), part);
   const req = new Request("https://x.example/", { headers: { cookie: "a=1; fz_staff=abc=; b=2" } });
   assert.equal(readCookie(req, "fz_staff"), "abc=");

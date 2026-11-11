@@ -81,7 +81,10 @@ async function test(name, fn, { serviceWorkers = "block" } = {}) {
   }
 }
 const open = async (page, screen) => {
-  await page.evaluate((s) => localStorage.setItem("sanad:last", JSON.stringify(s)), screen);
+  await page.evaluate((s) => {
+    localStorage.setItem("sanad:last", JSON.stringify(s));
+    localStorage.setItem("sanad:introSeen", "true"); // the intro is first-run only
+  }, screen);
   await page.reload();
   await page.waitForSelector(`.screen[data-screen="${screen}"]:not([hidden])`);
 };
@@ -104,7 +107,12 @@ await test("security headers are served and the CSP forbids inline scripts", asy
   problems.length = 0; // the violation report is the expected console error
 });
 
-await test("first run: welcome -> country -> home", async (page) => {
+await test("first run: intro (4 slides) -> welcome -> country -> home", async (page) => {
+  assert.equal(await current(page), "intro");
+  assert.equal(await page.locator('[data-screen="welcome"] svg.art').count(), 0, "no illustration of women");
+  for (let i = 0; i < 3; i++) await page.click('[data-intro="next"]');
+  assert.equal(await page.locator('[data-slide="3"]').isVisible(), true);
+  await page.click('[data-intro="next"]'); // last slide: "ابدئي"
   assert.equal(await current(page), "welcome");
   await page.click('[data-screen="welcome"] .btn.primary');
   assert.equal(await current(page), "country");

@@ -1,0 +1,87 @@
+/* Screen: intro (shown once on first run; reachable again from the welcome screen). */
+
+.intro {
+  background: var(--ground);
+  color: var(--ink);
+}
+
+.intro .top .spacer {
+  flex: 1;
+}
+
+.intro .badge svg.ic {
+  width: 40px;
+  height: 40px;
+}
+
+.intro .skip {
+  background: none;
+  border: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  padding: 8px 10px;
+  min-height: 44px;
+}
+
+.intro .body {
+  align-items: center;
+  text-align: center;
+  gap: 18px;
+}
+
+.intro .slides {
+  width: 100%;
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.intro .slide {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  max-width: 32ch;
+}
+
+.intro .slide[hidden] {
+  display: none;
+}
+
+.intro .slide h2 {
+  font-size: 26px;
+  color: var(--primary);
+}
+
+.intro .slide p,
+.intro .slide li {
+  line-height: 1.8;
+}
+
+.intro .slide ol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0;
+  margin: 0;
+  list-style-position: inside;
+  text-align: start;
+}
+
+.intro .badge {
+  display: grid;
+  place-items: center;
+  width: 84px;
+  height: 84px;
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.intro .slide .note {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+}

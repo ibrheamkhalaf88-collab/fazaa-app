@@ -178,7 +178,15 @@ test("developers READ every conversation (audited) but cannot claim, answer, clo
     ["GET", "client"],
     ["GET", "note"],
   ])
-    assert.equal((await w.call(method, `/v1/staff/cases/${caseId}/${action}`, { as: dev, body: method === "POST" ? { text: "x" } : undefined })).status, 403);
+    assert.equal(
+      (
+        await w.call(method, `/v1/staff/cases/${caseId}/${action}`, {
+          as: dev,
+          body: method === "POST" ? { text: "x" } : undefined,
+        })
+      ).status,
+      403,
+    );
   assert.equal((await w.call("GET", "/v1/staff/conversations", { as: lawyer })).status, 403);
   assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: dev })).status, 403);
   assert.equal((await w.call("GET", "/v1/staff/queue", { as: dev })).status, 403);

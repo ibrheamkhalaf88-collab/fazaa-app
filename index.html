@@ -41,6 +41,7 @@
     <link rel="stylesheet" href="styles/base.css" />
     <link rel="stylesheet" href="styles/layout.css" />
     <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/screens/intro.css" />
     <link rel="stylesheet" href="styles/screens/welcome.css" />
     <link rel="stylesheet" href="styles/screens/country.css" />
     <link rel="stylesheet" href="styles/screens/home.css" />
@@ -54,44 +55,78 @@
   <body>
     <div class="device">
       <main class="app" id="app">
+        <!-- 0. intro (shown once, reachable again from the welcome screen) -->
+        <section class="screen intro" data-screen="intro" hidden>
+          <div class="top">
+            <button class="iconbtn" data-intro="back" aria-label="السابق" hidden>
+              <svg class="ic"><use href="#i-back" /></svg>
+            </button>
+            <span class="spacer"></span>
+            <button class="skip" data-intro="skip">تخطّي</button>
+          </div>
+          <div class="body">
+            <div class="slides">
+              <article class="slide" data-slide="0">
+                <span class="badge">
+                  <svg class="ic"><use href="#i-scale" /></svg>
+                </span>
+                <h2>شو هو التطبيق؟</h2>
+                <p>
+                  مساحة آمنة بتشرحلك حقوقك القانونية كامرأة فلسطينية بكلام بسيط، وبتدلّك على الخطوة اللي
+                  بعدها: جواب سريع، أو محامية، أو خطة أمان.
+                </p>
+                <p class="note">المعلومات توعوية وما بتغني عن استشارة محامية.</p>
+              </article>
+              <article class="slide" data-slide="1" hidden>
+                <span class="badge">
+                  <svg class="ic"><use href="#i-chat" /></svg>
+                </span>
+                <h2>كيف بتستخدميه؟</h2>
+                <ol>
+                  <li>اختاري بلدك: الضفة الغربية أو غزة، لأنو القانون بيختلف.</li>
+                  <li>اكتبي سؤالك بكلامك العادي، متل النفقة أو الطلاق أو الابتزاز.</li>
+                  <li>بتاخدي جواب مبسّط مع المادة القانونية، وبتقدري تطلبي محامية من نفس الشاشة.</li>
+                </ol>
+              </article>
+              <article class="slide" data-slide="2" hidden>
+                <span class="badge">
+                  <svg class="ic"><use href="#i-lock" /></svg>
+                </span>
+                <h2>خصوصيتك أولاً</h2>
+                <p>
+                  ما في تسجيل إجباري. أسئلتك للمساعد الذكي ما بتنحفظ. وإذا طلبتي محامية، محادثتك معها بتتشفّر
+                  وبتنمسح تلقائياً بعد ما تنتهي الحالة.
+                </p>
+              </article>
+              <article class="slide" data-slide="3" hidden>
+                <span class="badge">
+                  <svg class="ic"><use href="#i-exit" /></svg>
+                </span>
+                <h2>الخروج السريع</h2>
+                <p>
+                  لو حدا قرّب منك، اضغطي زر الخروج وبيتحوّل التطبيق لآلة حاسبة عادية. وبتقدري ترجعي له بنفس
+                  الطريقة اللي بتختاريها.
+                </p>
+              </article>
+            </div>
+            <div class="dots" aria-hidden="true">
+              <i class="on"></i>
+              <i></i>
+              <i></i>
+              <i></i>
+            </div>
+            <div class="stack">
+              <button class="btn primary" data-intro="next">التالي</button>
+            </div>
+          </div>
+        </section>
+
         <!-- 1. welcome -->
         <section class="screen welcome" data-screen="welcome">
           <div class="body">
             <h1 class="brush wm">فَزعة</h1>
             <p class="wm-sub">أهلاً فيكِ</p>
-            <svg class="art" viewBox="0 0 300 220" role="img" aria-label="رسمة لثلاث نساء تحت قوس">
-              <path d="M30 220V100a120 120 0 0 1 240 0v120z" fill="#fff" fill-opacity=".1" />
-              <use href="#olive" x="170" y="0" width="110" height="66" />
-              <use href="#pome" x="20" y="40" width="40" height="40" />
-              <use
-                href="#w-hair"
-                x="6"
-                y="80"
-                width="112"
-                height="140"
-                style="--c1: var(--accent); --c3: #fff"
-              />
-              <use
-                href="#w-hair"
-                x="182"
-                y="80"
-                width="112"
-                height="140"
-                style="--c1: #5e6f9a; --c3: var(--accent); --hair: #6b3e2e"
-              />
-              <use
-                href="#w-hijab"
-                x="84"
-                y="50"
-                width="132"
-                height="170"
-                style="--c1: #1c2654; --c2: #f6f1e3; --c3: var(--accent)"
-              />
-            </svg>
-            <div class="dots" aria-hidden="true">
-              <i class="on"></i>
-              <i></i>
-            </div>
+
             <p class="lead">
               اسألي عن حقوقك أو اطلبي مساعدة بسرية تامة. ما في تسجيل دخول إجباري، وما بنحفظ ولا كلمة مما
               بتكتبيه.
@@ -121,6 +156,7 @@
               </button>
             </div>
             <p class="fine">الدخول بـ Google اختياري، بس بيحفظ بلدك وإعداداتك.</p>
+            <button class="btn" data-go="intro">شو هو التطبيق وكيف بستخدمه؟</button>
           </div>
         </section>
 

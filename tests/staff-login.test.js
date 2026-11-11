@@ -14,7 +14,12 @@ async function world() {
   const store = createMemoryStore();
   await store.upsertStaff({ email: OWNER, role: "developer", name: "", now: 1 });
   const salt = newSalt();
-  await store.setStaffPassword(OWNER, { salt, hash: await hashPin(OWNER_PW, salt), mustChange: true, now: 1 });
+  await store.setStaffPassword(OWNER, {
+    salt,
+    hash: await hashPin(OWNER_PW, salt),
+    mustChange: true,
+    now: 1,
+  });
   let clock = 1_000_000;
   const call = async (method, path, { body, cookie, origin = ORIGIN } = {}) =>
     handleRequest(
@@ -58,12 +63,18 @@ test("temporary password: sign in, nothing allowed until it is changed, then ful
   assert.equal((await w.call("GET", "/v1/staff/stats", { cookie })).status, 403);
 
   // wrong current password / weak new password are refused
-  let r = await w.call("POST", "/v1/staff/password", { cookie, body: { current: "bad", next: "a-good-new-pass" } });
+  let r = await w.call("POST", "/v1/staff/password", {
+    cookie,
+    body: { current: "bad", next: "a-good-new-pass" },
+  });
   assert.equal(r.status, 400);
   r = await w.call("POST", "/v1/staff/password", { cookie, body: { current: OWNER_PW, next: "short" } });
   assert.equal((await r.json()).error, "password-too-short");
 
-  r = await w.call("POST", "/v1/staff/password", { cookie, body: { current: OWNER_PW, next: "a-good-new-pass" } });
+  r = await w.call("POST", "/v1/staff/password", {
+    cookie,
+    body: { current: OWNER_PW, next: "a-good-new-pass" },
+  });
   assert.equal(r.status, 200);
   const fresh = w.cookieOf(r);
   // the old session was signed out; the new one works fully
@@ -93,7 +104,10 @@ test("logout ends the session", async () => {
 
 test("state-changing staff calls without an Origin header are refused", async () => {
   const w = await world();
-  const res = await w.call("POST", "/v1/staff/login", { origin: null, body: { email: OWNER, password: OWNER_PW } });
+  const res = await w.call("POST", "/v1/staff/login", {
+    origin: null,
+    body: { email: OWNER, password: OWNER_PW },
+  });
   assert.equal(res.status, 403);
 });
 
@@ -201,5 +215,8 @@ test("developer: health report and deleting a user account (never her name or ph
   const del = await w.call("DELETE", `/v1/staff/users/${row.id}`, { cookie: w.cookie });
   assert.equal(del.status, 200);
   const after = await (await w.call("GET", "/v1/staff/users", { cookie: w.cookie })).json();
-  assert.equal(after.users.some((u) => u.username === "noor_1"), false);
+  assert.equal(
+    after.users.some((u) => u.username === "noor_1"),
+    false,
+  );
 });

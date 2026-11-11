@@ -10,6 +10,7 @@ import { createState } from "./core/state.js";
 import { createStore } from "./core/store.js";
 import { createChat } from "./features/chat/chat.js";
 import { createDisguise } from "./features/disguise/disguise.js";
+import { createIntro } from "./features/intro/intro.js";
 import { renderTabs } from "./features/nav/tabs.js";
 import { createSettings } from "./features/settings/settings.js";
 import { createTheme } from "./features/settings/theme.js";
@@ -84,7 +85,8 @@ async function boot() {
   theme.apply();
   settings.render();
   sos.restore();
-  router.show(router.restore());
+  const intro = createIntro({ store, router });
+  router.show(intro.startScreen());
 
   telemetry.visit();
   router.onChange((name) => name === "sos" && telemetry.track("sos_open"));

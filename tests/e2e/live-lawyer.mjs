@@ -63,7 +63,7 @@ env.ALLOWED_ORIGINS = base;
 const staff = (path, init = {}) =>
   fetch(`${base}/api${path}`, {
     ...init,
-    headers: { "x-staff": "salma@x.test", "content-type": "application/json" },
+    headers: { "x-staff": "salma@x.test", "content-type": "application/json", origin: base },
   }).then((r) => r.json());
 
 const browser = await chromium.launch();
@@ -75,7 +75,10 @@ page.on("console", (m) => m.type() === "error" && problems.push(m.text()));
 let failed = false;
 try {
   await page.goto(base + "/");
-  await page.evaluate(() => localStorage.setItem("sanad:last", JSON.stringify("chat")));
+  await page.evaluate(() => {
+    localStorage.setItem("sanad:last", JSON.stringify("chat"));
+    localStorage.setItem("sanad:introSeen", "true"); // the intro is first-run only
+  });
   await page.reload();
   await page.waitForSelector('.screen[data-screen="chat"]:not([hidden])');
 

@@ -94,6 +94,7 @@
 }
 
 .welcome > .body,
+.intro > .body,
 [data-screen="country"] > .body {
   padding-bottom: 20px;
 }
