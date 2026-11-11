@@ -7,7 +7,7 @@ compatibility_date = "2026-01-01"
 
 [vars]
 # Exact origins of the deployed app, comma separated, no trailing slash.
-ALLOWED_ORIGINS = "https://fazaa.ibrheamkhalaf88.workers.dev"
+ALLOWED_ORIGINS = "https://fazaa.ibrheam-app.workers.dev"
 # Which model provider to call: "gemini" (default) | "nvidia" | "anthropic".
 PROVIDER = "gemini"
 # Optional: override the model (defaults live in providers.js; names change often).
