@@ -2,7 +2,8 @@
  * Entry point: build the pieces, wire them together, open the first screen.
  * No logic lives here; each feature owns its own behaviour (see docs/ARCHITECTURE.md).
  */
-import { AI_ENDPOINT, API_BASE, TELEMETRY_ENDPOINT } from "./config.js";
+import { AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
+import { createContacts } from "./features/support/contacts.js";
 import { createAnswerer } from "./ai/answerer.js";
 import { createRemoteEngine } from "./ai/remote-engine.js";
 import { createRouter } from "./core/router.js";
@@ -46,8 +47,11 @@ async function boot() {
 
   const telemetry = createTelemetry({ endpoint: TELEMETRY_ENDPOINT, state, store, router });
 
+  const contacts = createContacts({ store, state, endpoint: CONTACTS_ENDPOINT });
+
   const aiAvailable = AI_ENDPOINT !== "";
   const answerer = createAnswerer({
+    emergencyNumbers: contacts.emergencyNumbers,
     remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT }) : undefined,
     isRemoteEnabled: () => aiAvailable && state.get("aiOnline"),
     onRemoteError: (err) => {
@@ -90,6 +94,10 @@ async function boot() {
 
   telemetry.visit();
   router.onChange((name) => name === "sos" && telemetry.track("sos_open"));
+  // the list follows her region, so redraw whenever she opens the support screen
+  contacts.render();
+  router.onChange((name) => name === "support" && contacts.render());
+  contacts.refresh();
   window.addEventListener("appinstalled", () => telemetry.track("install"));
 
   registerServiceWorker();

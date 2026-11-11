@@ -1,5 +1,6 @@
 import { api } from "./api.js";
 import { aiSettingsView } from "./ai-settings.js";
+import { contactsView } from "./contacts.js";
 import { answersView } from "./answers.js";
 import { auditView, healthView, overviewView, teamView } from "./developer.js";
 import { conversationsView, lawyerView } from "./lawyer.js";
@@ -134,9 +135,13 @@ function showPasswordForm(forced) {
 }
 $("pw-form").addEventListener("submit", async (e) => {
   e.preventDefault();
-  if ($("pw-next").value !== $("pw-again").value) return formError("pw-error", "الكلمتين الجديدتين مش متطابقتين.");
+  if ($("pw-next").value !== $("pw-again").value)
+    return formError("pw-error", "الكلمتين الجديدتين مش متطابقتين.");
   try {
-    await api("/password", { method: "POST", body: { current: $("pw-current").value, next: $("pw-next").value } });
+    await api("/password", {
+      method: "POST",
+      body: { current: $("pw-current").value, next: $("pw-next").value },
+    });
     location.reload();
   } catch (err) {
     const { error } = err.body ? await err.body() : {};
@@ -188,6 +193,7 @@ $("logout").addEventListener("click", async () => {
           ["ai", "الذكاء الاصطناعي", aiView, "spark"],
           ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
           ["ai-settings", "إعدادات الذكاء", aiSettingsView, "gear"],
+          ["contacts", "أرقام التواصل", contactsView, "list"],
           ["team", "الفريق", teamView, "team"],
           ["audit", "سجل العمليات", auditView, "inbox"],
         ];

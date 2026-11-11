@@ -79,7 +79,7 @@ const REPLIES = {
   "self-harm": {
     lead: "أنا سامعتك، واللي حاسة فيه وجع حقيقي. إنتِ مش لحالك، وفي ناس بدهم يساعدوكِ هلأ.",
     steps: [
-      "إذا ممكن تأذي حالك هلأ، اتصلي بالإسعاف 101، أو روحي لأقرب طوارئ",
+      "إذا ممكن تأذي حالك هلأ، اتصلي بالإسعاف{ambulance}، أو روحي لأقرب طوارئ",
       "احكي لحدا بتثقي فيه وخليه يضل معكِ الليلة",
       "خطوط الدعم النفسي المجانية موجودة بصفحة «مين بيساعدني»",
     ],
@@ -89,7 +89,7 @@ const REPLIES = {
   imminent: {
     lead: "سلامتك أهم إشي هلأ. ما حدا إله حق يأذيكِ، وإنتِ مش غلطانة.",
     steps: [
-      "إذا إنتِ بخطر هلأ، اتصلي بالشرطة 100 أو روحي لمكان آمن عند حدا بتثقي فيه",
+      "إذا إنتِ بخطر هلأ، اتصلي بالشرطة{police} أو روحي لمكان آمن عند حدا بتثقي فيه",
       "جهّزي تلفونك وهويتك وأوراق الولاد بمكان سهل تاخديهم منه",
       "وثّقي أي إصابة أو تهديد: صور، وتقرير طبي، ورسائل",
       "احكي مع محامية عن الحماية وعن حقوقك",
@@ -102,31 +102,36 @@ const REPLIES = {
     steps: [
       "احكي لحدا كبير بتثقي فيه: قريبة، أو معلمة، أو مرشدة المدرسة",
       "اطلبي محامية من فزعة، بتعرف شو حقوقك وشو بيحميكِ",
-      "إذا في تهديد أو ضرب، اتصلي بالشرطة 100",
+      "إذا في تهديد أو ضرب، اتصلي بالشرطة{police}",
     ],
     note: "",
     topic: "زواج قاصرات",
   },
 };
 
+/** Fill {police} / {ambulance} with the numbers the owner set in the dashboard (" 100"), or nothing. */
+function reply(kind, numbers) {
+  const fill = (s) => s.replace(/\{(police|ambulance)\}/g, (_, k) => (numbers[k] ? ` ${numbers[k]}` : ""));
+  const r = REPLIES[kind];
+  return { ...r, lead: fill(r.lead), steps: r.steps.map(fill), cites: [], general: true, sos: true };
+}
+
 /**
  * @param {string} question
+ * @param {{police?: string, ambulance?: string}} [numbers]  from the contacts list; defaults 100 / 101
  * @returns {{kind: "self-harm"|"imminent"|"forced-marriage", answer: Omit<import("./types.js").Answer, "source">} | null}
  */
-export function detectDanger(question) {
+export function detectDanger(question, numbers = { police: "100", ambulance: "101" }) {
   const text = tokenize(question).join(" ");
   for (const { kind, patterns } of COMPILED) {
     if (!patterns.some((re) => re.test(text))) continue;
     // "غصب عني" alone is too wide; forced marriage needs a marriage word or a minor's age
     if (kind === "forced-marriage" && !/(?:جوز|زوج|عريس|خطب)/.test(text) && !MINOR.test(text)) continue;
-    return { kind, answer: { ...REPLIES[kind], cites: [], general: true, sos: true } };
+    return { kind, answer: reply(kind, numbers) };
   }
   // a minor talking about marriage at all is treated as forced marriage
   if (MINOR.test(text) && /(?:^| )(?:ب|و)?(?:يجوز|جواز|زواج|عريس|يزوج|يخطب)/.test(text)) {
-    return {
-      kind: "forced-marriage",
-      answer: { ...REPLIES["forced-marriage"], cites: [], general: true, sos: true },
-    };
+    return { kind: "forced-marriage", answer: reply("forced-marriage", numbers) };
   }
   return null;
 }

@@ -34,3 +34,9 @@ export const TELEMETRY_ENDPOINT = "";
  * demo. When the API is deployed on the same domain: "/api".
  */
 export const API_BASE = "";
+
+/**
+ * Public list of emergency numbers and support organisations (edited in the dashboard, "أرقام التواصل").
+ * Served by the same Worker as the app. "" = use only the numbers built into the app.
+ */
+export const CONTACTS_ENDPOINT = "/api/v1/contacts";

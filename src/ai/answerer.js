@@ -22,7 +22,12 @@ import { answerFromRules } from "./rules-engine.js";
  *   onRemoteError?: (err: Error) => void,
  * }} [deps]
  */
-export function createAnswerer({ remote, isRemoteEnabled = () => false, onRemoteError = () => {} } = {}) {
+export function createAnswerer({
+  remote,
+  isRemoteEnabled = () => false,
+  onRemoteError = () => {},
+  emergencyNumbers = () => ({ police: "100", ambulance: "101" }),
+} = {}) {
   return {
     /**
      * @param {string} question
@@ -31,7 +36,7 @@ export function createAnswerer({ remote, isRemoteEnabled = () => false, onRemote
      */
     async answer(question, ctx) {
       // 1) danger: a fixed, reviewed safety reply, at once, even offline; nothing is sent anywhere
-      const danger = detectDanger(question);
+      const danger = detectDanger(question, emergencyNumbers());
       if (danger) return { ...danger.answer, source: "rules" };
 
       const local = answerFromRules(question);

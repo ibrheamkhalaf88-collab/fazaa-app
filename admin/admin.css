@@ -1073,6 +1073,30 @@ dl.client dd {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* contacts editor */
+.contact-list {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.contact-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+.contact-head .ghost {
+  margin-inline-start: auto;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(220px, 100%), 1fr));
+  column-gap: 12px;
+}
+.contact-grid .field {
+  margin-bottom: 8px;
+}
 .hint.bad {
   color: var(--ink);
   font-weight: 600;

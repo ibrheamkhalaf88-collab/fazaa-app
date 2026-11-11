@@ -23,6 +23,8 @@ export const ACTION = {
   "user-delete": "حذف حساب مستخدمة",
   "dev-read-case": "فتح محادثة للقراءة",
   "cases-release": "رجّع حالات عضو لقائمة الانتظار",
+  "contacts-set": "عدّل أرقام التواصل",
+  "contacts-reset": "رجّع أرقام التواصل للأصل",
 };
 
 /**

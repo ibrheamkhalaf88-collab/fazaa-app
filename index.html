@@ -72,8 +72,8 @@
                 </span>
                 <h2>شو هو التطبيق؟</h2>
                 <p>
-                  مساحة آمنة بتشرحلك حقوقك القانونية كامرأة فلسطينية بكلام بسيط، وبتدلّك على الخطوة اللي
-                  بعدها: جواب سريع، أو محامية، أو خطة أمان.
+                  مساحة آمنة بتشرحلك حقوقك القانونية كامرأة فلسطينية بكلام بسيط، وبتدلّك على الخطوة اللي بعدها:
+                  جواب سريع، أو محامية، أو خطة أمان.
                 </p>
                 <p class="note">المعلومات توعوية وما بتغني عن استشارة محامية.</p>
               </article>
@@ -95,8 +95,8 @@
                 <h2>خصوصيتك أولاً</h2>
                 <p>
                   ما في تسجيل إجباري، وأسئلتك للمساعد الذكي ما بتنحفظ. وإذا طلبتي محامية، رسايلك بتقراها هي
-                  وفريق فزعة التقني للمتابعة بس. اسمك ورقمك مشفّرين وما بيشوفهم غير هي، وبتقدري تحذفي حسابك
-                  بأي وقت.
+                  وفريق فزعة التقني للمتابعة بس. اسمك ورقمك مشفّرين وما بيشوفهم غير هي، وبتقدري تحذفي حسابك بأي
+                  وقت.
                 </p>
               </article>
               <article class="slide" data-slide="3" hidden>
@@ -581,67 +581,12 @@
               <button role="tab" aria-selected="false" data-go="sos">طوارئ</button>
               <button class="on" role="tab" aria-selected="true" data-go="support">جهات الدعم</button>
             </div>
-            <div class="stabs" id="stabs">
-              <button class="stab on" data-cat="all">الكل</button>
-              <button class="stab" data-cat="safe">أمني</button>
-              <button class="stab" data-cat="law">قانوني</button>
-              <button class="stab" data-cat="mind">نفسي</button>
-            </div>
-            <div class="org" data-cat="safe">
-              <span class="oi" style="background: var(--emphasis-soft); color: var(--emphasis)">
-                <svg class="ic"><use href="#i-shield" /></svg>
-              </span>
-              <div>
-                <b>وحدة الجرائم الإلكترونية بالشرطة</b>
-                <small>للابتزاز والتهديد ونشر الصور</small>
-                <span class="badge">رسمية</span>
-                <div class="acts">
-                  <button class="chip fill" data-action="soon">
-                    <svg class="ic"><use href="#i-phone" /></svg>
-                    اتصلي
-                  </button>
-                  <button class="chip" data-action="soon">
-                    <svg class="ic"><use href="#i-pin" /></svg>
-                    أقرب مركز
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="org" data-cat="law">
-              <span class="oi" style="background: var(--primary-soft); color: var(--primary)">
-                <svg class="ic"><use href="#i-scale" /></svg>
-              </span>
-              <div>
-                <b>مساعدة قانونية مجانية للنساء</b>
-                <small>محاميات بيتابعوا قضايا العنف والابتزاز والأحوال الشخصية</small>
-                <span class="badge">مجانية</span>
-                <div class="acts">
-                  <button class="chip fill" data-action="soon">
-                    <svg class="ic"><use href="#i-msg" /></svg>
-                    واتساب
-                  </button>
-                </div>
-              </div>
-            </div>
-            <div class="org" data-cat="mind">
-              <span class="oi" style="background: var(--primary-soft); color: var(--accent)">
-                <svg class="ic"><use href="#i-brain" /></svg>
-              </span>
-              <div>
-                <b>خط الدعم النفسي</b>
-                <small>حدا يسمعك بسرية</small>
-                <span class="badge">سري</span>
-                <div class="acts">
-                  <button class="chip fill" data-action="soon">
-                    <svg class="ic"><use href="#i-phone" /></svg>
-                    اتصلي
-                  </button>
-                </div>
-              </div>
-            </div>
+            <!-- filled from the contacts list the owner edits in the dashboard (src/features/support/contacts.js) -->
+            <div class="stabs" id="stabs"></div>
+            <div id="support-list"></div>
             <p class="note">
               <svg class="ic"><use href="#i-pin" /></svg>
-              أرقام التواصل بتنضاف بعد ما نتأكد منها مع الجهات نفسها. هاي النسخة للعرض.
+              الأرقام بيحدّثها فريق فزعة، وبتضل محفوظة على جهازك حتى بدون نت.
             </p>
           </div>
           <nav class="tabs" data-tabs="support"></nav>
@@ -956,7 +901,10 @@
               <svg class="ic"><use href="#i-trash" /></svg>
               امسحي كل بياناتي من الجهاز
             </button>
-            <p class="credit">إعداد وتطوير: <span dir="ltr">Ibrheam Shady Khalaf</span></p>
+            <p class="credit">
+              إعداد وتطوير:
+              <span dir="ltr">Ibrheam Shady Khalaf</span>
+            </p>
           </div>
         </section>
 

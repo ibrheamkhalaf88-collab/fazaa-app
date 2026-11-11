@@ -41,6 +41,7 @@ import {
 import { createD1Store } from "./store/d1.js";
 import { scrub } from "./scrub.js";
 import { EVENTS, normalizeTopic } from "./store/days.js";
+import { DEFAULT_CONTACTS, validateContacts } from "../../src/data/contacts.js";
 
 const REGIONS = ["ps-wb", "ps-gaza"];
 const LIMITS = {
@@ -84,9 +85,9 @@ function corsHeaders(request, env) {
   };
 }
 
-async function readJson(request) {
+async function readJson(request, maxBytes = LIMITS.body) {
   const raw = await request.text();
-  if (new TextEncoder().encode(raw).length > LIMITS.body) return { error: 413 };
+  if (new TextEncoder().encode(raw).length > maxBytes) return { error: 413 };
   try {
     const value = JSON.parse(raw);
     return value && typeof value === "object" ? { value } : { error: 400 };
@@ -100,6 +101,7 @@ const firstName = (s) => (s || "").trim().split(/\s+/)[0].slice(0, LIMITS.name);
 
 /* ---------- AI settings (developer dashboard) ---------- */
 const AI_SETTING = "ai";
+const CONTACTS_SETTING = "contacts";
 const MODEL_RE = /^[\w.\-/:]{1,80}$/;
 const API_KEY_RE = /^[\x21-\x7e]{20,400}$/; // visible ASCII only, no spaces
 const aiProviders = () =>
@@ -228,6 +230,28 @@ export async function handleRequest(request, env, deps) {
 
   const seal = (text) => encryptText(text, env.MESSAGE_KEY);
   const open = (row) => decryptText(row, env.MESSAGE_KEY);
+
+  /** The contacts list the owner saved, or the built-in defaults. */
+  const loadContacts = async () => {
+    const row = await store.getSetting(CONTACTS_SETTING);
+    if (!row) return { contacts: DEFAULT_CONTACTS, updatedAt: null, updatedBy: null, custom: false };
+    try {
+      return {
+        contacts: validateContacts(JSON.parse(await open(row))),
+        updatedAt: row.updatedAt,
+        updatedBy: row.updatedBy,
+        custom: true,
+      };
+    } catch {
+      return { contacts: DEFAULT_CONTACTS, updatedAt: null, updatedBy: null, custom: false };
+    }
+  };
+
+  /* ============ public: emergency numbers and support organisations (no personal data) ============ */
+  if (path === "/v1/contacts" && request.method === "GET") {
+    const { contacts, updatedAt } = await loadContacts();
+    return reply(json({ contacts, updatedAt }, 200, { "cache-control": "public, max-age=300" }));
+  }
 
   /* ============ public AI endpoint: the key is the one a developer saved in the dashboard ============ */
   if (path === "/v1/answer" && request.method === "POST") {
@@ -478,6 +502,41 @@ export async function handleRequest(request, env, deps) {
       return reply(
         json({ ...aiSummary(env, await loadAi(store, open)), ...(await aiUsage(store, env, now)) }),
       );
+    }
+
+    /* ---- contacts editor (developer) ---- */
+    if (path === "/v1/staff/contacts") {
+      const denied = need("developer");
+      if (denied) return denied;
+      if (request.method === "GET") return reply(json(await loadContacts()));
+      if (request.method === "PUT") {
+        const { value, error } = await readJson(request, 16384);
+        if (error) return reply(fail(error, "bad-body"));
+        let contacts;
+        try {
+          contacts = validateContacts(value.contacts);
+        } catch (e) {
+          return reply(fail(400, e.message));
+        }
+        await store.setSetting({
+          key: CONTACTS_SETTING,
+          ...(await seal(JSON.stringify(contacts))),
+          now,
+          by: staff.email,
+        });
+        await store.addAudit({
+          actor: staff.email,
+          action: "contacts-set",
+          target: `${contacts.length}`,
+          now,
+        });
+        return reply(json(await loadContacts()));
+      }
+      if (request.method === "DELETE") {
+        await store.deleteSetting(CONTACTS_SETTING);
+        await store.addAudit({ actor: staff.email, action: "contacts-reset", target: "", now });
+        return reply(json(await loadContacts()));
+      }
     }
 
     if (path === "/v1/staff/ai-config" && request.method === "DELETE") {
