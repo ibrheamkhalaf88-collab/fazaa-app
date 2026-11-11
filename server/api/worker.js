@@ -28,7 +28,16 @@ import {
   STAFF_SESSION_MS,
   tempPassword,
 } from "./auth.js";
-import { decryptText, encryptText, hashPin, newSalt, randomId, safeEqual, sha256Hex } from "./crypto.js";
+import {
+  checkMessageKey,
+  decryptText,
+  encryptText,
+  hashPin,
+  newSalt,
+  randomId,
+  safeEqual,
+  sha256Hex,
+} from "./crypto.js";
 import { createD1Store } from "./store/d1.js";
 import { scrub } from "./scrub.js";
 import { EVENTS, normalizeTopic } from "./store/days.js";
@@ -368,6 +377,7 @@ export async function handleRequest(request, env, deps) {
         json({
           checkedAt: now,
           db: { ok: dbOk, ms: dbMs },
+          encryption: await checkMessageKey(env.MESSAGE_KEY),
           site,
           ai: {
             configured: ai.hasKey,

@@ -33,9 +33,25 @@ export function safeEqual(a, b) {
 }
 
 async function aesKey(base64Key) {
-  const raw = fromBase64(base64Key);
+  // A secret pasted through a terminal can pick up a BOM, quotes or line breaks: keep only base64.
+  let raw;
+  try {
+    raw = fromBase64(String(base64Key ?? "").replace(/[^A-Za-z0-9+/=]/g, ""));
+  } catch {
+    throw new Error("MESSAGE_KEY is not valid base64");
+  }
   if (raw.length !== 32) throw new Error("MESSAGE_KEY must be 32 bytes, base64");
   return crypto.subtle.importKey("raw", raw, "AES-GCM", false, ["encrypt", "decrypt"]);
+}
+
+/** Does MESSAGE_KEY work? Never reveals the key: only "ok" or a short reason. */
+export async function checkMessageKey(base64Key) {
+  try {
+    const sealed = await encryptText("ok", base64Key);
+    return { ok: (await decryptText(sealed, base64Key)) === "ok", error: null };
+  } catch (e) {
+    return { ok: false, error: e.message.startsWith("MESSAGE_KEY") ? e.message : "crypto-error" };
+  }
 }
 
 /** @returns {Promise<{iv: string, body: string}>} */
