@@ -27,7 +27,7 @@
 
   /* text */
   --ink: #18214a;
-  --ink-soft: #3f4b72; /* secondary text, still AA on --ground */
+  --ink-soft: #3a4569; /* secondary text, AA (4.7:1) on --ground */
 
   /* brand */
   --primary: #1c2654; /* main buttons, active states */

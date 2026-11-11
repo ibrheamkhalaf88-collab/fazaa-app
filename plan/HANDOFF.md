@@ -14,7 +14,7 @@ a backup (export in `D:\ai كلود\fazaa-db-backup`); the owner deletes it when
 
 - GitHub: https://github.com/ibrheamkhalaf88-collab/fazaa-app (branch `master`; old `sanad-app` links redirect)
 - **Everything is one Worker `fazaa`: https://fazaa.ibrheam-app.workers.dev** (workers.dev subdomain changed from
-  `ibrheamkhalaf88` to `ibrheam-app` on 2026-11-11; the old origin stays in ALLOWED_ORIGINS until the switch is done) — the app at `/`, the dashboard at
+  `ibrheamkhalaf88` to `ibrheam-app` on 2026-11-11; the old address no longer works) — the app at `/`, the dashboard at
   `/admin/`, the API at `/api/*` (same origin). Build + deploy: `node scripts/build-admin.mjs`, then
   `cd server/api && npx wrangler deploy`. It does NOT auto-deploy from GitHub. D1 database `fazaa`.
 - Old, unused, safe for the owner to delete in the Cloudflare dashboard: Pages project `sanad-app`

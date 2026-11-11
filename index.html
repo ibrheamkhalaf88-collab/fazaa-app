@@ -134,7 +134,8 @@
             </p>
             <div class="stack">
               <button class="btn primary" data-go="country">ابدئي كضيفة</button>
-              <button class="btn google" data-action="google">
+              <!-- hidden until Google sign-in really works -->
+              <button class="btn google" data-action="google" hidden>
                 <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
                   <path
                     fill="#FFC107"
@@ -367,8 +368,8 @@
               </button>
             </div>
             <div class="sec">
-              <h3 class="h">محامية متاحة الآن</h3>
-              <span class="muted" style="font-size: 12px">اسم للعرض</span>
+              <h3 class="h">محاميات فزعة</h3>
+              <span class="muted" style="font-size: 12px">أسماء تجريبية</span>
             </div>
             <div class="lawmini">
               <svg class="av" viewBox="0 0 120 150" aria-hidden="true">
@@ -377,9 +378,9 @@
               <div style="flex: 1; min-width: 0">
                 <b>أ. سلمى</b>
                 <small>نفقة وحضانة</small>
-                <span class="avail">
+                <span class="avail busy">
                   <i></i>
-                  متاحة الآن
+                  الخدمة قريباً
                 </span>
               </div>
               <button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button>
@@ -459,7 +460,8 @@
             <p class="disclaim">معلومات عامة من نص القانون، مش بديل عن محامي.</p>
           </div>
           <form class="composer" id="composer" autocomplete="off">
-            <button type="button" class="round mic" data-action="mic" aria-label="سجّلي بصوتك">
+            <!-- hidden until voice input really works -->
+            <button type="button" class="round mic" data-action="mic" aria-label="سجّلي بصوتك" hidden>
               <svg class="ic"><use href="#i-mic" /></svg>
             </button>
             <textarea id="q" rows="1" placeholder="اكتبي سؤالك هون..." aria-label="سؤالك"></textarea>
@@ -686,8 +688,8 @@
               </button>
             </div>
             <div class="sec">
-              <h3 class="h">محاميات متاحات</h3>
-              <span class="muted" style="font-size: 11.5px">أسماء للعرض</span>
+              <h3 class="h">محاميات فزعة</h3>
+              <span class="muted" style="font-size: 11.5px">أسماء تجريبية، والخدمة قريباً</span>
             </div>
             <div class="lawyers">
               <div class="lawyer">
@@ -705,9 +707,9 @@
                     <small>نفقة وحضانة · ١٢ سنة خبرة</small>
                   </div>
                 </div>
-                <span class="avail">
+                <span class="avail busy">
                   <i></i>
-                  متاحة الآن
+                  الخدمة قريباً
                 </span>
                 <button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button>
               </div>
@@ -726,9 +728,9 @@
                     <small>طلاق وعنف أسري · ٨ سنين</small>
                   </div>
                 </div>
-                <span class="avail">
+                <span class="avail busy">
                   <i></i>
-                  متاحة الآن
+                  الخدمة قريباً
                 </span>
                 <button class="chip fill" data-chat="lawyer" data-lawyer="رنا">احكي معها</button>
               </div>
@@ -749,9 +751,9 @@
                 </div>
                 <span class="avail busy">
                   <i></i>
-                  بترجع الساعة ٤
+                  الخدمة قريباً
                 </span>
-                <button class="chip" data-action="callback">اطلبي اتصال</button>
+                <button class="chip fill" data-chat="lawyer" data-lawyer="هبة">احكي معها</button>
               </div>
             </div>
             <div class="sec">
@@ -821,7 +823,8 @@
             <span style="width: 40px"></span>
           </div>
           <div class="body">
-            <div class="card">
+            <!-- hidden until Google sign-in really works -->
+            <div class="card" hidden>
               <div class="set">
                 <span class="si">
                   <svg class="ic"><use href="#i-user" /></svg>
@@ -887,7 +890,8 @@
                   aria-label="مسح المحادثة وخطة الأمان عند الخروج"
                 ></button>
               </div>
-              <div class="set">
+              <!-- hidden until the PIN lock really works -->
+              <div class="set" hidden>
                 <span class="si">
                   <svg class="ic"><use href="#i-lock" /></svg>
                 </span>

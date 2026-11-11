@@ -61,6 +61,13 @@
   transition: background 0.2s;
 }
 
+/* a bigger invisible tap area (44px tall) around the 30px switch */
+.tg::before {
+  content: "";
+  position: absolute;
+  inset: -7px -4px;
+}
+
 .tg::after {
   content: "";
   position: absolute;
@@ -87,7 +94,7 @@
   gap: 4px;
   border-radius: 999px;
   padding: 4px;
-  background: rgba(255, 255, 255, 0.28);
+  background: var(--surface-2); /* solid, so the unselected labels keep AA contrast in both themes */
 }
 
 .themes button {
