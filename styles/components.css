@@ -312,3 +312,39 @@
 .badge-flat {
   margin: 0;
 }
+
+/* "Emergency and support" tab: one tab for two screens, always a little louder than the others. */
+.tabs button.urgent:not(.on) {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.tabs button.urgent:not(.on) svg {
+  color: var(--accent);
+}
+
+/* Two-way switch at the top of the emergency and support screens. */
+.seg {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border-radius: 999px;
+  box-shadow: var(--shadow);
+}
+
+.seg button {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-soft);
+  font-size: 14px;
+}
+
+.seg button.on {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 600;
+}

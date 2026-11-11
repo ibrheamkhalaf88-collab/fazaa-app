@@ -120,6 +120,21 @@ await test("first run: intro (4 slides) -> welcome -> country -> home", async (p
   assert.equal(await current(page), "home");
 });
 
+await test("emergency and support share one tab; the woman's picture opens settings", async (page) => {
+  await open(page, "home");
+  assert.equal(await page.locator('[data-screen="home"] nav.tabs button').count(), 4);
+  await page.click('[data-screen="home"] nav.tabs button.urgent');
+  assert.equal(await current(page), "sos");
+  await page.click('[data-screen="sos"] .seg button[data-go="support"]');
+  assert.equal(await current(page), "support");
+  assert.equal(await page.locator('[data-screen="support"] nav.tabs button.urgent.on').count(), 1);
+  await page.click('[data-screen="support"] .seg button[data-go="sos"]');
+  assert.equal(await current(page), "sos");
+  await open(page, "home");
+  await page.click('[data-screen="home"] .avbtn');
+  assert.equal(await current(page), "settings");
+});
+
 await test("chat has a way back to home (not only the whole app)", async (page) => {
   await open(page, "home");
   await page.click(".ask-pill");

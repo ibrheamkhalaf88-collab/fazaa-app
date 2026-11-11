@@ -7,6 +7,37 @@
   min-width: 0;
 }
 
+/* The woman's picture at the top is the button that opens settings. */
+.avbtn {
+  position: relative;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  flex-shrink: 0;
+  min-width: 46px;
+  min-height: 46px;
+}
+
+.avbtn .gear {
+  position: absolute;
+  inset-inline-start: -4px;
+  bottom: -4px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #18214a;
+  border: 2px solid var(--ground);
+}
+
+.avbtn .gear svg.ic {
+  width: 12px;
+  height: 12px;
+}
+
 .hello svg.av {
   width: 46px;
   height: 46px;

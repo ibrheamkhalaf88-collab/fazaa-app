@@ -229,12 +229,17 @@
         <section class="screen" data-screen="home" hidden>
           <div class="top">
             <div class="hello">
-              <svg class="av" viewBox="0 0 120 150" aria-hidden="true">
-                <use
-                  href="#w-hijab"
-                  style="--c1: var(--primary); --c2: var(--emphasis); --c3: var(--accent)"
-                />
-              </svg>
+              <button class="avbtn" data-go="settings" aria-label="الإعدادات والخصوصية">
+                <svg class="av" viewBox="0 0 120 150" aria-hidden="true">
+                  <use
+                    href="#w-hijab"
+                    style="--c1: var(--primary); --c2: var(--emphasis); --c3: var(--accent)"
+                  />
+                </svg>
+                <span class="gear" aria-hidden="true">
+                  <svg class="ic"><use href="#i-gear" /></svg>
+                </span>
+              </button>
               <div>
                 <b
                   id="hello-name"
@@ -245,9 +250,6 @@
                 <span class="muted" style="font-size: 12.5px">إنتِ بأمان هون</span>
               </div>
             </div>
-            <button class="iconbtn" data-go="settings" aria-label="الإعدادات">
-              <svg class="ic ic-20"><use href="#i-gear" /></svg>
-            </button>
           </div>
           <div class="body">
             <div class="hero2">
@@ -471,6 +473,10 @@
         <section class="screen" data-screen="sos" hidden>
           <div class="top"><h2 class="h" style="font-size: 20px">خطة أمان</h2></div>
           <div class="body">
+            <div class="seg" role="tablist" aria-label="طوارئ ودعم">
+              <button class="on" role="tab" aria-selected="true" data-go="sos">طوارئ</button>
+              <button role="tab" aria-selected="false" data-go="support">جهات الدعم</button>
+            </div>
             <div class="sos-head">
               <svg class="ill" viewBox="0 0 60 60" aria-hidden="true">
                 <circle cx="30" cy="30" r="28" style="fill: var(--surface)" />
@@ -569,6 +575,10 @@
         <section class="screen" data-screen="support" hidden>
           <div class="top"><h2 class="h" style="font-size: 20px">مين بيقدر يساعدك</h2></div>
           <div class="body">
+            <div class="seg" role="tablist" aria-label="طوارئ ودعم">
+              <button role="tab" aria-selected="false" data-go="sos">طوارئ</button>
+              <button class="on" role="tab" aria-selected="true" data-go="support">جهات الدعم</button>
+            </div>
             <div class="stabs" id="stabs">
               <button class="stab on" data-cat="all">الكل</button>
               <button class="stab" data-cat="safe">أمني</button>
