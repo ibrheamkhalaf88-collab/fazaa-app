@@ -1,6 +1,6 @@
 # قاعدة البيانات — Database (Cloudflare D1, SQLite)
 
-One database, `sanad`, bound to the staff API as `DB`. Schema: `server/api/schema.sql`.
+One database, `fazaa`, bound to the staff API as `DB`. Schema: `server/api/schema.sql`.
 The app on the phone keeps its own data in the browser only; nothing there goes to this database.
 
 ## What is stored, by table
@@ -34,11 +34,11 @@ gave one (and then encrypted).
 
 ```
 # create tables (safe to repeat)
-npx wrangler d1 execute sanad --remote --file=schema.sql
+npx wrangler d1 execute fazaa --remote --file=schema.sql
 # look at a table's size (counts, no content)
-npx wrangler d1 execute sanad --remote --command "SELECT COUNT(*) FROM cases"
+npx wrangler d1 execute fazaa --remote --command "SELECT COUNT(*) FROM cases"
 # backup (the encrypted parts stay encrypted)
-npx wrangler d1 export sanad --remote --output=backup.sql
+npx wrangler d1 export fazaa --remote --output=backup.sql
 ```
 
 Keep backups private: they contain staff emails and encrypted data. Test a restore into a throwaway database

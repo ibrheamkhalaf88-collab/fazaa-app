@@ -1,7 +1,7 @@
 // Builds server/api/public/: the public app AND the staff dashboard, served by the `fazaa` Worker on ONE
 // origin (https://fazaa.<subdomain>.workers.dev): the app at /, the dashboard at /admin/, the API at /api/.
 // One origin keeps the CSP strict (connect-src 'self') and the staff cookie simple.
-// Run automatically by deploy-sanad.ps1; or by hand:  node scripts/build-admin.mjs
+// Run automatically by deploy-fazaa.ps1; or by hand:  node scripts/build-admin.mjs
 import { cpSync, rmSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";

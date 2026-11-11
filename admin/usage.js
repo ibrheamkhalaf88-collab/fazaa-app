@@ -1,6 +1,6 @@
 import { api, errorText } from "./api.js";
 import { barRows, barsChart, card, kpi, legend, pct, periodPicker, sum } from "./charts.js";
-import { ago, dateTime, el, REGION } from "./util.js";
+import { ago, dateTime, el, every, REGION } from "./util.js";
 
 const REFRESH_MS = 60_000;
 const FEATURES = {
@@ -33,8 +33,7 @@ function analyticsView(ctx, title, subtitle, render) {
     }
   }
   load();
-  const t = setInterval(load, REFRESH_MS);
-  return { destroy: () => clearInterval(t) };
+  return { destroy: every(REFRESH_MS, load) };
 }
 
 const note = (t) => el("p", "hint", t);
@@ -293,6 +292,5 @@ export function usersView(ctx) {
     }
   }
   load();
-  const t = setInterval(load, REFRESH_MS);
-  return { destroy: () => clearInterval(t) };
+  return { destroy: every(REFRESH_MS, load) };
 }

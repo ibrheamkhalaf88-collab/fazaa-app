@@ -29,15 +29,15 @@ RETENTION_USER_DAYS = "180"   # accounts with no login for this long are deleted
 
 [[d1_databases]]
 binding = "DB"
-database_name = "sanad"
-database_id = "e3a61665-5eff-4f5a-8049-453dd4efbb8f"
+database_name = "fazaa"
+database_id = "cce20983-1e00-4e11-8153-2cfb5d93261b"
 
 [triggers]
 crons = ["17 3 * * *"] # daily purge
 
-# Strongly recommended: per-IP rate limit
-# [[unsafe.bindings]]
-# name = "RATE_LIMITER"
-# type = "ratelimit"
-# namespace_id = "1002"
-# simple = { limit = 30, period = 60 }
+# Per-IP rate limit, applied only to AI / sign-up / sign-in / counters (see RATE_LIMITED in worker.js).
+# 30 requests per minute per IP and endpoint. period must be 10 or 60.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1002"
+simple = { limit = 30, period = 60 }

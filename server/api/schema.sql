@@ -1,4 +1,4 @@
--- D1 schema. Apply with:  npx wrangler d1 execute sanad --file=schema.sql
+-- D1 schema. Apply with:  npx wrangler d1 execute fazaa --file=schema.sql
 -- Privacy: no IPs or user agents are stored. Message bodies and the user's name/phone are
 -- encrypted by the Worker (AES-GCM) before they reach these tables. PINs are salted PBKDF2 hashes.
 

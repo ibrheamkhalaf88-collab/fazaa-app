@@ -43,7 +43,7 @@ export function answersView(ctx) {
       const url = URL.createObjectURL(
         new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
       );
-      const a = Object.assign(document.createElement("a"), { href: url, download: "sanad-ai-answers.json" });
+      const a = Object.assign(document.createElement("a"), { href: url, download: "fazaa-ai-answers.json" });
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {

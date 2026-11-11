@@ -3,9 +3,10 @@
  * (private mode, blocked storage and quota errors must never break the app).
  * `storage` is injectable so tests can use an in-memory fake.
  */
-import { STORAGE_PREFIX } from "../config.js";
+import { LEGACY_STORAGE_PREFIX, STORAGE_PREFIX } from "../config.js";
 
 export function createStore(storage = defaultStorage(), prefix = STORAGE_PREFIX) {
+  if (prefix === STORAGE_PREFIX) migrateLegacy(storage, LEGACY_STORAGE_PREFIX, prefix);
   return {
     get(key, fallback) {
       try {
@@ -31,6 +32,23 @@ export function createStore(storage = defaultStorage(), prefix = STORAGE_PREFIX)
       }
     },
   };
+}
+
+/**
+ * The app was renamed (سند → فزعة): move what it saved under the old prefix (settings, the lawyer-chat
+ * session) to the new one, so nobody loses anything. A key that already exists under the new prefix wins.
+ */
+export function migrateLegacy(storage, from, to) {
+  try {
+    for (const k of Object.keys(storage)) {
+      if (!k.startsWith(from)) continue;
+      const next = to + k.slice(from.length);
+      if (storage.getItem(next) === null) storage.setItem(next, storage.getItem(k));
+      storage.removeItem(k);
+    }
+  } catch {
+    /* storage unavailable: nothing to move */
+  }
 }
 
 function defaultStorage() {

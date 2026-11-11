@@ -82,8 +82,8 @@ async function test(name, fn, { serviceWorkers = "block" } = {}) {
 }
 const open = async (page, screen) => {
   await page.evaluate((s) => {
-    localStorage.setItem("sanad:last", JSON.stringify(s));
-    localStorage.setItem("sanad:introSeen", "true"); // the intro is first-run only
+    localStorage.setItem("fazaa:last", JSON.stringify(s));
+    localStorage.setItem("fazaa:introSeen", "true"); // the intro is first-run only
   }, screen);
   await page.reload();
   await page.waitForSelector(`.screen[data-screen="${screen}"]:not([hidden])`);
@@ -182,7 +182,7 @@ await test("quick exit wipes the chat and safety ticks, shows the disguise, and 
   await page.keyboard.press("Escape");
   assert.equal(await current(page), "disguise");
   assert.equal(await page.title(), "الطقس");
-  assert.equal(await page.evaluate(() => localStorage.getItem("sanad:last")), '"home"');
+  assert.equal(await page.evaluate(() => localStorage.getItem("fazaa:last")), '"home"');
   await page.dblclick(".weather .temp"); // secret way back
   assert.equal(await current(page), "home");
   await page.click(".ask-pill");
@@ -230,7 +230,7 @@ await test("settings: theme switch, erase everything", async (page) => {
   await page.click('[data-action="reset"]');
   assert.equal(await current(page), "welcome");
   assert.equal(
-    await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("sanad:")).length),
+    await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith("fazaa:")).length),
     1 /* only "last" */,
   );
 });

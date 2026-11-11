@@ -22,7 +22,7 @@ The code is portable: plain HTML/CSS/ES modules, no build step, no vendor lock-i
 - **Messages are encrypted with `MESSAGE_KEY`.** Moving the database without that same key makes every
   message unreadable. Either hand over the key through a secure channel, or accept that old cases are
   not carried over (the app deletes closed cases after 7 days anyway).
-- Staff list, settings and reviewed AI answers: `wrangler d1 export sanad --remote --output=backup.sql`, then
+- Staff list, settings and reviewed AI answers: `wrangler d1 export fazaa --remote --output=backup.sql`, then
   `wrangler d1 execute <new> --remote --file=backup.sql`. The saved AI provider key is encrypted with
   `MESSAGE_KEY` too, so re-enter it if the key changes.
 - Reviewed AI answers (`ai-data/`) contain no identities and can be handed over as files.

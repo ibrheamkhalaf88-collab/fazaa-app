@@ -1,5 +1,5 @@
 /**
- * Sanad AI proxy: a tiny Cloudflare Worker between the app and the Anthropic API.
+ * Fazaa AI proxy: a tiny Cloudflare Worker between the app and the Anthropic API.
  *
  * WHY A PROXY: an API key placed in browser code is public. The key lives here, as a
  * Worker secret, and the app only ever talks to this endpoint.

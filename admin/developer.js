@@ -1,6 +1,6 @@
 import { api, errorText } from "./api.js";
 import { barRows, barsChart, kpi, legend } from "./charts.js";
-import { ACTION, ago, dateTime, duration, el, pill, REGION, ROLE } from "./util.js";
+import { ACTION, ago, dateTime, duration, el, every, pill, REGION, ROLE } from "./util.js";
 
 const REFRESH_MS = 30_000;
 const STATUS = { open: "بانتظار محامية", claimed: "قيد المتابعة", closed: "منتهية" };
@@ -22,10 +22,7 @@ export function overviewView(ctx) {
       const week = s.series.slice(-7).reduce((n, d) => n + d.created, 0);
 
       const head = el("div", "page-head");
-      head.append(
-        el("h1", null, "نظرة عامة"),
-        el("span", "muted", "أرقام مجمّعة فقط، بدون أي محتوى محادثات"),
-      );
+      head.append(el("h1", null, "نظرة عامة"), el("span", "muted", "أرقام مجمّعة فقط، بدون أي محتوى محادثات"));
 
       const kpis = el("div", "kpis");
       kpis.append(
@@ -74,8 +71,7 @@ export function overviewView(ctx) {
     }
   }
   load();
-  const t = setInterval(load, REFRESH_MS);
-  return { destroy: () => clearInterval(t) };
+  return { destroy: every(REFRESH_MS, load) };
 }
 
 /* ============ permissions matrix (read-only; enforced on the server) ============ */
@@ -112,7 +108,11 @@ function permissionsCard() {
   card.append(
     el("h2", null, "جدول الصلاحيات"),
     wrap,
-    el("p", "hint", "المطوّر بيقرأ المحادثات بس ما بيرد عليها، وكل فتح بينسجّل. الصلاحيات مفروضة من السيرفر مش من الشاشة."),
+    el(
+      "p",
+      "hint",
+      "المطوّر بيقرأ المحادثات بس ما بيرد عليها، وكل فتح بينسجّل. الصلاحيات مفروضة من السيرفر مش من الشاشة.",
+    ),
   );
   return card;
 }
@@ -316,9 +316,15 @@ export function healthView(ctx) {
           `اليوم: ${h.ai.usedToday} من ${h.ai.dailyLimit} سؤال`,
           `آخر 7 أيام: ${h.ai.asked7} سؤال، ${h.ai.errors7} فشل (${errRate}%)`,
         ]),
-        statusCard("الحذف التلقائي اليومي", h.lastPurgeAt ? Date.now() - h.lastPurgeAt < 2 * 86_400_000 : null, [
-          h.lastPurgeAt ? `آخر تشغيل ${ago(Date.now() - h.lastPurgeAt)}` : "ما اشتغل لسا (بيشتغل كل يوم الساعة 3 الفجر UTC).",
-        ]),
+        statusCard(
+          "الحذف التلقائي اليومي",
+          h.lastPurgeAt ? Date.now() - h.lastPurgeAt < 2 * 86_400_000 : null,
+          [
+            h.lastPurgeAt
+              ? `آخر تشغيل ${ago(Date.now() - h.lastPurgeAt)}`
+              : "ما اشتغل لسا (بيشتغل كل يوم الساعة 3 الفجر UTC).",
+          ],
+        ),
       );
       body.replaceChildren(head, grid);
     } catch (e) {
@@ -326,8 +332,7 @@ export function healthView(ctx) {
     }
   }
   load();
-  const t = setInterval(load, 60_000);
-  return { destroy: () => clearInterval(t) };
+  return { destroy: every(60_000, load) };
 }
 
 /* ============ audit ============ */
@@ -373,6 +378,5 @@ export function auditView(ctx) {
     }
   }
   load();
-  const t = setInterval(load, REFRESH_MS);
-  return { destroy: () => clearInterval(t) };
+  return { destroy: every(REFRESH_MS, load) };
 }

@@ -1,5 +1,5 @@
 import { api, errorText } from "./api.js";
-import { ageClass, ago, el, icon, initial, REGION, time } from "./util.js";
+import { ageClass, ago, el, every, icon, initial, REGION, time } from "./util.js";
 
 const POLL_MS = 5000;
 const LIST_MS = 8000;
@@ -14,7 +14,8 @@ const REPLIES = [
   ["ختام", "إذا صار أي جديد أو احتجتي شي، اكتبيلي هون. وبتقدري تنهي المحادثة بأي وقت."],
 ];
 const STATUS = { open: "بانتظار محامي", claimed: "مفتوحة", closed: "منتهية" };
-const dayLabel = (ms) => new Date(ms).toLocaleDateString("ar", { weekday: "long", day: "numeric", month: "long" });
+const dayLabel = (ms) =>
+  new Date(ms).toLocaleDateString("ar", { weekday: "long", day: "numeric", month: "long" });
 
 /**
  * A conversation pane: header, messages (with day separators) and, for the lawyer, a composer.
@@ -30,7 +31,10 @@ function threadPane({ ctx, c, readOnly, onBack, onClosed, headExtra = [] }) {
   back.addEventListener("click", onBack);
   const avatar = el("span", "avatar", initial(c.topic));
   const title = el("div", "title");
-  title.append(el("b", null, c.topic), el("small", null, `${REGION[c.region] || ""} · ${STATUS[c.status] || ""}`));
+  title.append(
+    el("b", null, c.topic),
+    el("small", null, `${REGION[c.region] || ""} · ${STATUS[c.status] || ""}`),
+  );
   head.append(back, avatar, title, ...headExtra);
 
   const msgs = el("div", "msgs");
@@ -113,13 +117,13 @@ function threadPane({ ctx, c, readOnly, onBack, onClosed, headExtra = [] }) {
   }
 
   poll();
-  const timer = setInterval(poll, POLL_MS);
+  const stopPolling = every(POLL_MS, poll); // the open chat pauses while the tab is hidden
   return {
     pane,
     input,
     stop() {
       stopped = true;
-      clearInterval(timer);
+      stopPolling();
     },
   };
 }
@@ -308,7 +312,11 @@ export function lawyerView(ctx) {
   }
 
   async function finishCase(id) {
-    if (!window.confirm("بعد إنهاء الحالة ما بتقدر المستخدمة تكتب فيها، وبتنحذف المحادثة تلقائياً بعد مدة. متأكد؟"))
+    if (
+      !window.confirm(
+        "بعد إنهاء الحالة ما بتقدر المستخدمة تكتب فيها، وبتنحذف المحادثة تلقائياً بعد مدة. متأكد؟",
+      )
+    )
       return;
     try {
       await api(`/cases/${id}/close`, { method: "POST" });
@@ -355,7 +363,11 @@ export function lawyerView(ctx) {
       });
       list.appendChild(b);
     }
-    repliesCard.append(el("h2", null, "ردود جاهزة"), list, el("p", "hint", "بتنضاف لمربع الرد وبتقدر تعدّلها."));
+    repliesCard.append(
+      el("h2", null, "ردود جاهزة"),
+      list,
+      el("p", "hint", "بتنضاف لمربع الرد وبتقدر تعدّلها."),
+    );
 
     const clientCard = el("section", "card");
     clientCard.appendChild(el("h2", null, "بيانات المستخدمة"));
@@ -459,7 +471,11 @@ export function conversationsView(ctx) {
               el("span", "avatar", initial(c.topic)),
               el("b", null, c.topic),
               el("span", "muted", ago(Date.now() - c.lastActivity)),
-              el("small", null, `${REGION[c.region] || ""} · ${c.lawyer ? `مع ${c.lawyer}` : STATUS[c.status]}`),
+              el(
+                "small",
+                null,
+                `${REGION[c.region] || ""} · ${c.lawyer ? `مع ${c.lawyer}` : STATUS[c.status]}`,
+              ),
             );
             row.addEventListener("click", () => open(c));
             return row;
@@ -504,11 +520,11 @@ export function conversationsView(ctx) {
   }
   render();
   load();
-  const t = setInterval(load, LIST_MS);
+  const stopLoading = every(LIST_MS, load);
   return {
     destroy() {
       thread?.stop();
-      clearInterval(t);
+      stopLoading();
     },
   };
 }

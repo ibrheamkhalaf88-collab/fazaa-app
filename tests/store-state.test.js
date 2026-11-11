@@ -3,6 +3,24 @@ import { test } from "node:test";
 import { createState, DEFAULT_STATE } from "../src/core/state.js";
 import { createStore, memoryStorage } from "../src/core/store.js";
 
+test("store: data saved under the old name (sanad:) moves to fazaa: once, nothing is lost", () => {
+  const storage = memoryStorage();
+  storage.setItem("sanad:theme", '"dark"');
+  storage.setItem("sanad:session", '{"token":"t1","username":"sara"}');
+  storage.setItem("fazaa:last", '"chat"');
+  storage.setItem("sanad:last", '"home"'); // the newer key wins
+  storage.setItem("other:keep", "1");
+  const store = createStore(storage);
+  assert.equal(store.get("theme"), "dark");
+  assert.deepEqual(store.get("session"), { token: "t1", username: "sara" });
+  assert.equal(store.get("last"), "chat");
+  assert.deepEqual(
+    Object.keys(storage).filter((k) => k.startsWith("sanad:")),
+    [],
+  );
+  assert.equal(storage.getItem("other:keep"), "1");
+});
+
 test("store: namespaced JSON round-trip with fallback", () => {
   const storage = memoryStorage();
   const store = createStore(storage, "t:");

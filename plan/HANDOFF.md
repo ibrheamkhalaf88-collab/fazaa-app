@@ -4,21 +4,25 @@ Read this first, then `plan/PLAN.md` and `plan/DATABASE.md`. Reply to the owner 
 
 ## Name
 
-The app is called **فزعة (Fazaa)** (renamed from سند / Sanad on 2026-11-10). User-facing text changed; the repo, Pages
-project, D1 `sanad` and the `sanad:` localStorage prefix keep the old name on purpose (changing the prefix would wipe
-users' saved data).
+The app is called **فزعة (Fazaa)** (renamed from سند / Sanad on 2026-11-10). On 2026-11-11 the owner asked for
+everything to carry the new name: code, docs, the D1 database (`fazaa`, data copied from `sanad`), the deploy script,
+the local folders and the GitHub repo (`fazaa-app`). The localStorage prefix is now `fazaa:`; `src/core/store.js`
+moves anything still saved under `sanad:` on first load, so nobody loses data. The old D1 `sanad` is kept, unused, as
+a backup (export in `D:\ai كلود\fazaa-db-backup`); the owner deletes it when ready.
 
 ## Where things are
 
-- GitHub: https://github.com/ibrheamkhalaf88-collab/sanad-app (branch `master`)
+- GitHub: https://github.com/ibrheamkhalaf88-collab/fazaa-app (branch `master`; old `sanad-app` links redirect)
 - **Everything is one Worker `fazaa`: https://fazaa.ibrheamkhalaf88.workers.dev** — the app at `/`, the dashboard at
   `/admin/`, the API at `/api/*` (same origin). Build + deploy: `node scripts/build-admin.mjs`, then
-  `cd server/api && npx wrangler deploy`. It does NOT auto-deploy from GitHub. D1 database `sanad`.
+  `cd server/api && npx wrangler deploy`. It does NOT auto-deploy from GitHub. D1 database `fazaa`.
 - Old, unused, safe for the owner to delete in the Cloudflare dashboard: Pages project `sanad-app`
   (sanad-app.pages.dev, still auto-deploys from GitHub), Workers `sanad-api` (locked by a leftover Access app) and
   `fazaa-api`. Delete the Access app "sanad-api - Cloudflare Workers" too.
-- On the owner's PC: project `C:\Users\Lenovo\sanad-app`; deploy script `C:\Users\Lenovo\Desktop\سند\deploy-sanad.ps1`.
-  (There is also an accidental nested clone `C:\Users\Lenovo\sanad-app\server\api\sanad-app`; the owner said keep it for now.)
+- On the owner's PC: project `D:\ai كلود\fazaa-app` (junction `C:\Users\Lenovo\fazaa-app`); deploy script
+  `C:\Users\Lenovo\Desktop\فزعة\deploy-fazaa.ps1` (the folder is a junction to `D:\ai كلود\فزعة`).
+  (There is also an accidental nested clone `server\api\sanad-app` inside the project; the owner said keep it for now.)
+- Per-IP rate limit (`RATE_LIMITER`, 30/min per IP and endpoint) is on for AI, sign-up, sign-in and counters only.
 
 ## State (2026-11-11)
 
@@ -42,7 +46,7 @@ users' saved data).
    `TELEMETRY_ENDPOINT = "/api/v1/ping"`, `AI_ENDPOINT = "/api/v1/answer"` (no CSP change needed).
 4. Link: owner to choose free workers.dev or a paid custom domain (~$10–15/yr, bought by the owner).
 5. Before real users: lawyer verifies laws (`npm run law:verify`), consent text (developers read chats), real support
-   numbers, rate limit, PIN recovery.
+   numbers, PIN recovery.
 
 ## Rules
 

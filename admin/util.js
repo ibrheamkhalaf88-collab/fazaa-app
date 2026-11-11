@@ -22,7 +22,24 @@ export const ACTION = {
   "staff-password-reset": "عمل كلمة سر مؤقتة لعضو",
   "user-delete": "حذف حساب مستخدمة",
   "dev-read-case": "فتح محادثة للقراءة",
+  "cases-release": "رجّع حالات عضو لقائمة الانتظار",
 };
+
+/**
+ * setInterval that pauses while the tab is hidden (saves requests) and refreshes as soon as the tab
+ * is shown again. Returns a function that stops it.
+ */
+export function every(ms, fn) {
+  const tick = () => {
+    if (!document.hidden) fn();
+  };
+  const t = setInterval(tick, ms);
+  document.addEventListener("visibilitychange", tick);
+  return () => {
+    clearInterval(t);
+    document.removeEventListener("visibilitychange", tick);
+  };
+}
 
 export const minutes = (ms) => Math.max(0, Math.floor(ms / 60000));
 
@@ -64,7 +81,8 @@ const ICON_PATHS = {
   inbox: "M3 13h5l2 3h4l2-3h5M5 5h14l2 8v6H3v-6z",
   chart: "M4 20V10M10 20V4M16 20v-7M22 20H2",
   pulse: "M3 12h4l2-6 4 12 2-6h6",
-  users: "M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM22 19v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8",
+  users:
+    "M16 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM22 19v-1a4 4 0 0 0-3-3.9M16 4.1a3 3 0 0 1 0 5.8",
   spark: "M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6",
   check: "M4 12l5 5L20 6",
   gear: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z",

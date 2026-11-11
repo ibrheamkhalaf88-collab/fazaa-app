@@ -251,6 +251,15 @@ export function createMemoryStore() {
       const s = staff.get(email);
       if (s) s.active = !!active;
     },
+    async releaseCases(email) {
+      let n = 0;
+      for (const c of cases.values())
+        if (c.lawyerEmail === email && c.status === "claimed") {
+          Object.assign(c, { status: "open", lawyerEmail: null, claimedAt: null });
+          n++;
+        }
+      return n;
+    },
     async removeStaff(email) {
       staff.delete(email);
       staffAuth.delete(email);
@@ -262,7 +271,15 @@ export function createMemoryStore() {
       return a ? { ...a } : null;
     },
     async setStaffPassword(email, { salt, hash, mustChange, now }) {
-      staffAuth.set(email, { email, salt, hash, mustChange: !!mustChange, fails: 0, lockedUntil: 0, changedAt: now });
+      staffAuth.set(email, {
+        email,
+        salt,
+        hash,
+        mustChange: !!mustChange,
+        fails: 0,
+        lockedUntil: 0,
+        changedAt: now,
+      });
     },
     /** 5 wrong passwords lock the account for 15 minutes. */
     async noteStaffLogin(email, ok, now) {

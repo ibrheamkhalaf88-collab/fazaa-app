@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { ANSWER_TOOL, buildUserMessage, handleRequest } from "../server/ai-proxy/worker.js";
 import { ARTICLES } from "../src/data/law/index.js";
 
-const ORIGIN = "https://sanad.example";
+const ORIGIN = "https://fazaa.example";
 const ENV = { PROVIDER: "anthropic", ANTHROPIC_API_KEY: "sk-test", ALLOWED_ORIGINS: ORIGIN };
 
 const req = (body, { origin = ORIGIN, method = "POST", path = "/v1/answer", raw } = {}) =>

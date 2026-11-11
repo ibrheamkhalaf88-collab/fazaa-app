@@ -48,7 +48,7 @@ writeFileSync(file, sql);
 const apiDir = join(dirname(fileURLToPath(import.meta.url)), "..", "server", "api");
 const run = spawnSync(
   "npx",
-  ["wrangler", "d1", "execute", "sanad", args.includes("--local") ? "--local" : "--remote", "--yes", `--file=${file}`],
+  ["wrangler", "d1", "execute", "fazaa", args.includes("--local") ? "--local" : "--remote", "--yes", `--file=${file}`],
   { cwd: apiDir, stdio: ["ignore", "ignore", "inherit"], shell: process.platform === "win32" },
 );
 rmSync(dir, { recursive: true, force: true });

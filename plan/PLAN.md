@@ -1,4 +1,4 @@
-# خطة سند — Sanad plan
+# خطة فزعة — Fazaa plan
 
 Status: ✅ done · ⏳ in progress · ⬜ not started. "Owner" is who must act.
 
@@ -12,8 +12,8 @@ Status: ✅ done · ⏳ in progress · ⬜ not started. "Owner" is who must act.
 ## Phase 1 — Deploy the staff API (⏳, owner: Ibrahim)
 
 1. ✅ Cloudflare account and `wrangler login`.
-2. ✅ Create the D1 database `sanad` (id is in `server/api/wrangler.toml`).
-3. ⬜ Apply the tables: `npx wrangler d1 execute sanad --remote --file=schema.sql`.
+2. ✅ Create the D1 database `fazaa` (id is in `server/api/wrangler.toml`).
+3. ⬜ Apply the tables: `npx wrangler d1 execute fazaa --remote --file=schema.sql`.
 4. ⬜ Create `MESSAGE_KEY` and store it in a safe place **outside** the repo; `wrangler secret put MESSAGE_KEY`.
 5. ⬜ `npx wrangler deploy`.
 6. ⬜ Cloudflare Zero Trust -> Access: protect `/admin/*` and `/api/v1/staff/*`; copy the team domain and AUD

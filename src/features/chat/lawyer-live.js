@@ -10,6 +10,7 @@ const ERRORS = {
   "username-taken": "هالاسم المستعار مستخدم. جرّبي غيره.",
   "bad-credentials": "الاسم أو الرمز مش صحيح.",
   locked: "كتير محاولات غلط. استني 15 دقيقة وجرّبي.",
+  "rate-limited": "كتير طلبات بوقت قصير. استني دقيقة وجرّبي.",
   network: "ما في اتصال. جرّبي كمان شوي.",
 };
 const errorText = (res) => ERRORS[res.error] || "صار خطأ. جرّبي كمان مرة.";
@@ -130,7 +131,7 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
   }
 
   async function poll() {
-    if (!caseId) return;
+    if (!caseId || (typeof document !== "undefined" && document.hidden)) return; // no requests while hidden
     const res = await account.messages(caseId, lastId);
     if (res.status === 401) {
       stop();
@@ -141,6 +142,8 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     const { status: next, lawyer, messages } = res.data;
     if (lawyer) lawyerName = lawyer;
     if (next !== status) {
+      if (next === "open" && status === "claimed")
+        systemNote("المحامية ما عادت متاحة. حالتك رجعت للانتظار، وأول محامية فاضية رح تستلمها.");
       if (next === "claimed") systemNote(`المحامية ${lawyerName || ""} تولّت حالتك`.replace("  ", " "));
       if (next === "closed") {
         systemNote("المحامية أنهت هالحالة. بتقدري تفتحي حالة جديدة بأي وقت.");
@@ -158,6 +161,11 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     timer = setInterval(poll, pollMs);
     poll();
   }
+  // catch up as soon as she comes back to the app
+  if (typeof document !== "undefined")
+    document.addEventListener("visibilitychange", () => {
+      if (timer && !document.hidden) poll();
+    });
 
   /** After sign-in: pick up an unfinished case, otherwise wait for her first message. */
   async function resume() {

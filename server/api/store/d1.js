@@ -344,6 +344,14 @@ export function createD1Store(db) {
     async setStaffActive(email, active) {
       await q("UPDATE staff SET active = ? WHERE email = ?", active ? 1 : 0, email).run();
     },
+    /** Her claimed cases go back to the waiting queue (she was removed, suspended or is no longer a lawyer). */
+    async releaseCases(email) {
+      const r = await q(
+        "UPDATE cases SET status = 'open', lawyer_email = NULL, claimed_at = NULL WHERE lawyer_email = ? AND status = 'claimed'",
+        email,
+      ).run();
+      return r.meta?.changes ?? 0;
+    },
     async removeStaff(email) {
       await q("DELETE FROM staff WHERE email = ?", email).run();
       await q("DELETE FROM staff_auth WHERE email = ?", email).run();

@@ -4,9 +4,9 @@ import { handleRequest, purgeExpired } from "../server/api/worker.js";
 import { createMemoryStore } from "../server/api/store/memory.js";
 import { toBase64 } from "../server/api/crypto.js";
 
-const ORIGIN = "https://sanad.example";
+const ORIGIN = "https://fazaa.example";
 const KEY = toBase64(crypto.getRandomValues(new Uint8Array(32)));
-const ENV = { MESSAGE_KEY: KEY, ALLOWED_ORIGINS: ORIGIN, DEVELOPER_EMAILS: "dev@sanad.example" };
+const ENV = { MESSAGE_KEY: KEY, ALLOWED_ORIGINS: ORIGIN, DEVELOPER_EMAILS: "dev@fazaa.example" };
 
 /** Fresh world: store + a function that calls the API as a given staff email (or anonymous). */
 function world() {
@@ -14,7 +14,7 @@ function world() {
   let clock = 1_000_000;
   const call = (method, path, { body, token, as, env = ENV } = {}) =>
     handleRequest(
-      new Request(`https://sanad.example/api${path}`, {
+      new Request(`https://fazaa.example/api${path}`, {
         method,
         headers: {
           origin: ORIGIN,
@@ -46,9 +46,9 @@ async function openCase(
   assert.equal(res.status, 201);
   return { ...(await j(res)), token, username };
 }
-async function addLawyer(w, email = "salma@sanad.example", name = "سلمى الأحمد") {
+async function addLawyer(w, email = "salma@fazaa.example", name = "سلمى الأحمد") {
   const res = await w.call("PUT", "/v1/staff/team", {
-    as: "dev@sanad.example",
+    as: "dev@fazaa.example",
     body: { email, role: "lawyer", name },
   });
   assert.equal(res.status, 200);
@@ -66,7 +66,7 @@ test("not configured without MESSAGE_KEY", async () => {
 test("rejects an origin that is not allowed", async () => {
   const w = world();
   const res = await handleRequest(
-    new Request("https://sanad.example/api/v1/cases", {
+    new Request("https://fazaa.example/api/v1/cases", {
       method: "POST",
       headers: { origin: "https://evil.example" },
       body: "{}",
@@ -138,8 +138,8 @@ test("full flow: lawyer is added, claims, answers; the woman sees the lawyer's f
 
 test("two lawyers cannot take the same case; the second cannot read it", async () => {
   const w = world();
-  const a = await addLawyer(w, "a@sanad.example", "أ");
-  const b = await addLawyer(w, "b@sanad.example", "ب");
+  const a = await addLawyer(w, "a@fazaa.example", "أ");
+  const b = await addLawyer(w, "b@fazaa.example", "ب");
   const { caseId } = await openCase(w);
   assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: a })).status, 200);
   assert.equal((await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: b })).status, 409);
@@ -163,7 +163,7 @@ test("developers READ every conversation (audited) but cannot claim, answer, clo
   const lawyer = await addLawyer(w);
   const { caseId } = await openCase(w);
   await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
-  const dev = "dev@sanad.example";
+  const dev = "dev@fazaa.example";
   const read = await w.call("GET", `/v1/staff/cases/${caseId}/messages`, { as: dev });
   assert.equal(read.status, 200);
   assert.equal((await read.json()).messages[0].text, "طليقي ما بدفع نفقة");
@@ -202,7 +202,7 @@ test("developers READ every conversation (audited) but cannot claim, answer, clo
 test("developer stats contain counts only (no ids, topics or text)", async () => {
   const w = world();
   await openCase(w, "نص سري");
-  const st = await j(await w.call("GET", "/v1/staff/stats", { as: "dev@sanad.example" }));
+  const st = await j(await w.call("GET", "/v1/staff/stats", { as: "dev@fazaa.example" }));
   assert.deepEqual(Object.keys(st).sort(), [
     "avgClaimWaitMs",
     "byRegion",
@@ -218,7 +218,7 @@ test("developer stats contain counts only (no ids, topics or text)", async () =>
 
 test("developer manages the team; cannot remove self; bad input rejected", async () => {
   const w = world();
-  const dev = "dev@sanad.example";
+  const dev = "dev@fazaa.example";
   assert.equal(
     (await w.call("PUT", "/v1/staff/team", { as: dev, body: { email: "nope", role: "lawyer" } })).status,
     400,
@@ -263,8 +263,8 @@ test("retention: purgeExpired deletes old closed cases", async () => {
 
 test("private notes: encrypted at rest, only the lawyer who owns the case can read or write them", async () => {
   const w = world();
-  const a = await addLawyer(w, "a@sanad.example", "أ");
-  const b = await addLawyer(w, "b@sanad.example", "ب");
+  const a = await addLawyer(w, "a@fazaa.example", "أ");
+  const b = await addLawyer(w, "b@fazaa.example", "ب");
   const { caseId, token } = await openCase(w);
   await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: a });
   assert.equal(
@@ -279,7 +279,7 @@ test("private notes: encrypted at rest, only the lawyer who owns the case can re
   assert.ok(!(await w.store.getNote(caseId)).body.includes("سرية"));
   assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/note`, { as: b })).status, 403);
   assert.equal(
-    (await w.call("GET", `/v1/staff/cases/${caseId}/note`, { as: "dev@sanad.example" })).status,
+    (await w.call("GET", `/v1/staff/cases/${caseId}/note`, { as: "dev@fazaa.example" })).status,
     403,
   );
   // never shown to the woman
@@ -295,7 +295,7 @@ test("audit log: developer-only, records who did what but never message text", a
   await w.call("POST", `/v1/staff/cases/${caseId}/messages`, { as: lawyer, body: { text: "رد سري" } });
   await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: lawyer });
   assert.equal((await w.call("GET", "/v1/staff/audit", { as: lawyer })).status, 403);
-  const { audit } = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@sanad.example" }));
+  const { audit } = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@fazaa.example" }));
   assert.deepEqual(
     audit.map((a) => a.action),
     ["close", "claim", "staff-add"],
@@ -308,7 +308,7 @@ test("stats include the daily series and the average claim wait", async () => {
   const lawyer = await addLawyer(w);
   const { caseId } = await openCase(w);
   await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: lawyer });
-  const st = await j(await w.call("GET", "/v1/staff/stats", { as: "dev@sanad.example" }));
+  const st = await j(await w.call("GET", "/v1/staff/stats", { as: "dev@fazaa.example" }));
   assert.equal(
     st.series.reduce((n, d) => n + d.created, 0),
     1,
@@ -356,7 +356,7 @@ test("developer analytics: usage + who signed in; lawyers cannot read it", async
   await w.call("GET", "/v1/staff/me", { as: lawyer });
   await w.call("POST", "/v1/ping", { body: { event: "visit", region: "ps-wb" } });
   assert.equal((await w.call("GET", "/v1/staff/analytics", { as: lawyer })).status, 403);
-  const a = await j(await w.call("GET", "/v1/staff/analytics?days=30", { as: "dev@sanad.example" }));
+  const a = await j(await w.call("GET", "/v1/staff/analytics?days=30", { as: "dev@fazaa.example" }));
   assert.equal(a.series.length, 30);
   assert.equal(a.totals.visit, 1);
   const row = a.staff.find((m) => m.email === lawyer);
@@ -374,7 +374,7 @@ test("lawyer work dashboard: team counts and her own numbers, no content; develo
   assert.deepEqual(work.me, { claimed: 1, closed: 1 });
   assert.equal(work.byRegion["ps-gaza"], 1);
   assert.ok(!JSON.stringify(work).includes("سري"));
-  assert.equal((await w.call("GET", "/v1/staff/work", { as: "dev@sanad.example" })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/work", { as: "dev@fazaa.example" })).status, 403);
 });
 
 /* ---------------- women's accounts ---------------- */
@@ -457,8 +457,8 @@ test("session: /me lists only her cases; logout and account deletion end access"
 
 test("contact card: only the lawyer who claimed the case, and it is audited", async () => {
   const w = world();
-  const a = await addLawyer(w, "a@sanad.example", "أ");
-  const b = await addLawyer(w, "b@sanad.example", "ب");
+  const a = await addLawyer(w, "a@fazaa.example", "أ");
+  const b = await addLawyer(w, "b@fazaa.example", "ب");
   const { caseId } = await openCase(w);
   assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: a })).status, 403); // not claimed yet
   await w.call("POST", `/v1/staff/cases/${caseId}/claim`, { as: a });
@@ -467,10 +467,10 @@ test("contact card: only the lawyer who claimed the case, and it is audited", as
   assert.equal(card.phone, "0599123456");
   assert.equal((await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: b })).status, 403);
   assert.equal(
-    (await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: "dev@sanad.example" })).status,
+    (await w.call("GET", `/v1/staff/cases/${caseId}/client`, { as: "dev@fazaa.example" })).status,
     403,
   );
-  const audit = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@sanad.example" }));
+  const audit = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@fazaa.example" }));
   assert.ok(audit.audit.some((r) => r.action === "view-contact" && r.target === caseId));
   assert.ok(!JSON.stringify(audit).includes("سارة"));
 });
@@ -479,12 +479,12 @@ test("developers see accounts and activity but never names or phones", async () 
   const w = world();
   const { username } = await openCase(w);
   await w.call("POST", "/v1/login", { body: { username, pin: "123456" } });
-  const res = await j(await w.call("GET", "/v1/staff/users", { as: "dev@sanad.example" }));
+  const res = await j(await w.call("GET", "/v1/staff/users", { as: "dev@fazaa.example" }));
   assert.equal(res.total >= 1, true);
   assert.ok(res.users.every((u) => !("name" in u) && !("phone" in u) && !("body" in u)));
   assert.ok(!JSON.stringify(res).includes("سارة") && !JSON.stringify(res).includes("0599123456"));
   assert.equal((await w.call("GET", "/v1/staff/users", { as: await addLawyer(w) })).status, 403);
-  const an = await j(await w.call("GET", "/v1/staff/analytics", { as: "dev@sanad.example" }));
+  const an = await j(await w.call("GET", "/v1/staff/analytics", { as: "dev@fazaa.example" }));
   assert.ok(an.totals.signup >= 1 && an.totals.login >= 1);
 });
 
@@ -497,7 +497,7 @@ test("retention: accounts with no login for 180 days are deleted with their case
 });
 
 /* ---------- AI settings saved from the dashboard ---------- */
-const DEV = "dev@sanad.example";
+const DEV = "dev@fazaa.example";
 const SECRET_KEY = "AIzaSy-test-key-1234567890abcdef";
 const geminiReply = (args) =>
   new Response(
@@ -509,7 +509,7 @@ const geminiReply = (args) =>
 test("ai-config: developers only, and the key is never returned", async () => {
   const w = world();
   await addLawyer(w);
-  assert.equal((await w.call("GET", "/v1/staff/ai-config", { as: "salma@sanad.example" })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/ai-config", { as: "salma@fazaa.example" })).status, 403);
   assert.equal((await w.call("GET", "/v1/staff/ai-config")).status, 401);
 
   const put = await w.call("PUT", "/v1/staff/ai-config", {
@@ -573,7 +573,7 @@ test("/v1/answer uses the dashboard key and falls back to the Worker secret", as
   };
   const ask = (env) =>
     handleRequest(
-      new Request("https://sanad.example/api/v1/answer", {
+      new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { origin: ORIGIN, "content-type": "application/json" },
         body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
@@ -599,7 +599,7 @@ test("/v1/answer rejects missing origin and bad questions", async () => {
   const w = world();
   const post = (body, origin = ORIGIN) =>
     handleRequest(
-      new Request("https://sanad.example/api/v1/answer", {
+      new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { ...(origin ? { origin } : {}), "content-type": "application/json" },
         body: JSON.stringify(body),
@@ -628,7 +628,7 @@ test("answers are kept without the question, scrubbed, and reviewable by lawyers
       cites: [],
     });
   const res = await handleRequest(
-    new Request("https://sanad.example/api/v1/answer", {
+    new Request("https://fazaa.example/api/v1/answer", {
       method: "POST",
       headers: { origin: ORIGIN, "content-type": "application/json" },
       body: JSON.stringify({ question: QUESTION, country: "ps-gaza" }),
@@ -643,7 +643,7 @@ test("answers are kept without the question, scrubbed, and reviewable by lawyers
   assert.ok(!stored.includes("0599123456") && !stored.includes("x.test") && !stored.includes("help@x.org"));
   assert.match(stored, /\[رقم\]/);
 
-  const lawyer = "salma@sanad.example";
+  const lawyer = "salma@fazaa.example";
   const list = await j(await w.call("GET", "/v1/staff/ai-answers?verdict=pending", { as: lawyer }));
   assert.equal(list.items.length, 1);
   assert.equal(list.items[0].region, "ps-gaza");
@@ -677,7 +677,7 @@ test("a failed or empty AI call keeps nothing", async () => {
   await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
   const post = (fetchImpl) =>
     handleRequest(
-      new Request("https://sanad.example/api/v1/answer", {
+      new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { origin: ORIGIN, "content-type": "application/json" },
         body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
@@ -696,7 +696,7 @@ test("/v1/answer stops at the daily cap, and the cap resets the next day", async
   const env = { ...ENV, AI_DAILY_LIMIT: "2" };
   const ask = (now) =>
     handleRequest(
-      new Request("https://sanad.example/api/v1/answer", {
+      new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { origin: ORIGIN, "content-type": "application/json" },
         body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),

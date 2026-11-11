@@ -1,6 +1,6 @@
 import { api, errorText } from "./api.js";
 import { barRows, barsChart, card, kpi, legend, sum } from "./charts.js";
-import { duration, el, REGION } from "./util.js";
+import { duration, el, every, REGION } from "./util.js";
 
 const REFRESH_MS = 30_000;
 const STATUS = { open: "بانتظار محامية", claimed: "قيد المتابعة", closed: "منتهية" };
@@ -73,6 +73,5 @@ export function workView(ctx) {
     }
   }
   load();
-  const t = setInterval(load, REFRESH_MS);
-  return { destroy: () => clearInterval(t) };
+  return { destroy: every(REFRESH_MS, load) };
 }

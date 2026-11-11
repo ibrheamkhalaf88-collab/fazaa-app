@@ -76,8 +76,8 @@ let failed = false;
 try {
   await page.goto(base + "/");
   await page.evaluate(() => {
-    localStorage.setItem("sanad:last", JSON.stringify("chat"));
-    localStorage.setItem("sanad:introSeen", "true"); // the intro is first-run only
+    localStorage.setItem("fazaa:last", JSON.stringify("chat"));
+    localStorage.setItem("fazaa:introSeen", "true"); // the intro is first-run only
   });
   await page.reload();
   await page.waitForSelector('.screen[data-screen="chat"]:not([hidden])');

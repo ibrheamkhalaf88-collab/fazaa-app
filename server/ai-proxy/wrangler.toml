@@ -1,13 +1,13 @@
 # Deploy:  cd server/ai-proxy && npx wrangler deploy
 # Secret:  npx wrangler secret put GEMINI_API_KEY   (or NVIDIA_API_KEY / ANTHROPIC_API_KEY, matching PROVIDER)
 #          Never put a key in this file.
-name = "sanad-ai"
+name = "fazaa-ai"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
 [vars]
 # Exact origins of the deployed app, comma separated, no trailing slash.
-ALLOWED_ORIGINS = "https://sanad-app.pages.dev"
+ALLOWED_ORIGINS = "https://fazaa.ibrheamkhalaf88.workers.dev"
 # Which model provider to call: "gemini" (default) | "nvidia" | "anthropic".
 PROVIDER = "gemini"
 # Optional: override the model (defaults live in providers.js; names change often).

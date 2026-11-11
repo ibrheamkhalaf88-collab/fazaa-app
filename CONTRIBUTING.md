@@ -6,7 +6,7 @@ change it. Read this page (5 minutes), then `docs/ARCHITECTURE.md`.
 ## Set up
 
 ```bash
-git clone https://github.com/ibrheamkhalaf88-collab/sanad-app && cd sanad-app
+git clone https://github.com/ibrheamkhalaf88-collab/fazaa-app && cd fazaa-app
 npm install              # only dev tools: Playwright, ESLint
 npm run dev:admin        # app + staff API + dashboards -> http://localhost:8787  (admin at /admin/)
 SEED=1 npm run dev:admin # same, with demo data (lawyers, cases, a month of statistics)

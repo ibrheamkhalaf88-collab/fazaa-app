@@ -59,8 +59,8 @@ Memory-only, signs you in as that email (add header `x-dev-staff` to act as anot
 
 ## Deploy
 
-1. `cd server/api && npx wrangler d1 create sanad`, put the returned id in `wrangler.toml`, then
-   `npx wrangler d1 execute sanad --remote --file=schema.sql`.
+1. `cd server/api && npx wrangler d1 create fazaa`, put the returned id in `wrangler.toml`, then
+   `npx wrangler d1 execute fazaa --remote --file=schema.sql`.
 2. `openssl rand -base64 32 | npx wrangler secret put MESSAGE_KEY` (**back it up**: without it stored messages are unreadable).
 3. Put the Worker on the same domain as the site: `routes = [{ pattern = "yourdomain/api/*", ... }]`.
    (Same origin keeps the app's CSP strict and lets Access cookies reach the API.)

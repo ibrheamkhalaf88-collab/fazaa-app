@@ -1,5 +1,5 @@
 /**
- * Sanad staff API (Cloudflare Worker + D1).
+ * Fazaa staff API (Cloudflare Worker + D1).
  *
  *  Women (alias + 6-digit PIN): sign up when she asks for a lawyer, then open/read/write her own cases.
  *                      Name + phone are encrypted and shown only to the lawyer who claimed the case.
@@ -49,6 +49,7 @@ const USERNAME_RE = /^[a-z0-9_\u0621-\u064a]{3,20}$/;
 const PIN_RE = /^\d{6}$/;
 const PHONE_RE = /^\+?\d{7,15}$/;
 const DAY = 86_400_000;
+const RATE_LIMITED = ["/v1/answer", "/v1/users", "/v1/login", "/v1/staff/login", "/v1/ping"];
 
 const json = (body, status = 200, extra = {}) =>
   new Response(JSON.stringify(body), {
@@ -207,10 +208,11 @@ export async function handleRequest(request, env, deps) {
   const path = url.pathname.replace(/^\/api/, "");
   const m = (re) => path.match(re);
 
-  if (env.RATE_LIMITER) {
-    const { success } = await env.RATE_LIMITER.limit({
-      key: request.headers.get("cf-connecting-ip") || "anonymous",
-    });
+  // Per-IP limit on the public endpoints that cost money or can be abused (AI, sign-up, sign-in,
+  // counters). Message polling is not limited: many women can share one IP (mobile carriers).
+  if (env.RATE_LIMITER && request.method === "POST" && RATE_LIMITED.includes(path)) {
+    const ip = request.headers.get("cf-connecting-ip") || "anonymous";
+    const { success } = await env.RATE_LIMITER.limit({ key: `${ip}|${path}` });
     if (!success) return reply(fail(429, "rate-limited"));
   }
   if (!env.MESSAGE_KEY) return reply(fail(503, "not-configured"));
@@ -237,7 +239,8 @@ export async function handleRequest(request, env, deps) {
   /* ============ staff routes (email + password session) ============ */
   if (path.startsWith("/v1/staff/")) {
     // State-changing calls must come from a page (the cookie is also SameSite=Strict).
-    if (request.method !== "GET" && !request.headers.get("origin")) return reply(fail(403, "forbidden-origin"));
+    if (request.method !== "GET" && !request.headers.get("origin"))
+      return reply(fail(403, "forbidden-origin"));
 
     const newSession = async (email) => {
       const token = randomId(32);
@@ -256,7 +259,12 @@ export async function handleRequest(request, env, deps) {
     const setTemp = async (email) => {
       const password = tempPassword();
       const salt = newSalt();
-      await store.setStaffPassword(email, { salt, hash: await hashPin(password, salt), mustChange: true, now });
+      await store.setStaffPassword(email, {
+        salt,
+        hash: await hashPin(password, salt),
+        mustChange: true,
+        now,
+      });
       await store.deleteStaffSessions(email);
       return password;
     };
@@ -276,7 +284,9 @@ export async function handleRequest(request, env, deps) {
       if (!ok) return reply(fail(401, "bad-credentials"));
       await store.touchStaff(email, now);
       await store.addAudit({ actor: email, action: "staff-login", target: "", now });
-      return reply(json({ ok: true, mustChange: auth.mustChange }, 200, { "set-cookie": await newSession(email) }));
+      return reply(
+        json({ ok: true, mustChange: auth.mustChange }, 200, { "set-cookie": await newSession(email) }),
+      );
     }
 
     const token = deps.staffEmail ? "" : readCookie(request, STAFF_COOKIE);
@@ -313,7 +323,12 @@ export async function handleRequest(request, env, deps) {
       if (problem) return reply(fail(400, problem));
       if (value.next === value.current) return reply(fail(400, "password-unchanged"));
       const salt = newSalt();
-      await store.setStaffPassword(staff.email, { salt, hash: await hashPin(value.next, salt), mustChange: false, now });
+      await store.setStaffPassword(staff.email, {
+        salt,
+        hash: await hashPin(value.next, salt),
+        mustChange: false,
+        now,
+      });
       await store.deleteStaffSessions(staff.email); // signs out every other device
       await store.addAudit({ actor: staff.email, action: "password-change", target: "", now });
       return reply(json({ ok: true }, 200, { "set-cookie": await newSession(staff.email) }));
@@ -338,7 +353,10 @@ export async function handleRequest(request, env, deps) {
       if (env.PUBLIC_SITE_URL) {
         const t = Date.now();
         try {
-          const res = await fetchImpl(env.PUBLIC_SITE_URL, { method: "HEAD", signal: AbortSignal.timeout(6000) });
+          const res = await fetchImpl(env.PUBLIC_SITE_URL, {
+            method: "HEAD",
+            signal: AbortSignal.timeout(6000),
+          });
           site = { url: env.PUBLIC_SITE_URL, ok: res.ok, status: res.status, ms: Date.now() - t };
         } catch {
           site = { url: env.PUBLIC_SITE_URL, ok: false, status: 0, ms: Date.now() - t };
@@ -557,6 +575,16 @@ export async function handleRequest(request, env, deps) {
     if (path === "/v1/staff/team") {
       const denied = need("developer");
       if (denied) return denied;
+      const releaseCases = async (email) => {
+        const n = await store.releaseCases(email);
+        if (n)
+          await store.addAudit({
+            actor: staff.email,
+            action: "cases-release",
+            target: `${email} (${n})`,
+            now,
+          });
+      };
       if (request.method === "GET") return reply(json({ team: await store.listStaff() }));
       if (request.method === "PUT") {
         const { value, error } = await readJson(request);
@@ -569,7 +597,9 @@ export async function handleRequest(request, env, deps) {
         if (target === staff.email && (role !== staff.role || value.active === false))
           return reply(fail(400, "cannot-change-self"));
         await store.upsertStaff({ email: target, role, name: firstName(value.name), now });
-        if (typeof value.active === "boolean" && existing && value.active !== existing.active) {
+        const activeChanged =
+          typeof value.active === "boolean" && existing && value.active !== existing.active;
+        if (activeChanged) {
           await store.setStaffActive(target, value.active);
           if (!value.active) await store.deleteStaffSessions(target); // signed out at once
           await store.addAudit({
@@ -579,6 +609,9 @@ export async function handleRequest(request, env, deps) {
             now,
           });
         }
+        // nobody else can answer her claimed cases, so they go back to the queue
+        if (existing?.role === "lawyer" && (role !== "lawyer" || (activeChanged && !value.active)))
+          await releaseCases(target);
         await store.addAudit({ actor: staff.email, action: "staff-add", target: `${target} (${role})`, now });
         // a new member (or one from before passwords) gets a temporary password, shown once
         const tempPw = (await store.getStaffAuth(target)) ? null : await setTemp(target);
@@ -587,6 +620,7 @@ export async function handleRequest(request, env, deps) {
       if (request.method === "DELETE") {
         const target = (url.searchParams.get("email") || "").toLowerCase();
         if (target === staff.email) return reply(fail(400, "cannot-remove-self"));
+        await releaseCases(target);
         await store.removeStaff(target);
         await store.addAudit({ actor: staff.email, action: "staff-remove", target, now });
         return reply(json({ ok: true }));

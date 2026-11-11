@@ -28,10 +28,10 @@ main.js
 
 ## State and storage
 
-`core/store.js` wraps `localStorage` (namespace `sanad:`, JSON, never throws; falls back to memory when storage
+`core/store.js` wraps `localStorage` (namespace `fazaa:`, JSON, never throws; falls back to memory when storage
 is blocked). `core/state.js` holds `{theme, country, wipe, pin, dg, user, aiOnline}` and notifies subscribers.
 Chat messages are **not** persisted. The only things that identify her to the server are the session token
-(`sanad:session`, created when she signs up for a lawyer) and nothing else; wiping the app removes it. "Erase all" resets state and bumps the chat `epoch` so a late async reply
+(`fazaa:session`, created when she signs up for a lawyer) and nothing else; wiping the app removes it. "Erase all" resets state and bumps the chat `epoch` so a late async reply
 cannot reappear.
 
 ## Navigation

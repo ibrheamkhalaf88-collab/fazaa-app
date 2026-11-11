@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { handleRequest } from "../server/ai-proxy/worker.js";
 import { extractJson } from "../server/ai-proxy/providers.js";
 
-const ORIGIN = "https://sanad.example";
+const ORIGIN = "https://fazaa.example";
 const GOOD = {
   covered: true,
   lead: "إنتِ مش غلطانة.",
