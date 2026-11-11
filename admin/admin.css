@@ -355,9 +355,12 @@ textarea {
 
 @media (max-width: 900px) {
   .shell {
-    grid-template-columns: 1fr;
+    /* minmax(0, …): the scrolling tab row must not stretch the page wider than the window
+       (it pushed the Save button off-screen on narrow windows) */
+    grid-template-columns: minmax(0, 1fr);
   }
   .side {
+    min-width: 0;
     position: sticky;
     z-index: 5;
     height: auto;

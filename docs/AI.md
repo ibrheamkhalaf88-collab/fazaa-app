@@ -43,7 +43,7 @@ If the network, proxy or validation fails the user silently gets the offline ans
 
 1. Deploy the staff API (see `DEPLOYMENT.md`). It serves the endpoint `POST /api/v1/answer` on the site's own domain, so the CSP needs no change.
 2. In `src/config.js` set `AI_ENDPOINT = "/api/v1/answer"`, bump `CACHE_VERSION` in `sw.js`, deploy the site.
-3. A developer opens the dashboard, section **إعدادات الذكاء**, picks the provider, optionally a model (default is the lightest one, `gemini-2.5-flash-lite`), pastes the API key, saves, and presses **جرّبي الاتصال**.
+3. A developer opens the dashboard, section **إعدادات الذكاء**, picks the provider, optionally a model (default is the lightest one, `gemini-flash-lite-latest`), pastes the API key, saves, and presses **جرّبي الاتصال**.
 
 The key is stored encrypted (AES-GCM, `MESSAGE_KEY`) in D1, is write-only (the dashboard shows only its last 4 characters), and every save, test and delete is written to the audit log without the key. Settings saved in the dashboard win over Worker secrets; deleting them falls back to `GEMINI_API_KEY` / `NVIDIA_API_KEY` / `ANTHROPIC_API_KEY` if those exist.
 
@@ -64,7 +64,7 @@ When the AI answers through the staff API, the **answer** is stored (lead, steps
 
 | PROVIDER           | Key secret                          | Default model                 | Notes                                      |
 | ------------------ | ----------------------------------- | ----------------------------- | ------------------------------------------ |
-| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-2.5-flash-lite`       | free tier; good Arabic                     |
+| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-flash-lite-latest`       | free tier; good Arabic                     |
 | `nvidia`           | `NVIDIA_API_KEY` (build.nvidia.com) | `meta/llama-3.3-70b-instruct` | free trial credits; Arabic weaker, test it |
 | `anthropic`        | `ANTHROPIC_API_KEY`                 | `claude-sonnet-5-5`           | paid                                       |
 

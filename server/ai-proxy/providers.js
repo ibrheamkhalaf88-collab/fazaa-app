@@ -54,7 +54,7 @@ const anthropic = {
 const gemini = {
   keyName: "GEMINI_API_KEY",
   label: "Google Gemini",
-  defaultModel: "gemini-2.5-flash-lite",
+  defaultModel: "gemini-flash-lite-latest", // an alias Google keeps current (fixed versions get retired)
   build({ system, user, tool, env }, key) {
     const model = env.MODEL || gemini.defaultModel;
     return {

@@ -67,7 +67,7 @@ test("gemini: calls generateContent with the key in a header and reads functionC
   const c = api.calls[0];
   assert.match(
     c.url,
-    /generativelanguage\.googleapis\.com\/v1beta\/models\/gemini-2\.5-flash-lite:generateContent$/,
+    /generativelanguage\.googleapis\.com\/v1beta\/models\/gemini-flash-lite-latest:generateContent$/,
   );
   assert.equal(c.init.headers["x-goog-api-key"], "g-key");
   assert.ok(!c.url.includes("g-key"), "key must not be in the URL");

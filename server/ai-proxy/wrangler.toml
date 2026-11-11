@@ -11,7 +11,7 @@ ALLOWED_ORIGINS = "https://fazaa.ibrheam-app.workers.dev"
 # Which model provider to call: "gemini" (default) | "nvidia" | "anthropic".
 PROVIDER = "gemini"
 # Optional: override the model (defaults live in providers.js; names change often).
-MODEL = "gemini-2.5-flash-lite"   # lightest, cheapest Gemini; raise only if answers are weak
+MODEL = "gemini-flash-lite-latest"   # lightest, cheapest Gemini; raise only if answers are weak
 
 # Strongly recommended before public launch: per-IP rate limit (Cloudflare Rate Limiting binding).
 # [[unsafe.bindings]]

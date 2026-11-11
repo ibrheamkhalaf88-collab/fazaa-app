@@ -588,7 +588,7 @@ test("/v1/answer uses the dashboard key and falls back to the Worker secret", as
   await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
   await ask(ENV);
   assert.equal(seen.at(-1).key, SECRET_KEY);
-  assert.match(seen.at(-1).url, /gemini-2\.5-flash-lite/);
+  assert.match(seen.at(-1).url, /gemini-flash-lite-latest/);
 
   await w.call("DELETE", "/v1/staff/ai-config", { as: DEV });
   await ask({ ...ENV, GEMINI_API_KEY: "secret-from-worker-1234567890" });

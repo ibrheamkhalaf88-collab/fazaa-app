@@ -1,3 +1,5 @@
+import { companionAnswer, isVenting } from "./companion.js";
+import { detectDanger } from "./danger.js";
 import { answerFromRules } from "./rules-engine.js";
 
 /**
@@ -28,6 +30,10 @@ export function createAnswerer({ remote, isRemoteEnabled = () => false, onRemote
      * @returns {Promise<import("./types.js").Answer | null>}
      */
     async answer(question, ctx) {
+      // 1) danger: a fixed, reviewed safety reply, at once, even offline; nothing is sent anywhere
+      const danger = detectDanger(question);
+      if (danger) return { ...danger.answer, source: "rules" };
+
       const local = answerFromRules(question);
 
       if (remote && isRemoteEnabled()) {
@@ -38,7 +44,9 @@ export function createAnswerer({ remote, isRemoteEnabled = () => false, onRemote
           onRemoteError(/** @type {Error} */ (err));
         }
       }
-      return local;
+      if (local) return local;
+      // 2) she is venting and no law fits: listen instead of refusing
+      return isVenting(question) ? { ...companionAnswer(), source: "rules" } : null;
     },
   };
 }

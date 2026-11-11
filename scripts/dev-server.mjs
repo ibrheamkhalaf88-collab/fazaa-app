@@ -30,7 +30,7 @@ if (process.env.SEED) {
       at: Date.now() - i * 3_600_000,
       region: i ? "ps-gaza" : "ps-wb",
       provider: "gemini",
-      model: "gemini-2.5-flash-lite",
+      model: "gemini-flash-lite-latest",
       body: JSON.stringify({
         lead,
         steps: ["لا تدفعي ولا تردّي", "احفظي الأدلة"],
