@@ -1,26 +1,25 @@
-# Staff API. Deploy:  cd server/api && npx wrangler deploy
-name = "fazaa-api"
+# Fazaa: the public app (/), the staff dashboard (/admin/) and the API (/api/*) on ONE origin.
+# Deploy:  node scripts/build-admin.mjs && cd server/api && npx wrangler deploy
+name = "fazaa"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
-# Serve it on the SAME domain as the site so Cloudflare Access can guard /api/v1/staff/*.
-# routes = [{ pattern = "sanad.example.com/api/*", zone_name = "example.com" }]
+# A custom domain later:  routes = [{ pattern = "fazaa.example.com", custom_domain = true }]
 
-# The dashboard (/admin/) is served by this Worker from ./public (built by scripts/build-admin.mjs),
-# so it shares an origin with /api/*. Only /api/* runs the Worker code.
+# ./public is built by scripts/build-admin.mjs (app + dashboard). Only /api/* runs the Worker code.
 [assets]
 directory = "./public"
 run_worker_first = ["/api/*"]
 
 [vars]
 # The app's origin (public site) and this Worker's own origin (the dashboard).
-ALLOWED_ORIGINS = "https://sanad-app.pages.dev,https://fazaa-api.ibrheamkhalaf88.workers.dev"
+ALLOWED_ORIGINS = "https://fazaa.ibrheamkhalaf88.workers.dev"
 # Staff sign in with email + password (server/api/auth.js). The first developer gets a temporary
 # password with:  node scripts/staff-password.mjs --email you@example.com
 # DEVELOPER_EMAILS is only a bootstrap for the local dev server; keep it empty here.
 DEVELOPER_EMAILS = ""
 # Checked by the dashboard's "حالة النظام" page.
-PUBLIC_SITE_URL = "https://sanad-app.pages.dev"
+PUBLIC_SITE_URL = "https://fazaa.ibrheamkhalaf88.workers.dev/"
 AI_DAILY_LIMIT = "3000"        # max online-AI answers per day (protects the provider quota)
 RETENTION_CLOSED_DAYS = "7"
 RETENTION_IDLE_DAYS = "30"

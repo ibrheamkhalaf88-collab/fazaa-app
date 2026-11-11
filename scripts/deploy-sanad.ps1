@@ -34,4 +34,5 @@ if (Test-Path $keyFile) {
 $key | npx wrangler secret put MESSAGE_KEY
 
 Write-Host "5/5  Done." -ForegroundColor Green
-Write-Host "Dashboard: https://fazaa-api.ibrheamkhalaf88.workers.dev/admin/  (sign in with email + password)" -ForegroundColor Green
+Write-Host "App:       https://fazaa.ibrheamkhalaf88.workers.dev/" -ForegroundColor Green
+Write-Host "Dashboard: https://fazaa.ibrheamkhalaf88.workers.dev/admin/  (sign in with email + password)" -ForegroundColor Green

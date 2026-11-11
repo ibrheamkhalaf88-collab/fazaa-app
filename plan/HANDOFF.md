@@ -6,16 +6,17 @@ Read this first, then `plan/PLAN.md` and `plan/DATABASE.md`. Reply to the owner 
 
 The app is called **فزعة (Fazaa)** (renamed from سند / Sanad on 2026-11-10). User-facing text changed; the repo, Pages
 project, D1 `sanad` and the `sanad:` localStorage prefix keep the old name on purpose (changing the prefix would wipe
-users' saved data). The staff Worker was redeployed as `fazaa-api` on 2026-11-11 (see below).
+users' saved data).
 
 ## Where things are
 
-- GitHub: https://github.com/ibrheamkhalaf88-collab/sanad-app (branch `master`; the public site auto-deploys from it)
-- Public app: https://sanad-app.pages.dev
-- Staff API + dashboard (Cloudflare Worker `fazaa-api`): https://fazaa-api.ibrheamkhalaf88.workers.dev
-  - dashboard: `/admin/`, API: `/api/*`. D1 database `sanad` (id in `server/api/wrangler.toml`).
-  - The old Worker `sanad-api` still exists, locked behind a leftover Cloudflare Access app. Unused; the owner can
-    delete it (and the Access app) from the Cloudflare dashboard.
+- GitHub: https://github.com/ibrheamkhalaf88-collab/sanad-app (branch `master`)
+- **Everything is one Worker `fazaa`: https://fazaa.ibrheamkhalaf88.workers.dev** — the app at `/`, the dashboard at
+  `/admin/`, the API at `/api/*` (same origin). Build + deploy: `node scripts/build-admin.mjs`, then
+  `cd server/api && npx wrangler deploy`. It does NOT auto-deploy from GitHub. D1 database `sanad`.
+- Old, unused, safe for the owner to delete in the Cloudflare dashboard: Pages project `sanad-app`
+  (sanad-app.pages.dev, still auto-deploys from GitHub), Workers `sanad-api` (locked by a leftover Access app) and
+  `fazaa-api`. Delete the Access app "sanad-api - Cloudflare Workers" too.
 - On the owner's PC: project `C:\Users\Lenovo\sanad-app`; deploy script `C:\Users\Lenovo\Desktop\سند\deploy-sanad.ps1`.
   (There is also an accidental nested clone `C:\Users\Lenovo\sanad-app\server\api\sanad-app`; the owner said keep it for now.)
 
@@ -28,7 +29,7 @@ users' saved data). The staff Worker was redeployed as `fazaa-api` on 2026-11-11
 - Dashboard redesigned (navy/cream/gold): lawyer inbox like a chat app; developer tabs incl. "المحادثات" (read every
   conversation, read-only, each opening audited — owner's decision; a lawyer must review the consent wording),
   "حالة النظام", users list with delete (no names/phones).
-- `MESSAGE_KEY` is set on `fazaa-api` (same key as before; copy on the Desktop — owner must move it somewhere safe).
+- `MESSAGE_KEY` is set on `fazaa` (same key as before; copy on the Desktop — owner must move it somewhere safe).
 - The public app is NOT connected to the Worker yet, so the in-app AI only uses offline rules. No Gemini key set.
 
 ## Next steps, in order
@@ -37,8 +38,8 @@ users' saved data). The staff Worker was redeployed as `fazaa-api` on 2026-11-11
 2. **AI friend** (owner's request): a warm, Palestinian-dialect companion she can vent to; understands, walks with her,
    gives clear do/don't steps; legal facts only from the law corpus; danger or self-harm -> SOS numbers and "talk to a
    lawyer" at once. Needs a new Gemini key entered by the owner in "إعدادات الذكاء" (never in chat).
-3. Connect the public app: `src/config.js` -> `API_BASE`, `TELEMETRY_ENDPOINT`, `AI_ENDPOINT` pointing at
-   `https://fazaa-api.ibrheamkhalaf88.workers.dev/api...`, and extend `connect-src` in `_headers` to that origin only.
+3. Connect the public app: same origin now, so in `src/config.js` set `API_BASE = "/api"`,
+   `TELEMETRY_ENDPOINT = "/api/v1/ping"`, `AI_ENDPOINT = "/api/v1/answer"` (no CSP change needed).
 4. Link: owner to choose free workers.dev or a paid custom domain (~$10–15/yr, bought by the owner).
 5. Before real users: lawyer verifies laws (`npm run law:verify`), consent text (developers read chats), real support
    numbers, rate limit, PIN recovery.
