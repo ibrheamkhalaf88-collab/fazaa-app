@@ -23,6 +23,8 @@ Status: ✅ done · ⏳ in progress · ⬜ not started. "Owner" is who must act.
 
 ## Phase 2 — AI live (⬜, owner: Ibrahim)
 
+The detailed AI development plan is in `plan/AI-ROADMAP.md`.
+
 1. Create a **new** Gemini key (the old one was exposed in chat; delete it). Enter it in the dashboard only.
 2. Test connection from the dashboard.
 3. Ask 50+ real-style questions; a lawyer reviews each answer (good / bad).
