@@ -2,10 +2,10 @@ import { api } from "./api.js";
 import { aiSettingsView } from "./ai-settings.js";
 import { answersView } from "./answers.js";
 import { auditView, healthView, overviewView, teamView } from "./developer.js";
-import { lawyerView } from "./lawyer.js";
+import { conversationsView, lawyerView } from "./lawyer.js";
 import { aiView, usageView, usersView } from "./usage.js";
 import { workView } from "./work.js";
-import { el, ROLE } from "./util.js";
+import { el, icon, initial, ROLE } from "./util.js";
 
 /**
  * Staff dashboard shell. Staff sign in here with email + password; a temporary password must be
@@ -166,27 +166,30 @@ $("logout").addEventListener("click", async () => {
   }
   if (me.mustChange) return showPasswordForm(true);
   only("shell");
-  $("me-name").textContent = me.name || "مرحباً";
+  $("me-name").textContent = me.name || me.email.split("@")[0];
   $("me-mail").textContent = me.email;
   $("me-role").textContent = ROLE[me.role];
+  $("me-avatar").textContent = initial(me.name || me.email);
 
+  // [id, label, view, icon, full-height page]
   const sections =
     me.role === "lawyer"
       ? [
-          ["cases", "الحالات", lawyerView],
-          ["work", "لوحة العمل", workView],
-          ["answers", "مراجعة أجوبة الذكاء", answersView],
+          ["cases", "المحادثات", lawyerView, "chat", true],
+          ["work", "لوحة العمل", workView, "chart"],
+          ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
         ]
       : [
-          ["overview", "نظرة عامة", overviewView],
-          ["health", "حالة النظام", healthView],
-          ["usage", "الزوّار والاستخدام", usageView],
-          ["users", "المستخدمات", usersView],
-          ["ai", "الذكاء الاصطناعي", aiView],
-          ["answers", "مراجعة أجوبة الذكاء", answersView],
-          ["ai-settings", "إعدادات الذكاء", aiSettingsView],
-          ["team", "الفريق", teamView],
-          ["audit", "سجل العمليات", auditView],
+          ["overview", "نظرة عامة", overviewView, "chart"],
+          ["conversations", "المحادثات", conversationsView, "chat", true],
+          ["health", "حالة النظام", healthView, "pulse"],
+          ["users", "المستخدمات", usersView, "users"],
+          ["usage", "الزوّار والاستخدام", usageView, "list"],
+          ["ai", "الذكاء الاصطناعي", aiView, "spark"],
+          ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
+          ["ai-settings", "إعدادات الذكاء", aiSettingsView, "gear"],
+          ["team", "الفريق", teamView, "team"],
+          ["audit", "سجل العمليات", auditView, "inbox"],
         ];
   if (me.role === "lawyer") {
     $("sound").hidden = false;
@@ -214,14 +217,18 @@ $("logout").addEventListener("click", async () => {
   function show(id) {
     active?.destroy();
     banner();
-    const [, , build] = sections.find(([s]) => s === id);
+    const [, , build, , full] = sections.find(([s]) => s === id);
+    $("main").classList.toggle("full", Boolean(full));
     for (const b of $("nav").children) b.setAttribute("aria-current", b.dataset.id === id ? "page" : "false");
+    store.set("page", id);
     active = build(ctx);
   }
 
   $("nav").replaceChildren(
-    ...sections.map(([id, label]) => {
-      const b = el("button", null, label);
+    ...sections.map(([id, label, , ic]) => {
+      const b = el("button");
+      b.type = "button";
+      b.append(icon(ic), el("span", "label", label));
       b.dataset.id = id;
       if (id === "cases") b.append(Object.assign(el("span", "badge", "0"), { hidden: true }));
       b.addEventListener("click", () => show(id));
@@ -233,5 +240,6 @@ $("logout").addEventListener("click", async () => {
     $("nav")
       .querySelectorAll(".badge")
       .forEach((n) => n.remove());
-  show(sections[0][0]);
+  const last = store.get("page");
+  show(sections.some(([s]) => s === last) ? last : sections[0][0]);
 })();

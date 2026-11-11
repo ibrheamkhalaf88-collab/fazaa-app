@@ -1,0 +1,26 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "admin-lawyer",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-server.mjs"],
+      "env": { "PORT": "8788", "SEED": "1", "DEV_STAFF_EMAIL": "salma@local.test" },
+      "port": 8788
+    },
+    {
+      "name": "admin-developer",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-server.mjs"],
+      "env": { "PORT": "8787", "SEED": "1", "DEV_STAFF_EMAIL": "dev@local" },
+      "port": 8787
+    },
+    {
+      "name": "admin-signed-out",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-server.mjs"],
+      "env": { "PORT": "8789", "DEV_STAFF_EMAIL": "nobody@local", "DEVELOPERS": "none@local" },
+      "port": 8789
+    }
+  ]
+}

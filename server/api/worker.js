@@ -4,12 +4,13 @@
  *  Women (alias + 6-digit PIN): sign up when she asks for a lawyer, then open/read/write her own cases.
  *                      Name + phone are encrypted and shown only to the lawyer who claimed the case.
  *  Lawyers:            see the queue (topic + region only), claim a case, answer it, close it.
- *  Developers:         see system counts, manage staff. Never message content.
+ *  Developers:         system counts, staff, health; READ every conversation (owner's decision,
+ *                      2026-11-11): read-only, each opening audited, never her name or phone.
  *
  * Privacy rules enforced here (each has a test in tests/api.test.js):
  *   - bodies, names and phones are encrypted before storage; no IP / user-agent is stored;
  *   - PINs are salted PBKDF2 hashes; 5 wrong PINs lock the account for 15 minutes;
- *   - a lawyer can read only the case she claimed; developers can read no case at all;
+ *   - a lawyer can read only the case she claimed; developers can read any case but not write to it;
  *   - closed cases are deleted after RETENTION_CLOSED_DAYS, idle ones after RETENTION_IDLE_DAYS.
  *
  * Staff sign in with email + password (see auth.js): salted PBKDF2 hashes, lockout after 5 wrong

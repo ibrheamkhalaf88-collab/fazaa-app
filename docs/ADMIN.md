@@ -8,9 +8,19 @@
 | Claim a case, read and answer **her own** cases, close               | yes                       | **no**                  |
 | System counts (open/claimed/closed, lawyers, messages, longest wait) | no                        | yes                     |
 | Add/remove staff and set roles                                       | no                        | yes                     |
-| Read any case content                                                | only the case she claimed | **never**               |
+| Read any case content                                                | only the case she claimed | **read-only, audited**  |
+| See her name and phone                                               | only the case she claimed | never                   |
 
 Permissions are enforced in the API (`server/api/worker.js`), not by hiding buttons; `tests/api.test.js` proves each rule.
+
+**Owner's decision (2026-11-11):** developers can read every conversation ("المحادثات" tab), read-only. Each time a
+developer opens a conversation the audit log records it (`dev-read-case`), and the sign-up form in the app tells the
+woman that Fazaa's technical team can read her messages. A lawyer should review this wording before launch.
+
+**Sign-in (2026-11-11):** email + password, checked by the Worker (Cloudflare Access is no longer used). The owner adds a
+member in "الفريق" and gets a temporary password once; the member must change it at first sign-in. "كلمة سر جديدة"
+resets a forgotten one. Lockout: 5 wrong tries, 15 minutes. If every developer is locked out:
+`node scripts/staff-password.mjs --email you@example.com` (writes a temporary password to a file on the Desktop).
 
 ## How it fits together
 

@@ -72,7 +72,7 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     const note = el(
       "div",
       "muted",
-      "اسمك ورقمك بيتخزّنوا مشفّرين، وما بيشوفهم غير المحامي اللي بيتولى حالتك. بتقدري تحذفي حسابك بأي وقت.",
+      "رسايلك بيقرأها المحامي اللي بيتولى حالتك، وفريق فزعة التقني للمتابعة. اسمك ورقمك بيتخزّنوا مشفّرين، وما بيشوفهم غير المحامي. بتقدري تحذفي حسابك بأي وقت.",
     );
     const submit = el("button", "chip fill", "");
     submit.type = "submit";
