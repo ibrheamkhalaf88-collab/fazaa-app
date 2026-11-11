@@ -170,7 +170,18 @@ export async function answerQuestion(question, country, env, fetchImpl = fetch) 
   } catch {
     return { status: 502, body: { error: "upstream-unreachable" } };
   }
-  if (!upstream.ok) return { status: 502, body: { error: `upstream-${upstream.status}` } };
+  if (!upstream.ok) {
+    // the provider's own short reason (e.g. API_KEY_INVALID), never the request or the key
+    let reason = "";
+    try {
+      const e = (await upstream.json())?.error;
+      reason = String(e?.details?.find?.((d) => d.reason)?.reason || e?.status || e?.type || e?.code || "");
+    } catch {
+      /* no JSON body */
+    }
+    reason = reason.replace(/[^\w.-]/g, "").slice(0, 60);
+    return { status: 502, body: { error: `upstream-${upstream.status}${reason ? `:${reason}` : ""}` } };
+  }
 
   // ---- never trust the model output: extract, validate, restrict citations ----
   let input;

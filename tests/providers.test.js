@@ -29,6 +29,30 @@ const fake = (payload) => {
   };
 };
 
+test("a provider error returns its short reason code, never the key or the request", async () => {
+  const fetchImpl = async () => ({
+    ok: false,
+    status: 400,
+    json: async () => ({
+      error: {
+        code: 400,
+        message: "API key not valid. Please pass a valid API key. key=g-key",
+        status: "INVALID_ARGUMENT",
+        details: [{ reason: "API_KEY_INVALID" }],
+      },
+    }),
+  });
+  const res = await handleRequest(
+    post(),
+    { PROVIDER: "gemini", GEMINI_API_KEY: "g-key", ALLOWED_ORIGINS: ORIGIN },
+    { fetchImpl },
+  );
+  assert.equal(res.status, 502);
+  const body = await res.json();
+  assert.equal(body.error, "upstream-400:API_KEY_INVALID");
+  assert.ok(!JSON.stringify(body).includes("g-key"));
+});
+
 test("gemini: calls generateContent with the key in a header and reads functionCall.args", async () => {
   const api = fake({
     candidates: [{ content: { parts: [{ functionCall: { name: "give_answer", args: GOOD } }] } }],
