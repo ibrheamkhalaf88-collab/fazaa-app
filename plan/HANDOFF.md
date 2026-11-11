@@ -1,48 +1,53 @@
-# Handoff: continuing Sanad in a new session
+# Handoff: continuing Fazaa (formerly Sanad) in a new session
 
 Read this first, then `plan/PLAN.md` and `plan/DATABASE.md`. Reply to the owner in Palestinian-dialect Arabic, short.
 
 ## Name
 
-The app is now called **فزعة (Fazaa)** (renamed from سند / Sanad on 2026-11-10). Only user-facing text changed.
-Technical identifiers keep `sanad` on purpose: repo, Pages project, Worker `sanad-api`, D1 `sanad`, URLs, and the
-`sanad:` localStorage prefix (changing it would wipe users' saved data). Rename those only with a planned migration.
+The app is called **فزعة (Fazaa)** (renamed from سند / Sanad on 2026-11-10). User-facing text changed; the repo, Pages
+project, D1 `sanad` and the `sanad:` localStorage prefix keep the old name on purpose (changing the prefix would wipe
+users' saved data). The staff Worker was redeployed as `fazaa-api` on 2026-11-11 (see below).
 
 ## Where things are
 
 - GitHub: https://github.com/ibrheamkhalaf88-collab/sanad-app (branch `master`; the public site auto-deploys from it)
 - Public app: https://sanad-app.pages.dev
-- Staff API + dashboard (Cloudflare Worker `sanad-api`): https://sanad-api.ibrheamkhalaf88.workers.dev
+- Staff API + dashboard (Cloudflare Worker `fazaa-api`): https://fazaa-api.ibrheamkhalaf88.workers.dev
   - dashboard: `/admin/`, API: `/api/*`. D1 database `sanad` (id in `server/api/wrangler.toml`).
+  - The old Worker `sanad-api` still exists, locked behind a leftover Cloudflare Access app. Unused; the owner can
+    delete it (and the Access app) from the Cloudflare dashboard.
 - On the owner's PC: project `C:\Users\Lenovo\sanad-app`; deploy script `C:\Users\Lenovo\Desktop\سند\deploy-sanad.ps1`.
-  (There is also an accidental nested clone `C:\Users\Lenovo\sanad-app\server\api\sanad-app`; ignore or delete it.)
+  (There is also an accidental nested clone `C:\Users\Lenovo\sanad-app\server\api\sanad-app`; the owner said keep it for now.)
 
-## State
+## State (2026-11-11)
 
-- Done: app, AI retrieval (41 law articles), dashboard, staff IDs/suspension, API deployed, tables created,
-  `MESSAGE_KEY` secret set (key copy was saved on the Desktop; owner must move it to a safe place).
-- Cloudflare Access is live (2026-11-11): Zero Trust Free, team `restless-voice-f31b.cloudflareaccess.com`, app
-  "sanad-api - Cloudflare Workers" created from the Worker's Access tab. The owner signs in at `/admin/` with the
-  "Cloudflare" login and is `developer`. Caveats:
-  - It protects the WHOLE Worker (workers.dev has no zone, so path-only apps are not possible). Before connecting the
-    public app (step 3) the public routes (`/api/v1/cases*`, `/api/v1/answer`, `/api/v1/ping`) need a bypass, a
-    separate Worker, or a custom domain.
-  - Only the "Cloudflare account members" rule works. The second rule was saved as an email *domain* containing a full
-    address and matches nobody. To add lawyers: enable One-time PIN login and add an "Emails" rule.
+- Staff sign in with **email + password** (`server/api/auth.js`); Cloudflare Access is no longer used. The owner
+  (`developer`, S-001) has a temporary password in `Desktop\FAZAA-ADMIN-TEMP-PASSWORD.txt`; first sign-in forces a change.
+  Team tab: add member -> temporary password shown once; "كلمة سر جديدة" resets. Lockout 5 tries / 15 min.
+  Emergency reset: `node scripts/staff-password.mjs --email ...`.
+- Dashboard redesigned (navy/cream/gold): lawyer inbox like a chat app; developer tabs incl. "المحادثات" (read every
+  conversation, read-only, each opening audited — owner's decision; a lawyer must review the consent wording),
+  "حالة النظام", users list with delete (no names/phones).
+- `MESSAGE_KEY` is set on `fazaa-api` (same key as before; copy on the Desktop — owner must move it somewhere safe).
+- The public app is NOT connected to the Worker yet, so the in-app AI only uses offline rules. No Gemini key set.
 
 ## Next steps, in order
 
-1. Owner creates the Access application (self-hosted, paths `/admin` and `/api/v1/staff` on the workers.dev host,
-   Allow policy for the owner's email) and sends the team domain and AUD. Put them in `wrangler.toml`, run the deploy script.
-2. Test sign-in at `/admin/`. If Access will not accept workers.dev paths, a custom domain is needed.
-3. Connect the public app: `src/config.js` -> `API_BASE`, `TELEMETRY_ENDPOINT`, `AI_ENDPOINT` pointing at the Worker,
-   and extend `connect-src` in `_headers` to the Worker origin only. Run `npm run check` and the e2e tests.
-4. New Gemini key, entered by the owner in the dashboard (never in chat); test; lawyer reviews 50+ answers.
-5. Before real users: lawyer verifies laws (`npm run law:verify`), real support numbers, consent text, rate limit, PIN recovery.
+1. Owner signs in at the new link and changes the temporary password; adds lawyers in "الفريق".
+2. **AI friend** (owner's request): a warm, Palestinian-dialect companion she can vent to; understands, walks with her,
+   gives clear do/don't steps; legal facts only from the law corpus; danger or self-harm -> SOS numbers and "talk to a
+   lawyer" at once. Needs a new Gemini key entered by the owner in "إعدادات الذكاء" (never in chat).
+3. Connect the public app: `src/config.js` -> `API_BASE`, `TELEMETRY_ENDPOINT`, `AI_ENDPOINT` pointing at
+   `https://fazaa-api.ibrheamkhalaf88.workers.dev/api...`, and extend `connect-src` in `_headers` to that origin only.
+4. Link: owner to choose free workers.dev or a paid custom domain (~$10–15/yr, bought by the owner).
+5. Before real users: lawyer verifies laws (`npm run law:verify`), consent text (developers read chats), real support
+   numbers, rate limit, PIN recovery.
 
 ## Rules
 
 - Never ask for or store secrets in chat. The owner enters keys in the dashboard or `wrangler secret put`.
 - Commit messages: no AI attribution lines. Use Gemini/NVIDIA for the app's AI, not Claude.
 - Design: slate-blue / navy / cream / gold, no red. Keep `docs/TRANSFER.md` rules (account values only in `wrangler.toml`).
-- Run `npm run check` before every push; the working copy needs `node_modules` (`npm install`).
+- Run lint + unit tests before every push. `npm run check`'s prettier step fails on this Windows checkout (CRLF); the
+  `precache` test has a Windows path bug. On this PC `git` from PATH may fail with "fork bomb": use
+  `"C:\Program Files\Git\mingw64\bin\git.exe"`.

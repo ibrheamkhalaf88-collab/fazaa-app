@@ -34,4 +34,4 @@ if (Test-Path $keyFile) {
 $key | npx wrangler secret put MESSAGE_KEY
 
 Write-Host "5/5  Done." -ForegroundColor Green
-Write-Host "Dashboard: https://sanad-api.ibrheamkhalaf88.workers.dev/admin/  (stays locked until Cloudflare Access is set up)" -ForegroundColor Green
+Write-Host "Dashboard: https://fazaa-api.ibrheamkhalaf88.workers.dev/admin/  (sign in with email + password)" -ForegroundColor Green

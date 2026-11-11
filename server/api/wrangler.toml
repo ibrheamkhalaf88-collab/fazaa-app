@@ -1,5 +1,5 @@
 # Staff API. Deploy:  cd server/api && npx wrangler deploy
-name = "sanad-api"
+name = "fazaa-api"
 main = "worker.js"
 compatibility_date = "2026-01-01"
 
@@ -14,7 +14,7 @@ run_worker_first = ["/api/*"]
 
 [vars]
 # The app's origin (public site) and this Worker's own origin (the dashboard).
-ALLOWED_ORIGINS = "https://sanad-app.pages.dev,https://sanad-api.ibrheamkhalaf88.workers.dev"
+ALLOWED_ORIGINS = "https://sanad-app.pages.dev,https://fazaa-api.ibrheamkhalaf88.workers.dev"
 # Staff sign in with email + password (server/api/auth.js). The first developer gets a temporary
 # password with:  node scripts/staff-password.mjs --email you@example.com
 # DEVELOPER_EMAILS is only a bootstrap for the local dev server; keep it empty here.
