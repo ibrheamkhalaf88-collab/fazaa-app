@@ -608,8 +608,9 @@ test("/v1/answer rejects missing origin and bad questions", async () => {
       { store: w.store, now: 1 },
     );
   assert.equal((await post({ question: "حدا عم يبتزني بصوري" }, null)).status, 403);
-  assert.equal((await post({ question: "ab" })).status, 400);
-  assert.equal((await post({ question: "ا".repeat(501) })).status, 400);
+  // (2026-11-12) shared limits (src/ai/limits.js): 2 to 1200 characters
+  assert.equal((await post({ question: "a" })).status, 400);
+  assert.equal((await post({ question: "ا".repeat(1201) })).status, 400);
 });
 
 /* ---------- AI answers kept for review (the question is never stored) ---------- */

@@ -52,11 +52,12 @@ test("only POST /v1/answer exists", async () => {
   assert.equal((await handleRequest(req(null, { path: "/other" }), ENV)).status, 404);
 });
 
+// (2026-11-12) limits are shared with the app (src/ai/limits.js): 1200 characters, 16 KB body
 test("validates body size, JSON, and question length", async () => {
-  assert.equal((await handleRequest(req(null, { raw: "x".repeat(5000) }), ENV)).status, 413);
+  assert.equal((await handleRequest(req(null, { raw: "x".repeat(17000) }), ENV)).status, 413);
   assert.equal((await handleRequest(req(null, { raw: "{not json" }), ENV)).status, 400);
-  assert.equal((await handleRequest(req({ question: "ab" }), ENV)).status, 400);
-  assert.equal((await handleRequest(req({ question: "ا".repeat(501) }), ENV)).status, 400);
+  assert.equal((await handleRequest(req({ question: "a" }), ENV)).status, 400);
+  assert.equal((await handleRequest(req({ question: "ا".repeat(1201) }), ENV)).status, 400);
   assert.equal((await handleRequest(req({ question: 5 }), ENV)).status, 400);
 });
 
@@ -82,7 +83,8 @@ test("when retrieval finds no article, the model is never asked for a LAW answer
 
 test("family-law question: only family-law articles reach the model; a cyber-law citation is rejected", async () => {
   const api = anthropic(GOOD); // GOOD cites article 15, which was not retrieved for this question
-  const res = await handleRequest(req({ question: "طليقي ما عم يدفع نفقة" }), ENV, {
+  // (2026-11-12) a QUESTION about maintenance: a statement alone («طليقي ما عم يدفع») is not a legal request
+  const res = await handleRequest(req({ question: "طليقي ما عم يدفع نفقة، شو حقي؟" }), ENV, {
     fetchImpl: api.fetchImpl,
   });
   assert.equal(res.status, 502);

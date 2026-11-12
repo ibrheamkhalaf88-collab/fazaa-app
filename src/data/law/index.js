@@ -20,13 +20,23 @@ export const REGIONS = /** @type {const} */ (["ps-wb", "ps-gaza"]);
  *
  * @type {{key:string, name:string, regions:Region[], articles:import("./cyber-crimes-2018.js").Article[]}[]}
  */
+/**
+ * `review.status` is "pending" until a LAWYER has checked the text against the official gazette, its
+ * current force (amendments, repeals) and its application in each region. Nothing in this file may say
+ * "reviewed" before that happens. `scope` lists what is known to limit where or to whom it applies.
+ */
 export const LAWS = [
   {
     key: "cyber-2018",
     name: LAW_NAME,
-    // TODO(legal audit): confirm this decree-law is applied in Gaza before relying on it there.
     regions: ["ps-wb", "ps-gaza"],
     articles: CYBER_CRIMES_2018,
+    source: "maqam.najah.edu (Al-Najah legislation database), copied 2026",
+    scope: [
+      "Decree-law issued in Ramallah: whether and how it is applied by courts in Gaza is NOT confirmed.",
+      "Articles 15 and 52 were amended (2020, 2021): confirm the stored text is the text now in force.",
+    ],
+    review: { status: "pending", by: "", at: "" },
   },
   {
     // Personal status differs by region: the West Bank applies the 1976 law, Gaza the 1954 family-rights law.
@@ -34,18 +44,33 @@ export const LAWS = [
     name: PSL_WB_NAME,
     regions: ["ps-wb"],
     articles: PSL_WB_1976,
+    source: "maqam.najah.edu (Al-Najah legislation database), copied 2026",
+    scope: [
+      "Applies to Muslims before the sharia courts in the West Bank; Christian communities have their own rules.",
+      "Later decree-laws (e.g. marriage age 2019) may change some articles: not yet in the corpus.",
+    ],
+    review: { status: "pending", by: "", at: "" },
   },
   {
     key: "family-gaza-1954",
     name: FAMILY_GAZA_NAME,
     regions: ["ps-gaza"],
     articles: FAMILY_GAZA_1954,
+    source: "PDF on muslimfamilylawindex.com (unofficial copy; OCR text layer with damaged characters)",
+    scope: [
+      "Unofficial source: every article must be checked against the official text.",
+      "Custody and harm/shiqaq articles are missing from the corpus.",
+    ],
+    review: { status: "pending", by: "", at: "" },
   },
   {
     key: "basic-law-2003",
     name: BASIC_LAW_NAME,
     regions: ["ps-wb", "ps-gaza"],
     articles: BASIC_LAW_2003,
+    source: "maqam.najah.edu (Al-Najah legislation database), copied 2026",
+    scope: ["Constitutional principles: they do not by themselves give a remedy in a specific case."],
+    review: { status: "pending", by: "", at: "" },
   },
 ];
 

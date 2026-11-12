@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { createAnswerer } from "../src/ai/answerer.js";
 import { isVenting } from "../src/ai/companion.js";
-import { detectDanger } from "../src/ai/danger.js";
+import { assessDanger, detectDanger, FORCED_QUESTION } from "../src/ai/danger.js";
 import { detectIntents } from "../src/ai/detect.js";
 
 const ask = (q, remote) =>
@@ -10,10 +10,11 @@ const ask = (q, remote) =>
 
 test("danger: imminent violence gets the fixed safety reply with the SOS button", () => {
   for (const q of ["ضربني امبارح وأنا خايفة يرجع الليلة", "بدّه يقتلني", "حابسني بالبيت وما بخليني أطلع"]) {
-    const d = detectDanger(q);
+    const d = detectDanger(q, { police: "100" });
     assert.equal(d?.kind, "imminent", q);
     assert.equal(d.answer.sos, true);
-    assert.match(d.answer.steps[0], /100/);
+    // (2026-11-12) the reply is now a short "talk" reply: options instead of a numbered list
+    assert.match(d.answer.options[0], /100/);
   }
 });
 
@@ -21,7 +22,9 @@ test("danger: self-harm and forced marriage of a minor", () => {
   assert.equal(detectDanger("تعبت وبدي أموت")?.kind, "self-harm");
   assert.equal(detectDanger("صرت بفكر أنتحر")?.kind, "self-harm");
   assert.equal(detectDanger("عمري 16 وأهلي بدهم يجوزوني غصب عني")?.kind, "forced-marriage");
-  assert.equal(detectDanger("عمري ١٥ وجايبين عريس")?.kind, "forced-marriage");
+  // (2026-11-12) age + a suitor is no longer an automatic emergency script: one direct question instead
+  assert.equal(detectDanger("عمري ١٥ وجايبين عريس"), null);
+  assert.equal(assessDanger("عمري ١٥ وجايبين عريس").ask, FORCED_QUESTION);
 });
 
 test("danger does not fire on ordinary questions", () => {
@@ -54,8 +57,10 @@ test("venting with no law match gets the listening reply, not a refusal", async 
   const a = await ask("بحس حالي لحالي وما حدا فاهمني، بدي بس حدا يسمعني");
   assert.ok(a, "an answer, not null");
   assert.equal(a.general, true);
-  assert.deepEqual(a.cites, []);
-  assert.match(a.lead, /سامعتك/);
+  assert.ok(!a.cites?.length, "no law in a listening reply");
+  // (2026-11-12) she asked to be heard: a short listening reply, no list of steps
+  assert.match(a.lead, /سامع/);
+  assert.deepEqual(a.options, []);
 });
 
 test("a question nobody covers and that is not venting still gets the honest refusal (null)", async () => {

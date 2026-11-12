@@ -23,7 +23,9 @@ test("greetings, how are you, who are you, help me, thanks: a warm chat reply, n
     assert.equal(detectSmallTalk(q)?.kind, kind, q);
     const a = await ask(q);
     assert.equal(a.kind, "chat", q);
-    assert.ok(a.lead.length > 60, `a real reply, not a one-liner: ${q}`);
+    assert.ok(a.lead.length > 10, q);
+    // (2026-11-12) short and honest: no promise of secrecy, no "I will never leave you"
+    assert.doesNotMatch(a.lead, /بيضل بيننا|ما رح أتركك|بسرية/, q);
   }
 });
 
@@ -32,7 +34,7 @@ test("a long question that starts with hello still gets the law answer", async (
   const a = await ask("مرحبا، حدا عم يبتزني بصوري وبدّه مصاري، شو بعمل؟");
   assert.notEqual(a.kind, "chat");
   assert.ok(a.cites.length > 0);
-  assert.ok(a.closing, "a line of hope at the end");
+  // (2026-11-12) no rotating "line of hope" any more: it repeated in every reply
 });
 
 test("danger still wins over a greeting", async () => {
@@ -93,10 +95,11 @@ test("server: no matching article -> the model gives a SUPPORT reply, labelled, 
   assert.equal(status, 200);
   assert.equal(sent.tools[0].functionDeclarations[0].name, "give_support");
   assert.match(sent.systemInstruction.parts[0].text, /Say NOTHING about laws/);
-  assert.deepEqual(body.answer.cites, [], "a citation slipped by the model is dropped");
+  // (2026-11-12) a "talk" reply: it carries no citations at all (a slipped one is dropped)
+  assert.equal(body.answer.kind, "talk");
+  assert.ok(!body.answer.cites, "a citation slipped by the model is dropped");
   assert.equal(body.answer.general, true);
-  assert.match(body.answer.note, /مش معلومة قانونية/);
-  assert.equal(body.answer.closing, "إنتِ أقوى مما بتتخيلي 🤍");
+  assert.match(body.answer.lead, /حاسة فيكِ/);
 });
 
 test("server: support mode can be switched off", async () => {

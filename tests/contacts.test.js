@@ -68,15 +68,16 @@ test("region filter and special numbers", () => {
 });
 
 test("emergency replies use the numbers from the list, and drop a removed one cleanly", async () => {
+  // (2026-11-12) danger replies are short "talk" replies (options); a missing number drops the whole line
   const d = detectDanger("ضربني وخايفة يرجع", { police: "112", ambulance: "" });
-  assert.match(d.answer.steps[0], /بالشرطة 112 أو/);
+  assert.match(d.answer.options[0], /الشرطة 112/);
   const noNum = detectDanger("ضربني وخايفة يرجع", { police: "", ambulance: "" });
-  assert.match(noNum.answer.steps[0], /بالشرطة أو/);
+  assert.ok(noNum.answer.options.every((o) => !/الشرطة/.test(o) && !/undefined/.test(o)));
   const a = await createAnswerer({ emergencyNumbers: () => ({ police: "999", ambulance: "998" }) }).answer(
     "بدي أموت",
     { country: "ps-wb" },
   );
-  assert.match(a.steps[0], /998/);
+  assert.match(a.options[0], /998/);
 });
 
 test("API: public list falls back to defaults; only a developer can edit; edits are audited and reach the app", async () => {

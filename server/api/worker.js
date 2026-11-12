@@ -16,7 +16,8 @@
  * Staff sign in with email + password (see auth.js): salted PBKDF2 hashes, lockout after 5 wrong
  * tries, temporary passwords that must be changed, HttpOnly SameSite=Strict session cookie.
  */
-import { answerQuestion, LIMITS_FOR_QUESTION } from "../ai-proxy/worker.js";
+import { answerQuestion, parseAnswerRequest } from "../ai-proxy/worker.js";
+import { MAX_BODY_BYTES } from "../../src/ai/limits.js";
 import { DEFAULT_PROVIDER, PROVIDERS } from "../ai-proxy/providers.js";
 import {
   passwordProblem,
@@ -338,16 +339,17 @@ export async function handleRequest(request, env, deps) {
   /* ============ public AI endpoint: the key is the one a developer saved in the dashboard ============ */
   if (path === "/v1/answer" && request.method === "POST") {
     if (!request.headers.get("origin")) return reply(fail(403, "forbidden-origin")); // browsers only
-    const { value, error } = await readJson(request);
-    const question = typeof value?.question === "string" ? value.question.trim() : "";
-    if (error || question.length < LIMITS_FOR_QUESTION.min || question.length > LIMITS_FOR_QUESTION.max)
-      return reply(fail(400, "bad-question"));
-    const country = REGIONS.includes(value.country) ? value.country : "ps-wb";
+    const { value, error } = await readJson(request, MAX_BODY_BYTES);
+    if (error) return reply(fail(error === 413 ? 413 : 400, "bad-question"));
+    const req = parseAnswerRequest(value);
+    if (req.error) return reply(fail(400, req.error));
     if (!(await takeAiSlot(store, env, now))) return reply(fail(429, "daily-limit"));
     const saved = await loadAi(store, open);
     const live = aiEnv(env, saved);
-    const { status, body } = await answerQuestion(question, country, live, fetchImpl);
-    if (body.answer) await keepAnswer(store, body.answer, country, live, now);
+    const { status, body } = await answerQuestion(req.question, req.country, live, fetchImpl, req);
+    // kept for lawyer review: law answers only (talk replies echo her words more closely)
+    if (body.answer && body.answer.kind !== "talk" && body.answer.source === "ai")
+      await keepAnswer(store, body.answer, req.country, live, now);
     return reply(json(body, status));
   }
 

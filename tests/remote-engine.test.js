@@ -19,14 +19,15 @@ test("sends only the question and the country, with no credentials or referrer",
   assert.deepEqual(JSON.parse(seen.init.body), { question: "سؤالي", country: "ps-gaza" });
 });
 
-test("truncates very long questions before sending", async () => {
-  let body;
+// (2026-11-12) never cut a message silently: a too-long one is refused before anything is sent
+test("refuses (does not cut) a message longer than the limit, and sends nothing", async () => {
+  let sent = false;
   const engine = createRemoteEngine({
     endpoint: "x",
-    fetchImpl: async (_u, init) => ((body = JSON.parse(init.body)), okResponse({ answer: GOOD })),
+    fetchImpl: async () => ((sent = true), okResponse({ answer: GOOD })),
   });
-  await engine.answer("ا".repeat(2000), { country: "ps-wb" });
-  assert.equal(body.question.length, 500);
+  await assert.rejects(engine.answer("ا".repeat(1201), { country: "ps-wb" }), /message-too-long/);
+  assert.equal(sent, false);
 });
 
 test("returns a validated answer, marked as AI", async () => {
