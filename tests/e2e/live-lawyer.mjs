@@ -7,7 +7,10 @@ import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
-import { extname, join, normalize } from "node:path";
+import { extname, join, posix } from "node:path";
+// URL paths are always "/"-separated: posix.normalize, so "/" stays "/" on Windows too (it became "\")
+const normalize = posix.normalize;
+import { tmpdir } from "node:os";
 import { chromium } from "playwright";
 import { toBase64 } from "../../server/api/crypto.js";
 import { createMemoryStore } from "../../server/api/store/memory.js";
@@ -88,6 +91,8 @@ try {
   const card = page.locator(".authbox");
   await card.waitFor();
   await card.locator("button.chip.fill").click(); // empty form -> readable error, still on the card
+  // wait for the server's answer (reading at once raced with it and failed before 2026-11-12)
+  await page.waitForFunction(() => /\S/.test(document.querySelector(".authbox .err")?.textContent || ""));
   assert.match(await card.locator(".err").textContent(), /\S/);
   problems.length = 0; // the 400 for the empty form is expected
   const [alias, pin, name, phone] = await card.locator("input").all();
@@ -96,7 +101,9 @@ try {
   await name.fill("سارة محمد");
   await phone.fill("0599123456");
   await card.locator("button.chip.fill").click();
-  await page.locator("#msgs .lw", { hasText: "احكيلي شو صاير" }).waitFor();
+  // (2026-11-12) an honest system note instead of a lawyer bubble promising secrecy
+  await page.locator("#msgs .sys", { hasText: "اكتبي رسالتك هون" }).waitFor();
+  assert.equal(await page.locator("#msgs .lw").count(), 0, "no lawyer speaks before a lawyer has the case");
 
   // her first message opens a case
   await page.fill("#q", "طليقي ما بدفع نفقة");
@@ -133,9 +140,11 @@ try {
   console.log("ok   live lawyer chat: sign-up, case, claim, reply, resume");
 } catch (err) {
   failed = true;
-  await page.screenshot({ path: "/tmp/live-fail.png" });
-  console.log((await page.locator("#msgs").innerText()).slice(0, 600), problems);
+  // print first: a failing screenshot (e.g. "/tmp" missing on Windows) used to hide the error entirely
   console.log(`FAIL live lawyer chat\n     ${err.message.split("\n")[0]}`);
+  console.log((await page.locator("#msgs").innerText().catch(() => "")).slice(0, 600), problems);
+  const shot = join(tmpdir(), "fazaa-live-fail.png");
+  await page.screenshot({ path: shot }).then(() => console.log(`screenshot: ${shot}`)).catch(() => {});
 } finally {
   await browser.close();
   server.close();

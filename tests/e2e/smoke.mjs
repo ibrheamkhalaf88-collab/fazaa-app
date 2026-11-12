@@ -7,8 +7,11 @@ import { fileURLToPath } from "node:url";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
-import { extname, join, normalize } from "node:path";
+import { extname, join, posix } from "node:path";
+// URL paths are always "/"-separated: posix.normalize, so "/" stays "/" on Windows too (it became "\")
+const normalize = posix.normalize;
 import { chromium } from "playwright";
+import { DEFAULT_CONTACTS, publicContacts } from "../../src/data/contacts.js";
 
 const ROOT = fileURLToPath(new URL("../../", import.meta.url)); // works on Windows too
 const TYPES = {
@@ -38,8 +41,24 @@ const SECURITY_HEADERS = Object.fromEntries(
     .filter(([k, v]) => k && v),
 );
 
+/**
+ * The shipped config reads /api/v1/contacts, /api/v1/lawyers and /api/v1/answer from the same origin
+ * (since 2026-11). Answer them like the real server does when no lawyer is on duty and no AI key is set,
+ * so a 404 does not count as an app error. (Before 2026-11-12 every test failed on those 404s.)
+ */
+async function fakeApi(path, res) {
+  const json = (status, body) =>
+    res.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" }).end(JSON.stringify(body));
+  if (path === "/api/v1/contacts") return json(200, { contacts: publicContacts(DEFAULT_CONTACTS), updatedAt: null });
+  if (path === "/api/v1/lawyers") return json(200, { lawyers: [] });
+  if (path === "/api/v1/answer") return json(503, { error: "not-configured" });
+  return json(404, { error: "not-found" });
+}
+
 const server = createServer(async (req, res) => {
-  const path = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname)).replace(
+  const urlPath = new URL(req.url, "http://x").pathname;
+  if (urlPath.startsWith("/api/")) return fakeApi(urlPath, res);
+  const path = normalize(decodeURIComponent(urlPath)).replace(
     /^(\.\.[/\\])+/,
     "",
   );
@@ -77,16 +96,28 @@ async function test(name, fn, { serviceWorkers = "block" } = {}) {
     results.push(`ok   ${name}`);
   } catch (err) {
     failed++;
-    results.push(`FAIL ${name}\n     ${err.message.split("\n")[0]}`);
+    const extra = problems.length ? `\n     errors: ${problems.slice(0, 3).join(" | ")}` : "";
+    results.push(`FAIL ${name}\n     ${err.message.split("\n")[0]}${extra}`);
   } finally {
     await context.close();
   }
 }
-const open = async (page, screen) => {
-  await page.evaluate((s) => {
-    localStorage.setItem("fazaa:last", JSON.stringify(s));
-    localStorage.setItem("fazaa:introSeen", "true"); // the intro is first-run only
-  }, screen);
+/**
+ * Open a screen. By default the answers come from the device (deterministic offline engine) and the AI
+ * notice is marked as seen; `{ ai: true }` keeps the shipped default (AI on, notice not yet answered).
+ */
+const open = async (page, screen, { ai = false } = {}) => {
+  await page.evaluate(
+    ([s, withAi]) => {
+      localStorage.setItem("fazaa:last", JSON.stringify(s));
+      localStorage.setItem("fazaa:introSeen", "true"); // the intro is first-run only
+      if (!withAi) {
+        localStorage.setItem("fazaa:aiOnline", "false");
+        localStorage.setItem("fazaa:aiNotice", JSON.stringify("2026-11-12"));
+      }
+    },
+    [screen, ai],
+  );
   await page.reload();
   await page.waitForSelector(`.screen[data-screen="${screen}"]:not([hidden])`);
 };
@@ -162,7 +193,8 @@ await test("a question outside the corpus is refused honestly, not guessed", asy
   await open(page, "chat");
   await page.fill("#q", "كيف بطبخ مقلوبة؟");
   await page.press("#q", "Enter");
-  const refusal = page.locator("#msgs .a", { hasText: "بدون مصدر" });
+  // (2026-11-12) wording: «ما عندي جواب أكيد… ما بدي أعطيكِ معلومة مش متأكدة منها»
+  const refusal = page.locator("#msgs .a", { hasText: "مش متأكدة" });
   await refusal.waitFor({ timeout: 5000 }); // (the first .a is the welcome bubble, the second may be "typing")
   assert.equal(await page.locator("#msgs .a ol").count(), 0, "no invented steps or citations");
 });
@@ -214,15 +246,32 @@ await test("calculator disguise works and the code unlocks the app", async (page
   assert.equal(await current(page), "home");
 });
 
-await test("lawyer demo mode connects and replies", async (page) => {
-  await open(page, "home");
-  await page.click('.lawmini [data-chat="lawyer"]');
-  await page.waitForSelector("#msgs .lw", { timeout: 4000 });
+// (2026-11-12) the scripted demo lawyer is gone: without the service the tab says so and sends nothing
+await test("no lawyer service: the tab says it is not available, no pretend lawyer, nothing sent", async (page) => {
+  await open(page, "chat");
+  await page.click('[data-mode="lawyer"]');
+  await page.locator("#msgs .a", { hasText: "خدمة المحامية مش شغّالة" }).waitFor({ timeout: 4000 });
   await page.fill("#q", "عندي مشكلة");
   await page.press("#q", "Enter");
-  await page.waitForFunction(() => document.querySelectorAll("#msgs .lw").length >= 2, null, {
-    timeout: 4000,
-  });
+  await page.locator("#msgs .sys", { hasText: "ما انبعتت لحدا" }).waitFor({ timeout: 4000 });
+  assert.equal(await page.locator("#msgs .lw").count(), 0, "no lawyer bubble");
+  assert.equal(await page.locator('[data-mode="lawyer"] .live').count(), 0, "no 'live' dot");
+});
+
+await test("AI on by default: a notice comes before anything is sent, and her text stays until she answers", async (page) => {
+  await open(page, "chat", { ai: true });
+  let sent = 0;
+  page.on("request", (r) => r.url().includes("/api/v1/answer") && sent++);
+  await page.fill("#q", "تعبانة كتير");
+  await page.press("#q", "Enter");
+  await page.locator(".a.notice").waitFor({ timeout: 4000 });
+  assert.equal(sent, 0, "nothing sent before her answer");
+  assert.equal(await page.inputValue("#q"), "تعبانة كتير");
+  await page.click(".a.notice >> text=لأ، جاوبيني من الجهاز بس");
+  await page.locator("#msgs .u", { hasText: "تعبانة كتير" }).waitFor();
+  await page.waitForSelector("#msgs .a:not(.notice) >> nth=1", { timeout: 6000 });
+  assert.equal(sent, 0, "she chose the device only: still nothing sent");
+  assert.equal(await page.evaluate(() => localStorage.getItem("fazaa:aiOnline")), "false");
 });
 
 await test("settings: theme switch, erase everything", async (page) => {
@@ -237,10 +286,11 @@ await test("settings: theme switch, erase everything", async (page) => {
   );
 });
 
-await test("online AI is off and unavailable without an endpoint (shows 'soon')", async (page) => {
+// (2026-11-12) the shipped config has an AI endpoint (owner's decision): the switch is shown, not «قريباً»
+await test("online AI: the switch is shown because an endpoint is configured", async (page) => {
   await open(page, "settings");
-  assert.ok(await page.isVisible("#ai-soon"));
-  assert.ok(!(await page.isVisible("#ai-toggle")));
+  assert.ok(await page.isVisible("#ai-toggle"));
+  assert.ok(!(await page.isVisible("#ai-soon")));
 });
 
 await test(
@@ -256,6 +306,8 @@ await test(
     await page.waitForSelector(".screen:not([hidden])");
     assert.ok(await page.isVisible(".screen:not([hidden])"));
     await page.fill("#q", "x").catch(() => {});
+    // the app tries to refresh contacts / lawyers and fails offline: expected, not an app error
+    for (let i = problems.length - 1; i >= 0; i--) if (/ERR_INTERNET_DISCONNECTED/.test(problems[i])) problems.splice(i, 1);
   },
   { serviceWorkers: "allow" },
 );
