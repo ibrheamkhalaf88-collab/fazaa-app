@@ -369,22 +369,10 @@
             </div>
             <div class="sec">
               <h3 class="h">محاميات فزعة</h3>
-              <span class="muted" style="font-size: 12px">أسماء تجريبية</span>
+              <span class="muted" style="font-size: 12px" id="home-lawyer-note"></span>
             </div>
-            <div class="lawmini">
-              <svg class="av" viewBox="0 0 120 150" aria-hidden="true">
-                <use href="#w-hijab" style="--c1: #18214a; --c2: var(--emphasis); --c3: #fff" />
-              </svg>
-              <div style="flex: 1; min-width: 0">
-                <b>أ. سلمى</b>
-                <small>نفقة وحضانة</small>
-                <span class="avail busy">
-                  <i></i>
-                  الخدمة قريباً
-                </span>
-              </div>
-              <button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button>
-            </div>
+            <!-- filled from /api/v1/lawyers (src/features/lawyers/lawyer-cards.js) -->
+            <div id="home-lawyer"></div>
             <button class="teaser" data-go="lawyer">
               <span style="flex: 1">
                 <span class="tag">قصة تخيلية</span>
@@ -502,6 +490,8 @@
                 <div class="prog" aria-hidden="true"><i id="prog"></i></div>
               </div>
             </div>
+            <!-- emergency numbers from the dashboard ("أرقام التواصل"), filled by src/features/support/contacts.js -->
+            <div class="sos-calls" id="sos-call" hidden></div>
             <div class="steps" id="steps">
               <button class="step">
                 <span class="box">
@@ -634,73 +624,9 @@
             </div>
             <div class="sec">
               <h3 class="h">محاميات فزعة</h3>
-              <span class="muted" style="font-size: 11.5px">أسماء تجريبية، والخدمة قريباً</span>
+              <span class="muted" style="font-size: 11.5px" id="lawyer-list-note"></span>
             </div>
-            <div class="lawyers">
-              <div class="lawyer">
-                <div class="lh">
-                  <svg
-                    class="av"
-                    viewBox="0 0 120 150"
-                    style="background: var(--primary-soft)"
-                    aria-hidden="true"
-                  >
-                    <use href="#w-hijab" style="--c1: #17163a; --c2: var(--emphasis); --c3: #fff" />
-                  </svg>
-                  <div>
-                    <b>أ. سلمى</b>
-                    <small>نفقة وحضانة · ١٢ سنة خبرة</small>
-                  </div>
-                </div>
-                <span class="avail busy">
-                  <i></i>
-                  الخدمة قريباً
-                </span>
-                <button class="chip fill" data-chat="lawyer" data-lawyer="سلمى">احكي معها</button>
-              </div>
-              <div class="lawyer">
-                <div class="lh">
-                  <svg
-                    class="av"
-                    viewBox="0 0 120 150"
-                    style="background: var(--primary-soft)"
-                    aria-hidden="true"
-                  >
-                    <use href="#w-hair" style="--c1: #17163a; --c3: #fff" />
-                  </svg>
-                  <div>
-                    <b>أ. رنا</b>
-                    <small>طلاق وعنف أسري · ٨ سنين</small>
-                  </div>
-                </div>
-                <span class="avail busy">
-                  <i></i>
-                  الخدمة قريباً
-                </span>
-                <button class="chip fill" data-chat="lawyer" data-lawyer="رنا">احكي معها</button>
-              </div>
-              <div class="lawyer">
-                <div class="lh">
-                  <svg
-                    class="av"
-                    viewBox="0 0 120 150"
-                    style="background: var(--emphasis-soft)"
-                    aria-hidden="true"
-                  >
-                    <use href="#w-hijab" style="--c1: #17163a; --c2: var(--accent); --c3: #fff" />
-                  </svg>
-                  <div>
-                    <b>أ. هبة</b>
-                    <small>ميراث وحقوق عمل · ١٥ سنة</small>
-                  </div>
-                </div>
-                <span class="avail busy">
-                  <i></i>
-                  الخدمة قريباً
-                </span>
-                <button class="chip fill" data-chat="lawyer" data-lawyer="هبة">احكي معها</button>
-              </div>
-            </div>
+            <div class="lawyers" id="lawyer-list"></div>
             <div class="sec">
               <h3 class="h">قصص نساء متلك</h3>
               <span class="muted" style="font-size: 11.5px">قصص تخيلية</span>

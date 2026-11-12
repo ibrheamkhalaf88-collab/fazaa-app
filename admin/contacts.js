@@ -4,6 +4,7 @@ import { dateTime, el, pill } from "./util.js";
 
 const PROBLEM = {
   "bad-phone": "رقم فيه رموز غير مسموحة. استعملي أرقام و + و - بس.",
+  "bad-link": "الرابط لازم يبلّش بـ https:// وبدون مسافات.",
   "name-required": "كل جهة لازم يكون إلها اسم.",
   "bad-cat": "اختاري نوع لكل جهة.",
   "too-many": `الحد الأقصى ${MAX_CONTACTS} جهة.`,
@@ -19,7 +20,7 @@ const RECHECK_DAYS = 90;
 /** Where a contact stands, for the summary, the filter and the card's pill. */
 function stateOf(c, now = Date.now()) {
   if (!c.active) return "off";
-  if (!c.phone && !c.whatsapp) return "nonumber";
+  if (!c.phone && !c.whatsapp && !c.link) return "nonumber";
   if (!c.verified) return "unverified";
   if (c.verifiedAt && now - c.verifiedAt > RECHECK_DAYS * DAY) return "stale";
   return "ok";
@@ -96,6 +97,7 @@ export function contactsView(ctx) {
       desc: input(c.desc, { max: 140, placeholder: "بتساعد بشو؟" }),
       phone: input(c.phone, { dir: "ltr", max: 20, placeholder: "مثلاً 100" }),
       whatsapp: input(c.whatsapp, { dir: "ltr", max: 20, placeholder: "+970…" }),
+      link: input(c.link, { dir: "ltr", max: 200, placeholder: "https://…" }),
       badge: input(c.badge, { max: 20, placeholder: "رسمية / مجانية / سري" }),
       hours: input(c.hours, { max: 40, placeholder: "مثلاً 24 ساعة، أو 8 الصبح لـ 4" }),
       note: input(c.note, { max: 200, placeholder: "مين أكد الرقم، مع مين حكينا… (ما بيظهر بالتطبيق)" }),
@@ -116,6 +118,7 @@ export function contactsView(ctx) {
         verifiedAt: f.phone.value === c.phone && f.whatsapp.value === c.whatsapp ? c.verifiedAt : null,
         phone: f.phone.value.trim(),
         whatsapp: f.whatsapp.value.trim(),
+        link: f.link.value.trim(),
       };
       const s = stateOf(now);
       status.replaceChildren(pill(...[STATE[s][1], STATE[s][0]]));
@@ -151,6 +154,7 @@ export function contactsView(ctx) {
       field("النوع", f.cat),
       field("رقم الاتصال", f.phone),
       field("واتساب", f.whatsapp),
+      field("رابط (موقع، صفحة، نموذج)", f.link),
       field("ساعات العمل", f.hours),
       field("المنطقة", f.region),
       field("الوصف", f.desc),
@@ -170,6 +174,7 @@ export function contactsView(ctx) {
       desc: f.desc.value,
       phone: f.phone.value,
       whatsapp: f.whatsapp.value,
+      link: f.link.value,
       badge: f.badge.value,
       hours: f.hours.value,
       note: f.note.value,
@@ -237,6 +242,7 @@ export function contactsView(ctx) {
           desc: "",
           phone: "",
           whatsapp: "",
+          link: "",
           badge: "",
           hours: "",
           note: "",

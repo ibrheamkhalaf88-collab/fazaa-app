@@ -2,7 +2,8 @@
  * Entry point: build the pieces, wire them together, open the first screen.
  * No logic lives here; each feature owns its own behaviour (see docs/ARCHITECTURE.md).
  */
-import { AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
+import { AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, LAWYERS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
+import { createLawyerCards } from "./features/lawyers/lawyer-cards.js";
 import { createContacts } from "./features/support/contacts.js";
 import { createAnswerer } from "./ai/answerer.js";
 import { createRemoteEngine } from "./ai/remote-engine.js";
@@ -96,8 +97,13 @@ async function boot() {
   router.onChange((name) => name === "sos" && telemetry.track("sos_open"));
   // the list follows her region, so redraw whenever she opens the support screen
   contacts.render();
-  router.onChange((name) => name === "support" && contacts.render());
+  router.onChange((name) => (name === "support" || name === "sos") && contacts.render());
   contacts.refresh();
+
+  // real lawyers who are available now; the chat button only appears once the live chat is on
+  const lawyerCards = createLawyerCards({ state, endpoint: LAWYERS_ENDPOINT, liveChat: account.enabled });
+  lawyerCards.refresh();
+  router.onChange((name) => (name === "home" || name === "lawyer") && lawyerCards.refresh());
   window.addEventListener("appinstalled", () => telemetry.track("install"));
 
   registerServiceWorker();

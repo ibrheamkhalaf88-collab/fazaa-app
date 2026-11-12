@@ -1,6 +1,8 @@
 import { api } from "./api.js";
 import { aiSettingsView } from "./ai-settings.js";
 import { contactsView } from "./contacts.js";
+import { lawyersView } from "./lawyers.js";
+import { myProfileView } from "./my-profile.js";
 import { answersView } from "./answers.js";
 import { auditView, healthView, overviewView, teamView } from "./developer.js";
 import { conversationsView, lawyerView } from "./lawyer.js";
@@ -181,7 +183,9 @@ $("logout").addEventListener("click", async () => {
     me.role === "lawyer"
       ? [
           ["cases", "المحادثات", lawyerView, "chat", true],
+          ["me", "حالتي وملفي", myProfileView, "users"],
           ["work", "لوحة العمل", workView, "chart"],
+          ...(me.manager ? [["lawyers", "إدارة المحاميات", lawyersView, "team"]] : []),
           ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
         ]
       : [
@@ -194,6 +198,7 @@ $("logout").addEventListener("click", async () => {
           ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
           ["ai-settings", "إعدادات الذكاء", aiSettingsView, "gear"],
           ["contacts", "أرقام التواصل", contactsView, "list"],
+          ["lawyers", "المحاميات", lawyersView, "users"],
           ["team", "الفريق", teamView, "team"],
           ["audit", "سجل العمليات", auditView, "inbox"],
         ];

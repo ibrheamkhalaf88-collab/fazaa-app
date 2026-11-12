@@ -74,17 +74,42 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
       wa.append(icon("i-msg"), document.createTextNode("واتساب"));
       acts.append(wa);
     }
-    if (!c.phone && !c.whatsapp) acts.append(el("span", "muted", "الرقم بينضاف قريباً"));
+    if (c.link) {
+      const site = el("a", c.phone || c.whatsapp ? "chip" : "chip fill");
+      site.href = c.link;
+      site.target = "_blank";
+      site.rel = "noopener noreferrer";
+      site.append(icon("i-pin"), document.createTextNode("الموقع"));
+      acts.append(site);
+    }
+    if (!c.phone && !c.whatsapp && !c.link) acts.append(el("span", "muted", "الرقم بينضاف قريباً"));
     info.append(acts);
     box.append(badge, info);
     return box;
   }
 
-  /** Draw the list for her region into the support screen. */
+  /** Big call buttons for the emergency numbers, at the top of the emergency screen. */
+  function renderQuickCall(mine) {
+    const root = $("#sos-call");
+    if (!root) return;
+    const urgent = mine.filter((c) => c.cat === "emergency" && c.phone);
+    root.hidden = urgent.length === 0;
+    root.replaceChildren(
+      ...urgent.map((c) => {
+        const a = el("a", "btn primary sos-call");
+        a.href = `tel:${c.phone.replace(/[\s-]/g, "")}`;
+        a.append(icon("i-phone"), document.createTextNode(`${c.name} ${c.phone}`));
+        return a;
+      }),
+    );
+  }
+
+  /** Draw the list for her region into the support screen (and the quick-call row). */
   function render() {
+    const mine = contactsFor(list, state.get("country"));
+    renderQuickCall(mine);
     const root = $("#support-list");
     if (!root) return;
-    const mine = contactsFor(list, state.get("country"));
     const cats = Object.keys(CONTACT_CATS).filter((cat) => mine.some((c) => c.cat === cat));
     root.replaceChildren(...cats.flatMap((cat) => mine.filter((c) => c.cat === cat).map(card)));
     const tabs = $("#stabs");

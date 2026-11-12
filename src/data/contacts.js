@@ -14,7 +14,7 @@ export const MAX_CONTACTS = 30;
 
 /**
  * @typedef {{id:string, cat:keyof typeof CONTACT_CATS, name:string, desc:string, phone:string, whatsapp:string,
- *   badge:string, region:keyof typeof CONTACT_REGIONS, hours:string,
+ *   badge:string, region:keyof typeof CONTACT_REGIONS, hours:string, link:string,
  *   active:boolean,           // false = hidden in the app (the line is down, closed, or not ready)
  *   verified:boolean,         // the owner confirmed the number with the organisation itself
  *   verifiedAt:number|null,   // when (set by the server)
@@ -86,7 +86,15 @@ const STARTING_LIST = [
   },
 ];
 
-const LIMITS = { id: 24, name: 60, desc: 140, phone: 20, badge: 20, hours: 40, note: 200 };
+const LIMITS = { id: 24, name: 60, desc: 140, phone: 20, badge: 20, hours: 40, note: 200, link: 200 };
+
+/** An https link (website, form, Facebook page); "" when empty. Throws on anything else. */
+const link = (v) => {
+  const s = typeof v === "string" ? v.trim() : "";
+  if (!s) return "";
+  if (s.length > LIMITS.link || !/^https:\/\/[^\s<>"']+$/i.test(s)) throw new Error("bad-link");
+  return s;
+};
 
 const text = (v, max) =>
   typeof v === "string"
@@ -135,6 +143,7 @@ export function validateContacts(list) {
       badge: text(c.badge, LIMITS.badge),
       region: /** @type {Contact["region"]} */ (region),
       hours: text(c.hours, LIMITS.hours),
+      link: link(c.link),
       active: c.active !== false,
       verified: c.verified === true,
       verifiedAt: c.verified === true && Number.isFinite(c.verifiedAt) ? Number(c.verifiedAt) : null,

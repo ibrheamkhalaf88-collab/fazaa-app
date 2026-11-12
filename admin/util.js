@@ -25,6 +25,9 @@ export const ACTION = {
   "cases-release": "رجّع حالات عضو لقائمة الانتظار",
   "contacts-set": "عدّل أرقام التواصل",
   "contacts-reset": "رجّع أرقام التواصل للأصل",
+  "lawyer-update": "عدّل ملف محامية",
+  "lawyer-available": "صارت متاحة",
+  "lawyer-unavailable": "صارت مش متاحة",
 };
 
 /**

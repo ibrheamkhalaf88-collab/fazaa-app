@@ -42,6 +42,14 @@ import { createD1Store } from "./store/d1.js";
 import { scrub } from "./scrub.js";
 import { EVENTS, normalizeTopic } from "./store/days.js";
 import { DEFAULT_CONTACTS, publicContacts, validateContacts } from "../../src/data/contacts.js";
+import {
+  applyProfile,
+  emptyProfile,
+  MANAGER_FIELDS,
+  pick,
+  publicLawyer,
+  SELF_FIELDS,
+} from "../../src/data/lawyers.js";
 
 const REGIONS = ["ps-wb", "ps-gaza"];
 const LIMITS = {
@@ -102,6 +110,7 @@ const firstName = (s) => (s || "").trim().split(/\s+/)[0].slice(0, LIMITS.name);
 /* ---------- AI settings (developer dashboard) ---------- */
 const AI_SETTING = "ai";
 const CONTACTS_SETTING = "contacts";
+const LAWYERS_SETTING = "lawyers";
 const MODEL_RE = /^[\w.\-/:]{1,80}$/;
 const API_KEY_RE = /^[\x21-\x7e]{20,400}$/; // visible ASCII only, no spaces
 const aiProviders = () =>
@@ -247,6 +256,35 @@ export async function handleRequest(request, env, deps) {
     }
   };
 
+  /** Lawyer profiles, one encrypted setting: { email: LawyerProfile }. */
+  const loadProfiles = async () => {
+    const row = await store.getSetting(LAWYERS_SETTING);
+    if (!row) return {};
+    try {
+      return JSON.parse(await open(row)) || {};
+    } catch {
+      return {};
+    }
+  };
+  const saveProfiles = async (all, by) =>
+    store.setSetting({ key: LAWYERS_SETTING, ...(await seal(JSON.stringify(all))), now, by });
+  const profileOf = (all, email) => applyProfile(all[email] || emptyProfile(), {});
+
+  /* ============ public: lawyers available now (first name and speciality only) ============ */
+  if (path === "/v1/lawyers" && request.method === "GET") {
+    const region = url.searchParams.get("region");
+    const all = await loadProfiles();
+    const out = [];
+    for (const s of await store.listStaff()) {
+      if (s.role !== "lawyer") continue;
+      const p = profileOf(all, s.email);
+      if (region && !p.regions.includes(region)) continue;
+      const card = publicLawyer(s, p, (await store.listMine(s.email)).length);
+      if (card) out.push(card);
+    }
+    return reply(json({ lawyers: out }, 200, { "cache-control": "no-store" }));
+  }
+
   /* ============ public: emergency numbers and support organisations (no personal data) ============ */
   if (path === "/v1/contacts" && request.method === "GET") {
     const { contacts, updatedAt } = await loadContacts();
@@ -346,10 +384,119 @@ export async function handleRequest(request, env, deps) {
     const auth = await store.getStaffAuth(staff.email);
     const mustChange = Boolean(auth?.mustChange) && !deps.staffEmail;
 
+    // a lawyer may also be a "manager" of the lawyers (set by a developer)
+    const profiles =
+      staff.role === "lawyer" || path.startsWith("/v1/staff/lawyers") ? await loadProfiles() : {};
+    const isManager = staff.role === "lawyer" && profileOf(profiles, staff.email).manager;
+    const canManageLawyers = staff.role === "developer" || isManager;
+
     if (path === "/v1/staff/me" && request.method === "GET") {
       await store.touchStaff(staff.email, now);
+      const extra =
+        staff.role === "lawyer"
+          ? { manager: isManager, available: profileOf(profiles, staff.email).available }
+          : {};
       return reply(
-        json({ email: staff.email, role: staff.role, name: staff.name, code: staff.code || "", mustChange }),
+        json({
+          email: staff.email,
+          role: staff.role,
+          name: staff.name,
+          code: staff.code || "",
+          mustChange,
+          ...extra,
+        }),
+      );
+    }
+
+    /* ---- a lawyer's own profile and availability ---- */
+    if (path === "/v1/staff/profile") {
+      const denied = need("lawyer");
+      if (denied) return denied;
+      if (request.method === "GET") return reply(json({ profile: profileOf(profiles, staff.email) }));
+      if (request.method === "PUT") {
+        const { value, error } = await readJson(request);
+        if (error) return reply(fail(error, "bad-body"));
+        try {
+          profiles[staff.email] = applyProfile(profileOf(profiles, staff.email), pick(value, SELF_FIELDS));
+        } catch (e) {
+          return reply(fail(400, e.message));
+        }
+        await saveProfiles(profiles, staff.email);
+        if ("available" in value)
+          await store.addAudit({
+            actor: staff.email,
+            action: profiles[staff.email].available ? "lawyer-available" : "lawyer-unavailable",
+            target: staff.email,
+            now,
+          });
+        return reply(json({ profile: profiles[staff.email] }));
+      }
+    }
+
+    /* ---- managing the lawyers (developer, or a lawyer who is a manager) ---- */
+    if (path === "/v1/staff/lawyers") {
+      if (!canManageLawyers) return reply(fail(403, "wrong-role"));
+      const lawyerRows = async () => {
+        const seen = new Map((await store.listStaffActivity()).map((r) => [r.email, r.lastSeen]));
+        const rows = [];
+        for (const s of await store.listStaff()) {
+          if (s.role !== "lawyer") continue;
+          const p = profileOf(profiles, s.email);
+          const open = (await store.listMine(s.email)).length;
+          rows.push({
+            ...s,
+            ...p,
+            openCases: open,
+            listed: Boolean(publicLawyer(s, p, open)),
+            lastSeen: seen.get(s.email) ?? null,
+          });
+        }
+        return rows;
+      };
+      if (request.method === "GET")
+        return reply(json({ lawyers: await lawyerRows(), canSetManager: staff.role === "developer" }));
+
+      const { value, error } = await readJson(request);
+      if (error) return reply(fail(error, "bad-body"));
+      const target = cleanText(value.email, LIMITS.email).toLowerCase();
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(target)) return reply(fail(400, "bad-staff"));
+      const existing = await store.getStaff(target);
+      const fields = staff.role === "developer" ? [...MANAGER_FIELDS, "manager"] : MANAGER_FIELDS;
+      let tempPw = null;
+
+      if (request.method === "POST") {
+        // add a new lawyer (or turn an unknown email into one); never touch a developer's account
+        const bootDev = (env.DEVELOPER_EMAILS || "")
+          .toLowerCase()
+          .split(",")
+          .map((s) => s.trim());
+        if ((existing && existing.role !== "lawyer") || bootDev.includes(target) || target === staff.email)
+          return reply(fail(409, "not-a-lawyer"));
+        const name = firstName(value.name);
+        if (!name) return reply(fail(400, "name-required"));
+        await store.upsertStaff({ email: target, role: "lawyer", name, now });
+        await store.addAudit({ actor: staff.email, action: "staff-add", target: `${target} (lawyer)`, now });
+        tempPw = (await store.getStaffAuth(target)) ? null : await setTemp(target);
+      } else if (request.method === "PUT") {
+        if (!existing || existing.role !== "lawyer") return reply(fail(404, "no-such-lawyer"));
+        if (typeof value.name === "string" && firstName(value.name))
+          await store.upsertStaff({ email: target, role: "lawyer", name: firstName(value.name), now });
+      } else {
+        return reply(fail(405, "method"));
+      }
+      try {
+        profiles[target] = applyProfile(profileOf(profiles, target), pick(value, fields));
+      } catch (e) {
+        return reply(fail(400, e.message));
+      }
+      await saveProfiles(profiles, staff.email);
+      await store.addAudit({ actor: staff.email, action: "lawyer-update", target, now });
+      return reply(
+        json({
+          lawyers: await lawyerRows(),
+          canSetManager: staff.role === "developer",
+          ...(tempPw ? { tempPassword: tempPw } : {}),
+        }),
       );
     }
 

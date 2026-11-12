@@ -40,3 +40,6 @@ export const API_BASE = "";
  * Served by the same Worker as the app. "" = use only the numbers built into the app.
  */
 export const CONTACTS_ENDPOINT = "/api/v1/contacts";
+
+/** Lawyers available now (managed in the dashboard, "المحاميات"). "" = hide the lawyer cards' live data. */
+export const LAWYERS_ENDPOINT = "/api/v1/lawyers";

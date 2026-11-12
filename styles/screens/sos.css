@@ -39,6 +39,17 @@
   background: var(--accent);
 }
 
+/* emergency numbers set in the dashboard: one big call button each */
+.sos-calls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px;
+}
+.sos-calls .sos-call {
+  text-decoration: none;
+  justify-content: center;
+}
+
 .steps {
   display: flex;
   flex-direction: column;
