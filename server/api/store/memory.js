@@ -308,6 +308,11 @@ export function createMemoryStore() {
       const hit = [...audit].reverse().find((a) => a.action === action);
       return hit ? hit.at : null;
     },
+    /** When did this actor last do this action on this target? */
+    async lastAuditFor({ actor, action, target }) {
+      const hit = [...audit].reverse().find((a) => a.actor === actor && a.action === action && a.target === target);
+      return hit ? hit.at : null;
+    },
     async track({ event, region = "none", ms = 0, now }) {
       const day = dayKey(now);
       const k = `${day}|${event}|${region}`;

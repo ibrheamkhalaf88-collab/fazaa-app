@@ -35,6 +35,14 @@ export function bindActions({ router, chat, sos, disguise, settings }) {
 
   const handlers = [
     ["[data-exit]", () => disguise.quickExit()],
+    // a safety plan for this kind of danger (chat buttons and the tabs on the plan screen)
+    [
+      "[data-plan]",
+      (n) => {
+        sos.show(attr(n, "data-plan"));
+        if (router.current !== "sos") router.show("sos");
+      },
+    ],
     ["[data-k]", (n) => disguise.pressKey(attr(n, "data-k"))],
     [
       "[data-mode]",

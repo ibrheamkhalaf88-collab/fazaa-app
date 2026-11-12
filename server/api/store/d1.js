@@ -421,6 +421,16 @@ export function createD1Store(db) {
       const r = await q("SELECT MAX(at) AS at FROM audit WHERE action = ?", action).first();
       return r?.at ?? null;
     },
+    /** When did this actor last do this action on this target? */
+    async lastAuditFor({ actor, action, target }) {
+      const r = await q(
+        "SELECT MAX(at) AS at FROM audit WHERE actor = ? AND action = ? AND target = ?",
+        actor,
+        action,
+        target,
+      ).first();
+      return r?.at ?? null;
+    },
     async track({ event, region = "none", ms = 0, now }) {
       await q(
         "INSERT INTO events_daily (day, event, region, n, ms_sum) VALUES (?,?,?,1,?) ON CONFLICT(day, event, region) DO UPDATE SET n = n + 1, ms_sum = ms_sum + excluded.ms_sum",

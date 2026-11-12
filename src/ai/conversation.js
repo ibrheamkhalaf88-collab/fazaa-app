@@ -110,6 +110,8 @@ export function createMemory() {
     lastOptionIds: [],
     safetyAsked: false,
     country: "",
+    dangerKind: "", // "violence" | "selfharm" | "forced" after a danger reply (chooses the safety plan)
+    minor: false, // she said she is under 18 (kept for the session: «عمري 16» then «جايبين عريس»)
   };
 }
 
@@ -130,6 +132,10 @@ export function remember(memory, text) {
   else if (said) memory.person = PEOPLE[said];
   const feel = words.find((w) => FEELINGS[w]);
   if (feel) memory.feeling = FEELINGS[feel];
+  // her age, if she says it: a minor stays a minor for the whole session («عمري 16» … «جايبين عريس»)
+  const age = /(?:^| )(?:عمري|انا عمري|صار عمري)(?: [^ ]+)? ([0-9٠-٩]{1,2})(?: |$)/.exec(t);
+  if (age) memory.minor = Number(age[1].replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d))) < 18;
+  else if (/(?:^| )(?:قاصر|قاصره|بالمدرسه|بالصف|بالتوجيهي|طالبه بمدرسه)(?: |$)/.test(t)) memory.minor = true;
   if (has(t, LISTEN)) memory.mode = "listen";
   if (has(t, STEPS) || has(t, LEGAL)) memory.mode = "";
   // she refused one of the ideas we just gave: never suggest it again this session

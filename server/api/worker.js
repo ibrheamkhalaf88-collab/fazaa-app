@@ -68,7 +68,9 @@ const USERNAME_RE = /^[a-z0-9_\u0621-\u064a]{3,20}$/;
 const PIN_RE = /^\d{6}$/;
 const PHONE_RE = /^\+?\d{7,15}$/;
 const DAY = 86_400_000;
-const RATE_LIMITED = ["/v1/answer", "/v1/users", "/v1/login", "/v1/staff/login", "/v1/ping"];
+const RATE_LIMITED = ["/v1/answer", "/v1/users", "/v1/login", "/v1/staff/login", "/v1/ping", "/v1/cases"];
+/** Cases one account may have open (waiting or with a lawyer) at the same time. */
+const MAX_OPEN_CASES = 3;
 
 const json = (body, status = 200, extra = {}) =>
   new Response(JSON.stringify(body), {
@@ -422,6 +424,31 @@ export async function handleRequest(request, env, deps) {
 
     if (!staff) return reply(fail(401, "not-staff"));
     const need = (role) => (staff.role === role ? null : reply(fail(403, "wrong-role")));
+    /**
+     * The OWNER is the only one who manages developers (add, promote, demote, suspend, reset password,
+     * remove). Without it, one stolen developer account could reset the owner's password and lock her out.
+     * OWNER_EMAILS (Worker variable/secret, comma separated) wins; otherwise the first developer (S-001…).
+     */
+    const ownerEmails = async () => {
+      const set = String(env.OWNER_EMAILS || "")
+        .toLowerCase()
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (set.length) return set;
+      const devs = (await store.listStaff())
+        .filter((s) => s.role === "developer" && s.active !== false && /^S-\d+$/.test(s.code || ""))
+        .sort((a, b) => Number(a.code.slice(2)) - Number(b.code.slice(2)));
+      if (devs.length) return [devs[0].email];
+      // no developer in the table yet (first run, local dev server): the bootstrap list
+      return String(env.DEVELOPER_EMAILS || "")
+        .toLowerCase()
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+    };
+    const isOwner = async () => staff.role === "developer" && (await ownerEmails()).includes(staff.email);
+    const ownerOnly = () => reply(fail(403, "owner-only"));
     const auth = await store.getStaffAuth(staff.email);
     const mustChange = Boolean(auth?.mustChange) && !deps.staffEmail;
 
@@ -444,6 +471,7 @@ export async function handleRequest(request, env, deps) {
           name: staff.name,
           code: staff.code || "",
           mustChange,
+          owner: await isOwner(),
           ...extra,
         }),
       );
@@ -506,6 +534,9 @@ export async function handleRequest(request, env, deps) {
       let tempPw = null;
 
       if (request.method === "POST") {
+        // Creating an account that can read women's cases is a developer's job, not a manager's
+        // (since 2026-11-13): a manager edits profiles, availability and case limits only.
+        if (staff.role !== "developer") return reply(fail(403, "developer-only"));
         // add a new lawyer (or turn an unknown email into one); never touch a developer's account
         const bootDev = (env.DEVELOPER_EMAILS || "")
           .toLowerCase()
@@ -847,7 +878,10 @@ export async function handleRequest(request, env, deps) {
       if (error) return reply(fail(error, "bad-body"));
       const target = cleanText(value.email, LIMITS.email).toLowerCase();
       if (target === staff.email) return reply(fail(400, "use-change-password"));
-      if (!(await store.getStaff(target))) return reply(fail(404, "not-found"));
+      const member = await store.getStaff(target);
+      if (!member) return reply(fail(404, "not-found"));
+      // a developer's password can only be reset by the owner (a stolen account cannot take over hers)
+      if (member.role === "developer" && !(await isOwner())) return ownerOnly();
       const password = await setTemp(target);
       await store.addAudit({ actor: staff.email, action: "staff-password-reset", target, now });
       return reply(json({ ok: true, tempPassword: password }));
@@ -880,6 +914,9 @@ export async function handleRequest(request, env, deps) {
         const existing = await store.getStaff(target);
         if (target === staff.email && (role !== staff.role || value.active === false))
           return reply(fail(400, "cannot-change-self"));
+        // creating, promoting, changing or suspending a DEVELOPER is for the owner only
+        if ((role === "developer" || existing?.role === "developer") && target !== staff.email && !(await isOwner()))
+          return ownerOnly();
         await store.upsertStaff({ email: target, role, name: firstName(value.name), now });
         const activeChanged =
           typeof value.active === "boolean" && existing && value.active !== existing.active;
@@ -904,6 +941,7 @@ export async function handleRequest(request, env, deps) {
       if (request.method === "DELETE") {
         const target = (url.searchParams.get("email") || "").toLowerCase();
         if (target === staff.email) return reply(fail(400, "cannot-remove-self"));
+        if ((await store.getStaff(target))?.role === "developer" && !(await isOwner())) return ownerOnly();
         await releaseCases(target);
         await store.removeStaff(target);
         await store.addAudit({ actor: staff.email, action: "staff-remove", target, now });
@@ -936,8 +974,11 @@ export async function handleRequest(request, env, deps) {
       const kase = await store.getCase(id);
       if (!kase) return reply(fail(404, "no-case"));
       const after = Number(url.searchParams.get("after")) || 0;
-      // log the opening, not every refresh
-      if (!after) await store.addAudit({ actor: staff.email, action: "dev-read-case", target: id, now });
+      // Every reading is accounted for. A refresh does not add a line each time, but the request
+      // parameters can never skip the log: before 2026-11-13, "?after=1" read the case unlogged.
+      const last = await store.lastAuditFor({ actor: staff.email, action: "dev-read-case", target: id });
+      if (!after || last == null || now - last > 30 * 60_000)
+        await store.addAudit({ actor: staff.email, action: "dev-read-case", target: id, now });
       const rows = await store.listMessages(id, after);
       const messages = await Promise.all(
         rows.map(async (r) => ({ id: r.id, from: r.sender, text: await open(r), at: r.createdAt })),
@@ -952,6 +993,11 @@ export async function handleRequest(request, env, deps) {
       if (!kase) return reply(fail(404, "no-case"));
 
       if (action === "claim" && request.method === "POST") {
+        // she takes a case only if she is on duty, covers the woman's region and has room for it
+        const me = profileOf(profiles, staff.email);
+        if (!me.available) return reply(fail(409, "not-available"));
+        if (!me.regions.includes(kase.region)) return reply(fail(409, "other-region"));
+        if ((await store.listMine(staff.email)).length >= me.maxCases) return reply(fail(409, "case-limit"));
         const ok = await store.claimCase(id, staff.email, now);
         if (ok) await store.addAudit({ actor: staff.email, action: "claim", target: id, now });
         return reply(ok ? json({ ok: true }) : fail(409, "already-claimed"));
@@ -1100,6 +1146,9 @@ export async function handleRequest(request, env, deps) {
     const topic = cleanText(value.topic, LIMITS.topic) || "غير محدد";
     const text = cleanText(value.message, LIMITS.text);
     if (!text) return reply(fail(400, "bad-body"));
+    // one account cannot flood the lawyers' queue
+    const openCount = (await store.listUserCases(user.id)).filter((k) => k.status !== "closed").length;
+    if (openCount >= MAX_OPEN_CASES) return reply(fail(429, "too-many-cases"));
     const id = randomId(9);
     await store.createCase({ id, userId: user.id, topic, region: user.region, now });
     await store.track({ event: "lawyer_request", region: user.region, now });

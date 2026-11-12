@@ -13,6 +13,14 @@ const REPLIES = [
   ["الخطوة القادمة", "بناءً على اللي حكيتيه، هاي الخطوات اللي بنصحك فيها:"],
   ["ختام", "إذا صار أي جديد أو احتجتي شي، اكتبيلي هون. وبتقدري تنهي المحادثة بأي وقت."],
 ];
+/** Why a claim was refused (server checks since 2026-11-13). */
+const CLAIM_ERRORS = {
+  "not-available": "حالتك «مش متاحة». فعّلي «متاحة» من «حالتي وملفي» لتستلمي حالات.",
+  "other-region": "هالحالة من منطقة مش ضمن مناطقك. غيّري مناطقك من «حالتي وملفي» إذا بتقدري تتابعيها.",
+  "case-limit": "وصلتي للحد الأعلى من الحالات. أنهي حالة أو اطلبي من المديرة ترفع الحد.",
+  "already-claimed": "هالحالة صارت مع محامية تانية.",
+};
+
 const STATUS = { open: "بانتظار محامي", claimed: "مفتوحة", closed: "منتهية" };
 const dayLabel = (ms) =>
   new Date(ms).toLocaleDateString("ar", { weekday: "long", day: "numeric", month: "long" });
@@ -270,7 +278,8 @@ export function lawyerView(ctx) {
       const c = state.mine.find((x) => x.id === id);
       if (c) openCase(c);
     } catch (e) {
-      ctx.banner(errorText(e));
+      const { error } = (await e.body?.()) || {};
+      ctx.banner(CLAIM_ERRORS[error] || errorText(e));
       await refreshLists();
     }
   }

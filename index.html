@@ -490,8 +490,8 @@
                 />
               </svg>
               <div style="flex: 1">
-                <div class="brush">إنتِ مش غلطانة</div>
-                <span class="muted" style="font-size: 13px">
+                <div class="brush" id="sos-title">إنتِ مش غلطانة</div>
+                <span class="muted" style="font-size: 13px" id="sos-hint">
                   خلينا نمشي بالخطوات سوا. علّمي على كل خطوة بتخلصيها.
                 </span>
                 <div class="prog" aria-hidden="true"><i id="prog"></i></div>
@@ -499,53 +499,9 @@
             </div>
             <!-- emergency numbers from the dashboard ("أرقام التواصل"), filled by src/features/support/contacts.js -->
             <div class="sos-calls" id="sos-call" hidden></div>
-            <div class="steps" id="steps">
-              <button class="step">
-                <span class="box">
-                  <svg class="ic ic-16"><use href="#i-check" /></svg>
-                </span>
-                <span>
-                  <b class="fw-5">لا تبعتي مصاري ولا صور</b>
-                  <small>الدفع ما بيوقّف المبتز، غالباً بيخليه يطلب أكتر.</small>
-                </span>
-              </button>
-              <button class="step">
-                <span class="box">
-                  <svg class="ic ic-16"><use href="#i-check" /></svg>
-                </span>
-                <span>
-                  <b class="fw-5">لا تمسحي المحادثة</b>
-                  <small>هي دليلك قدام الشرطة والمحكمة.</small>
-                </span>
-              </button>
-              <button class="step">
-                <span class="box">
-                  <svg class="ic ic-16"><use href="#i-check" /></svg>
-                </span>
-                <span>
-                  <b class="fw-5">صوّري الشاشة</b>
-                  <small>الرسائل، واسم الحساب، ورابطه، والتاريخ.</small>
-                </span>
-              </button>
-              <button class="step">
-                <span class="box">
-                  <svg class="ic ic-16"><use href="#i-check" /></svg>
-                </span>
-                <span>
-                  <b class="fw-5">بلّغي عن الحساب بالمنصة</b>
-                  <small>إنستغرام وفيسبوك وواتساب فيهم تبليغ عن الابتزاز.</small>
-                </span>
-              </button>
-              <button class="step">
-                <span class="box">
-                  <svg class="ic ic-16"><use href="#i-check" /></svg>
-                </span>
-                <span>
-                  <b class="fw-5">تواصلي مع جهة رسمية</b>
-                  <small>الابتزاز جريمة حسب المادة ١٥ من قانون الجرائم الإلكترونية.</small>
-                </span>
-              </button>
-            </div>
+            <!-- one plan per kind of danger: src/data/safety-plans.js, drawn by src/features/sos/sos.js -->
+            <div class="acts sos-plans" id="sos-plans" role="group" aria-label="نوع الخطة"></div>
+            <div class="steps" id="steps"></div>
             <div class="done-card" id="done-card" hidden>
               <svg class="ic" style="color: var(--primary); width: 26px; height: 26px">
                 <use href="#i-shield" />

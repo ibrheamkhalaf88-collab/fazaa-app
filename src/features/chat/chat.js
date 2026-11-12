@@ -15,6 +15,15 @@ const SUGGESTIONS = [
   ["بدي حدا يسمعني", "بدي حدا يسمعني بس"],
 ];
 
+/** Which safety plan a reply opens: the one the danger reply chose, else from what it is about. */
+function planFor(answer) {
+  if (answer.sosPlan) return answer.sosPlan;
+  if (answer.cites?.some((id) => ["15", "16", "22", "52"].includes(id))) return "blackmail";
+  if (answer.topic === "زواج قاصرات") return "forced";
+  if (answer.topic === "دعم نفسي") return "selfharm";
+  return "violence";
+}
+
 /** Bump when the text of the AI notice changes: everyone sees the new notice once. */
 export const AI_NOTICE_VERSION = "2026-11-12";
 
@@ -93,7 +102,9 @@ export function createChat({
   function actionsFor(answer) {
     const actions = el("div", "acts");
     if (answer.sos)
-      actions.appendChild(chip({ label: "افتحي خطة الأمان", iconId: "i-shield", fill: true, data: { go: "sos" } }));
+      actions.appendChild(
+        chip({ label: "افتحي خطة الأمان", iconId: "i-shield", fill: true, data: { go: "sos", plan: planFor(answer) } }),
+      );
     if (lawyerAvailable() && (answer.general || answer.cites?.length))
       actions.appendChild(
         chip({ label: "احكي مع محامية", iconId: "i-phone", fill: !answer.sos, data: { chat: "lawyer", topic: answer.topic || "" } }),

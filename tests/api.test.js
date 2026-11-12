@@ -52,6 +52,12 @@ async function addLawyer(w, email = "salma@fazaa.example", name = "سلمى ال
     body: { email, role: "lawyer", name },
   });
   assert.equal(res.status, 200);
+  // (2026-11-13) a lawyer takes cases only when on duty and covering the region: put her on duty
+  const duty = await w.call("PUT", "/v1/staff/lawyers", {
+    as: "dev@fazaa.example",
+    body: { email, available: true, regions: ["ps-wb", "ps-gaza"] },
+  });
+  assert.equal(duty.status, 200);
   return email;
 }
 
@@ -296,8 +302,9 @@ test("audit log: developer-only, records who did what but never message text", a
   await w.call("POST", `/v1/staff/cases/${caseId}/close`, { as: lawyer });
   assert.equal((await w.call("GET", "/v1/staff/audit", { as: lawyer })).status, 403);
   const { audit } = await j(await w.call("GET", "/v1/staff/audit", { as: "dev@fazaa.example" }));
+  // ("lawyer-update" is the test setup putting her on duty, see addLawyer)
   assert.deepEqual(
-    audit.map((a) => a.action),
+    audit.map((a) => a.action).filter((a) => a !== "lawyer-update"),
     ["close", "claim", "staff-add"],
   );
   assert.ok(!JSON.stringify(audit).includes("سري"));

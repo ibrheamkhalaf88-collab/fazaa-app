@@ -23,6 +23,14 @@ export function createStore(storage = defaultStorage(), prefix = STORAGE_PREFIX)
         /* storage unavailable: the app keeps working for this session */
       }
     },
+    /** Remove one key (no "null" left behind). */
+    remove(key) {
+      try {
+        storage.removeItem(prefix + key);
+      } catch {
+        /* ignore */
+      }
+    },
     /** Remove everything this app stored, and nothing else. */
     clear() {
       try {

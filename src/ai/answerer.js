@@ -6,6 +6,9 @@ import { answerFromRules } from "./rules-engine.js";
 import { detectSmallTalk } from "./smalltalk.js";
 import { ventingFeeling } from "./companion.js";
 import { detectIntents } from "./detect.js";
+import { tokenize } from "./normalize.js";
+
+const norm = (s) => tokenize(s).join(" ");
 
 /** She is talking about her own situation (not asking for a recipe or a restaurant). */
 const onTopic = (q) =>
@@ -48,11 +51,101 @@ export function createAnswerer({
 } = {}) {
   const memory = createMemory();
 
+  /* ---------- after a danger reply (fixed text, see docs/SAFETY-REVIEW.md) ---------- */
+
+  const DANGER_KIND = { immediate: "violence", selfharm: "selfharm", "forced-marriage": "forced" };
+
+  /** Remember which danger reply was given, so her next words are read as an answer to it. */
+  function rememberDanger(d) {
+    memory.dangerKind = DANGER_KIND[d.level] || memory.dangerKind || "violence";
+    memory.lastAsk = memory.dangerKind === "selfharm" ? "alone" : "safe-place";
+    return { ...d.answer, sosPlan: memory.dangerKind };
+  }
+
+  const isShort = (q) => norm(q).split(" ").filter(Boolean).length <= 4;
+  const SAFE_NOW = /(?:^| )(?:صرت بامان|انا بامان|بامان هلا|امنه|راح|طلع|مشي|هدي|نام)(?: |$)/;
+
+  /** Her answer to our safety question; null = it is something else, carry on normally. */
+  function dangerFollowUp(question, numbers) {
+    const t = norm(question);
+    const plan = memory.dangerKind;
+    if (plan === "selfharm") {
+      if (answeredYes(question) || /(?:^| )لحالي(?: |$)/.test(t)) {
+        memory.lastAsk = "";
+        return {
+          kind: "talk",
+          lead: "شكراً إنك حكيتيلي. مش لازم تضلي لحالك مع هالشعور.",
+          options: [
+            numbers.ambulance
+              ? `إذا ممكن تأذي حالك هلأ، اتصلي بالإسعاف ${numbers.ambulance} أو روحي لأقرب طوارئ إذا بتقدري.`
+              : "إذا ممكن تأذي حالك هلأ، روحي لأقرب طوارئ إذا بتقدري.",
+            "إذا في شخص بتقدري تتصلي فيه أو تروحي عنده هلأ، حتى لو بس ليقعد جنبك.",
+            "إذا في إشي حواليكِ ممكن تأذي فيه حالك، بعّديه عنك إذا بتقدري.",
+          ],
+          ask: "بدك تضلي تحكي معي شوي هلأ؟",
+          note: "",
+          sos: true,
+          sosPlan: "selfharm",
+        };
+      }
+      if (answeredNo(question)) {
+        memory.lastAsk = "";
+        return {
+          kind: "talk",
+          lead: "منيح إنه في حدا جنبك.",
+          options: [],
+          ask: "بتقدري تحكيله إنك تعبانة الليلة؟",
+          note: "",
+          sos: true,
+          sosPlan: "selfharm",
+        };
+      }
+      return null;
+    }
+    // violence / forced marriage: we asked if she can talk safely.
+    // A denial first: «مش آمنة» contains «آمنة» and must never read as "safe".
+    if (answeredNo(question) || /(?:^| )(?:مش|ما|مو) ?(?:امنه|بامان)(?: |$)/.test(t)) return stillUnsafe(numbers, plan);
+    if (answeredYes(question) || SAFE_NOW.test(t)) {
+      memory.lastAsk = "";
+      return {
+        kind: "talk",
+        lead: "منيح إنك بأمان هلأ. خدي نفس، ما في استعجال.",
+        options: [],
+        ask: "بدك تحكيلي شو صار، أو نفكر سوا شو بيحميكِ إذا تكرر؟",
+        note: "",
+        sos: true,
+        sosPlan: plan,
+      };
+    }
+    if (isShort(question)) return stillUnsafe(numbers, plan); // unclear short answer: stay on safety
+    memory.lastAsk = ""; // a longer message about something else: answer it normally
+    return null;
+  }
+
+  /** She is still not safe: short, no questions about the past, nothing that keeps her typing. */
+  function stillUnsafe(numbers, plan) {
+    memory.lastAsk = "safe-place";
+    return {
+      kind: "talk",
+      lead: "خليكِ مركّزة على سلامتك هلأ.",
+      options: [
+        numbers.police ? `إذا بتقدري تتصلي بأمان، الشرطة ${numbers.police}، حتى لو ما بتقدري تحكي كتير.` : "",
+        "إذا الكتابة أو الصوت ممكن يلفت انتباهه، وقّفي هلأ وارجعي لما تكوني بأمان.",
+        "زر «خروج سريع» فوق بيخبّي التطبيق بلحظة.",
+      ].filter(Boolean),
+      ask: "اكتبيلي «آمنة» لما تصيري بأمان.",
+      note: "",
+      sos: true,
+      sosPlan: plan || "violence",
+    };
+  }
+
   /** A reply the app adds after violence was mentioned without a clear "now". */
   function withSafetyQuestion(answer, ask, about = "") {
     if (memory.safetyAsked || !ask) return answer;
     memory.safetyAsked = true;
-    memory.lastAsk = about === "forced" ? "forced" : "safety";
+    // each question has its own polarity: «لا» to «إنتِ بأمان؟» is danger, «لا» to «بخطر هلأ؟» is not
+    memory.lastAsk = about === "forced" ? "forced" : about === "family" ? "family" : "safety";
     if (answer.kind === "talk") return { ...answer, ask, sos: true };
     return { ...answer, safetyAsk: ask, sos: true };
   }
@@ -65,12 +158,15 @@ export function createAnswerer({
       extra.push("انتبهي: تطبيق قانون الجرائم الإلكترونية بغزة مش مؤكد، فاسألي محامية قبل ما تعتمدي عليه.");
     if (memory.constraints.has("monitored"))
       extra.push("إذا حدا بيشوف تلفونك، لا تحفظي أدلة عليه إذا هاد ممكن يعرّضك لخطر.");
+    const before = answer.steps || [];
     const steps = memory.constraints.has("monitored")
-      ? answer.steps.filter((s) => !/صور|احتفظ|وثق|وثّق|احفظ/.test(s))
-      : answer.steps;
+      ? before.filter((s) => !/صور|احتفظ|وثق|وثّق|احفظ/.test(s))
+      : before;
+    // only when evidence steps were REMOVED (never on the article-text reply, which has no steps)
+    const removedAll = before.length > 0 && steps.length === 0;
     return {
       ...answer,
-      steps: steps.length ? steps : ["محامية أو جهة رسمية بتقدر تقلك كيف تحتفظي بالأدلة بأمان"],
+      steps: removedAll ? ["محامية أو جهة رسمية بتقدر تقلك كيف تحتفظي بالأدلة بأمان"] : steps,
       scope: extra,
     };
   }
@@ -124,19 +220,39 @@ export function createAnswerer({
     const can = available();
 
     // answers to our own last question come first
-    if (memory.lastAsk === "safety" && answeredNo(question)) {
-      const d = assessDanger("مش بامان", numbers);
-      memory.lastAsk = "safe-place";
-      return d.answer;
+    if (memory.lastAsk === "safety" && answeredNo(question)) return rememberDanger(assessDanger("مش بامان", numbers));
+    // After a danger reply we asked ONE safety question. Her answer is about her safety: never drift to
+    // "since when?" while she may still be in danger.
+    if (memory.dangerKind && ["safe-place", "alone"].includes(memory.lastAsk)) {
+      const fresh = assessDanger(question, numbers, { mindLine: can.mindLine, minor: memory.minor });
+      if (fresh?.answer && fresh.level !== "selfharm-check") return rememberDanger(fresh);
+      const follow = dangerFollowUp(question, numbers, can);
+      if (follow) return follow;
+    }
+    if (memory.lastAsk === "family") {
+      const t = norm(question);
+      if (answeredYes(question) || /(?:^| )(?:هلا|هلق|هسا|الحين|اليوم)(?: |$)/.test(t))
+        return rememberDanger(assessDanger("مش بامان", numbers));
+      if (answeredNo(question) || /(?:^| )(?:اذا|لو) (?:عرفوا|عرف|درو)(?: |$)/.test(t)) {
+        memory.lastAsk = "";
+        memory.constraints.add("familyUnsafe");
+        return {
+          kind: "talk",
+          lead: "مفهوم. ما رح أقترح عليكِ تحكي لأهلك، وأي خطوة بنفكر فيها لازم ما تكشفك قدامهم.",
+          options: [],
+          ask: "شو أكتر إشي خايفة منه هلأ؟",
+          note: "",
+          sos: true,
+          sosPlan: "violence",
+        };
+      }
     }
     if (memory.lastAsk === "forced" && answeredYes(question)) {
-      memory.lastAsk = "safe-place";
-      return forcedMarriageAnswer(numbers);
+      return rememberDanger({ level: "forced-marriage", answer: forcedMarriageAnswer(numbers) });
     }
     if (memory.lastAsk === "selfharm") {
       if (answeredYes(question)) {
-        memory.lastAsk = "safe-place";
-        return assessDanger("بدي اموت", numbers, { mindLine: can.mindLine }).answer;
+        return rememberDanger(assessDanger("بدي اموت", numbers, { mindLine: can.mindLine }));
       }
       if (answeredNo(question)) {
         memory.lastAsk = "";
@@ -144,11 +260,15 @@ export function createAnswerer({
       }
     }
 
-    const danger = assessDanger(question, numbers, { mindLine: can.mindLine });
+    const danger = assessDanger(question, numbers, { mindLine: can.mindLine, minor: memory.minor });
     if (danger?.answer) {
-      memory.lastAsk = danger.level === "selfharm-check" ? "selfharm" : "safe-place";
-      return danger.answer;
+      if (danger.level === "selfharm-check") {
+        memory.lastAsk = "selfharm";
+        return danger.answer;
+      }
+      return rememberDanger(danger);
     }
+    if (danger?.about === "family") memory.constraints.add("familyUnsafe");
 
     const small = detectSmallTalk(question);
     if (small && !memory.turns.some((t) => t.role === "assistant")) return small.answer;

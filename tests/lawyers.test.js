@@ -67,12 +67,19 @@ test("developer adds a lawyer and makes her manager; the manager manages lawyers
   assert.ok(add.body.tempPassword, "a temporary password is shown once");
   assert.equal(add.body.lawyers[0].manager, true);
 
-  // the manager adds a lawyer with her contact number, but cannot make anyone a manager
-  const m = await w.call("POST", "/v1/staff/lawyers", {
+  // (2026-11-13) only a developer creates accounts that can read cases; a manager edits profiles
+  const tryCreate = await w.call("POST", "/v1/staff/lawyers", {
+    as: "boss@x.org",
+    body: { email: "salma@x.org", name: "سلمى أحمد" },
+  });
+  assert.equal(tryCreate.status, 403);
+  assert.equal((await w.call("POST", "/v1/staff/lawyers", { as: DEV, body: { email: "salma@x.org", name: "سلمى أحمد" } })).status, 200);
+
+  // the manager sets her contact number and availability, but cannot make anyone a manager
+  const m = await w.call("PUT", "/v1/staff/lawyers", {
     as: "boss@x.org",
     body: {
       email: "salma@x.org",
-      name: "سلمى أحمد",
       phone: "0599123456",
       regions: ["ps-wb"],
       available: true,
@@ -103,11 +110,13 @@ test("developer adds a lawyer and makes her manager; the manager manages lawyers
     body: { email: "salma@x.org", available: false },
   });
   assert.equal(off.body.lawyers.find((l) => l.email === "salma@x.org").available, false);
-  // and cannot turn a developer into a lawyer
+  // and cannot create accounts at all (so not turn a developer into a lawyer either)
   assert.equal(
     (await w.call("POST", "/v1/staff/lawyers", { as: "boss@x.org", body: { email: DEV, name: "x" } })).status,
-    409,
+    403,
   );
+  // a developer still cannot turn a developer into a lawyer
+  assert.equal((await w.call("POST", "/v1/staff/lawyers", { as: DEV, body: { email: DEV, name: "x" } })).status, 409);
   assert.ok((await w.store.listAudit(50)).some((a) => a.action === "lawyer-update"));
 });
 

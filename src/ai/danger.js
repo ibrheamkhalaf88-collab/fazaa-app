@@ -124,6 +124,21 @@ const OTHER_PERSON =
 const MINOR = /(?:^| )(?:1[0-7]|١[٠-٧]|قاصر|قاصره|بالمدرسه|بالصف)(?: |$)/;
 const ARRANGED = /(?:^| )(?:جايبين عريس|جابولي عريس|عريس|خطبوني|بدهم يخطبوني|كتب الكتاب|بدهم يزوجوني|بدهم يجوزوني)(?: |$)/;
 export const FORCED_QUESTION = "في حدا عم يضغط عليكِ تتجوزي وإنتِ مش بدك؟";
+/** She says she does not want it («وأنا مش بدي», «غصب عني»). */
+const UNWILLING = /(?:^| )(?:مش بدي|ما بدي|مش حابه|رافضه|غصب عني|بالغصب|مجبوره)(?: |$)/;
+
+/** «أهلي بيقتلوني»: a threat to kill her by her family. */
+const FAMILY_THREAT = compile([
+  "بيقتلوني",
+  "رح يقتلوني",
+  "بدهم يقتلوني",
+  "بيذبحوني",
+  "رح يذبحوني",
+  "بيدفنوني",
+  "بيغسلوا عارهم",
+]);
+const CONDITIONAL = /(?:^| )(?:اذا|لو|لما)(?: |$)/;
+export const FAMILY_QUESTION = "بتحسي إنك بخطر من أهلك هلأ، ولا إذا عرفوا بالموضوع؟";
 
 /** First match of `patterns` that is not denied in the few words before it. @returns {number} index or -1 */
 function firstMatch(text, patterns) {
@@ -192,7 +207,7 @@ function forcedMarriageReply(n) {
     options: [
       "إذا في شخص كبير بتأمنيله وبتحسي إنه آمن تحكيله (قريبة، معلمة، مرشدة)، ممكن يوقف معك.",
       "بتقدري تطلبي محامية من فزعة تشرحلك وضعك وحقوقك.",
-      callStep("وإذا في تهديد أو ضرب هلأ، الشرطة", n.police),
+      n.police ? `إذا في تهديد أو ضرب هلأ وبتقدري تتصلي بأمان: الشرطة ${n.police}.` : "",
     ].filter(Boolean),
     ask: "إنتِ بأمان بالبيت هلأ؟",
     note: "",
@@ -224,9 +239,18 @@ export function assessDanger(question, numbers = {}, opts = {}) {
 
   if (firstMatch(text, FORCED_MARRIAGE) >= 0 && !legal)
     return { level: "forced-marriage", answer: forcedMarriageReply(numbers) };
+  const minor = MINOR.test(text) || opts.minor === true;
+  // a minor whose marriage is being arranged against her will: the forced-marriage reply
+  if (minor && ARRANGED.test(text) && UNWILLING.test(text) && !legal)
+    return { level: "forced-marriage", answer: forcedMarriageReply(numbers) };
   // a minor whose marriage is being arranged: not an emergency script, not ignored either
-  if (MINOR.test(text) && ARRANGED.test(text) && !legal)
-    return { level: "check", ask: FORCED_QUESTION, about: "forced" };
+  if (minor && ARRANGED.test(text) && !legal) return { level: "check", ask: FORCED_QUESTION, about: "forced" };
+
+  // a threat to kill her from her family (often "honour"): never brushed off
+  if (firstMatch(text, FAMILY_THREAT) >= 0 && !legal && !otherPerson) {
+    if (PRESENT.test(text) && !CONDITIONAL.test(text)) return { level: "immediate", answer: immediateReply(numbers) };
+    return { level: "check", ask: FAMILY_QUESTION, about: "family" };
+  }
 
   const severe = firstMatch(text, SEVERE) >= 0;
   const violence = firstMatch(text, VIOLENCE) >= 0;
