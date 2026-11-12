@@ -262,8 +262,29 @@ async function supportAnswer(question, provider, key, env, fetchImpl) {
   }
 }
 
-/** One forced-tool call to the provider. @returns {Promise<{input?: any, error?: string}>} */
+/** Busy or over quota: worth one more try (429 RESOURCE_EXHAUSTED, 503 UNAVAILABLE, 500/504). */
+const BUSY = /^upstream-(429|500|503|504)/;
+/** A second model with its own quota, tried once when the first is busy. FALLBACK_MODEL overrides. */
+const FALLBACK_MODEL = { gemini: "gemini-flash-latest" };
+const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * One forced-tool call, with one retry when the provider is busy: after a short pause, on the
+ * fallback model when there is one (free tiers have a small per-minute quota per model).
+ * @returns {Promise<{input?: any, error?: string}>}
+ */
 async function callModel(provider, key, args, fetchImpl) {
+  const first = await callOnce(provider, key, args, fetchImpl);
+  if (!first.error || !BUSY.test(first.error) || args.env.RETRY === "off") return first;
+  const providerId = Object.keys(PROVIDERS).find((id) => PROVIDERS[id] === provider);
+  const fallback = args.env.FALLBACK_MODEL || FALLBACK_MODEL[providerId] || "";
+  await pause(args.env.RETRY_PAUSE_MS != null ? Number(args.env.RETRY_PAUSE_MS) : 700);
+  const env = fallback ? { ...args.env, MODEL: fallback } : args.env;
+  const second = await callOnce(provider, key, { ...args, env }, fetchImpl);
+  return second.error ? first : second;
+}
+
+async function callOnce(provider, key, args, fetchImpl) {
   const call = provider.build(args, key);
   let upstream;
   try {

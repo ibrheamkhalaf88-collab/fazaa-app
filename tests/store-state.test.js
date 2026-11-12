@@ -76,6 +76,6 @@ test("state: loads defaults, persists changes, notifies, resets", () => {
   assert.equal(createState(createStore(storage, "t:")).get("theme"), "auto", "persisted values cleared");
 });
 
-test("state: AI online is off by default (opt-in)", () => {
-  assert.equal(DEFAULT_STATE.aiOnline, false);
+test("state: AI online is on by default (owner's decision); she can switch it off", () => {
+  assert.equal(DEFAULT_STATE.aiOnline, true);
 });

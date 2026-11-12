@@ -10,7 +10,7 @@ export const DEFAULT_STATE = Object.freeze({
   pin: false, // reserved: real PIN lock is not implemented yet
   dg: "weather", // disguise: "weather" | "calc" | "notes"
   user: null, // demo sign-in name
-  aiOnline: false, // user agreed to send questions to the AI proxy
+  aiOnline: true, // owner's decision (2026-11-12): on by default, she can switch it off in Settings
   stats: true, // anonymous usage counters (no ids, no text); user can switch off
 });
 

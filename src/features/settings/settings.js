@@ -61,9 +61,12 @@ export function createSettings({ state, router, theme, chat, sos, aiAvailable })
     toggle(key) {
       state.set(key, !state.get(key));
       render();
-      if (key === "aiOnline" && state.get(key)) {
-        toast("هلأ أسئلتك بتنبعت لسيرفر فزعة عشان جواب أوضح. بتقدري تطفيها بأي وقت.");
-      }
+      if (key === "aiOnline")
+        toast(
+          state.get(key)
+            ? "هلأ أسئلتك بتنبعت لسيرفر فزعة عشان جواب أوضح. بتقدري تطفيها بأي وقت."
+            : "طفّيناها. الأجوبة هلأ من جهازك بس، بدون نت.",
+        );
     },
     /** Demo sign-in (no real Google flow yet). */
     toggleAccount() {

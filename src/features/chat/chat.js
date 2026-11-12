@@ -3,6 +3,7 @@ import { ARTICLES } from "../../data/law/index.js";
 import { $, $$, chip, el, icon } from "../../core/dom.js";
 import { append, messageList, scrollChat, systemNote, typingBubble } from "./messages.js";
 import { createLawyerSession } from "./lawyer-session.js";
+import { START_CHIPS } from "../../ai/smalltalk.js";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -136,23 +137,25 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
     return box;
   }
 
-  /** Shown when nothing in the app covers the question: honest refusal, never a guess. */
+  /**
+   * Nothing answered (offline and no rule fits, or the AI was unreachable): never a cold refusal and
+   * never a guess. A warm word, an invitation to say more, topics to tap, and a human to talk to.
+   */
   function renderNotCovered() {
     const box = el("div", "a");
     box.appendChild(
-      el(
-        "div",
-        null,
-        "سؤالك مهم، بس ما لقيت نص قانوني بيغطّيه بالقوانين اللي بفزعة لهلأ (الجرائم الإلكترونية، الأحوال الشخصية، حقوق العائلة، والقانون الأساسي)، وما بدي أعطيكِ معلومة بدون مصدر.",
-      ),
+      el("div", null, "سامعتك 🤍 بس ما قدرت أجاوبك على هاد بالزبط هلأ، وما بدي أعطيكِ معلومة مش متأكدة منها."),
     );
     box.appendChild(
       el(
         "div",
         "gap-top",
-        "جرّبي تسألي عن الابتزاز، أو نشر الصور، أو النفقة والطلاق والحضانة. وإذا موضوعك مختلف، احكي مع محامية مباشرة.",
+        "احكيلي أكتر بكلماتك: شو اللي صار؟ مع مين؟ ومن إيمتى؟ وكل ما وضحتي أكتر، بقدر أساعدك أحسن. أو اختاري موضوع من تحت، أو احكي مع محامية حقيقية.",
       ),
     );
+    const topics = el("div", "acts");
+    for (const [label, question] of START_CHIPS) topics.appendChild(chip({ label, data: { ask: question } }));
+    box.appendChild(topics);
     const actions = el("div", "acts");
     actions.append(
       chip({ label: "احكي مع محامية الآن", iconId: "i-phone", fill: true, data: { chat: "lawyer" } }),
