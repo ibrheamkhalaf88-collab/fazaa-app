@@ -18,7 +18,7 @@ import { DEFAULT_PROVIDER, PROVIDERS } from "./providers.js";
 import { retrieveArticles } from "../../src/ai/retrieve.js";
 import { validateAnswer } from "../../src/ai/validate.js";
 
-const LIMITS = { bodyBytes: 4096, questionMin: 3, questionMax: 500, upstreamMs: 10000 };
+const LIMITS = { bodyBytes: 4096, questionMin: 3, questionMax: 500, upstreamMs: 20000 }; // newer models think before answering: give them time
 const COUNTRIES = ["ps-wb", "ps-gaza"];
 
 export const SYSTEM_PROMPT = `You write short legal-information answers for women in Palestine who may be in danger (blackmail, leaked images, abuse). You are not a lawyer and you must say nothing a lawyer would not stand behind.
@@ -265,7 +265,7 @@ async function supportAnswer(question, provider, key, env, fetchImpl) {
 /** Busy or over quota: worth one more try (429 RESOURCE_EXHAUSTED, 503 UNAVAILABLE, 500/504). */
 const BUSY = /^upstream-(429|500|503|504)/;
 /** A second model with its own quota, tried once when the first is busy. FALLBACK_MODEL overrides. */
-const FALLBACK_MODEL = { gemini: "gemini-flash-latest" };
+const FALLBACK_MODEL = { gemini: "gemini-3.5-flash" }; // slower but rarely busy (tested 2026-11-12)
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**

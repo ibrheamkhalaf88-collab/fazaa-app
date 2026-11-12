@@ -12,7 +12,11 @@ const MAX_QUESTION_CHARS = 500;
  *
  * @param {{endpoint: string, timeoutMs?: number, fetchImpl?: typeof fetch}} opts
  */
-export function createRemoteEngine({ endpoint, timeoutMs = 12000, fetchImpl = fetch }) {
+export function createRemoteEngine({
+  endpoint,
+  timeoutMs = 45000 /* the server may wait for a busy model, then try a backup one */,
+  fetchImpl = fetch,
+}) {
   return {
     /**
      * @param {string} question

@@ -26,7 +26,7 @@ test("Google busy (429 / 503): one retry on the fallback model, and she gets her
   assert.equal(status, 200);
   assert.equal(body.answer.lead, "سامعتك 🤍");
   assert.equal(urls.length, 2);
-  assert.match(urls[1], /gemini-flash-latest/);
+  assert.match(urls[1], /gemini-3\.5-flash:/);
 });
 
 test("still busy after the retry: the first error is reported (the app then uses its offline answers)", async () => {
