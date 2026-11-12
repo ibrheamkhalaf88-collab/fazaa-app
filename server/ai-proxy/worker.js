@@ -268,20 +268,36 @@ const BUSY = /^upstream-(429|500|503|504)/;
 const FALLBACK_MODEL = { gemini: "gemini-3.5-flash" }; // slower but rarely busy (tested 2026-11-12)
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/** Total time the server keeps trying for one question (the app waits 45 s). */
+const RETRY_BUDGET_MS = 35000;
+
 /**
- * One forced-tool call, with one retry when the provider is busy: after a short pause, on the
- * fallback model when there is one (free tiers have a small per-minute quota per model).
+ * One forced-tool call that keeps trying while the provider is busy (free tiers have a small
+ * per-minute quota and get overloaded): primary model, then the fallback model, then the primary
+ * again after a longer pause, all within RETRY_BUDGET_MS. Any other error stops at once.
  * @returns {Promise<{input?: any, error?: string}>}
  */
 async function callModel(provider, key, args, fetchImpl) {
+  const started = Date.now();
   const first = await callOnce(provider, key, args, fetchImpl);
   if (!first.error || !BUSY.test(first.error) || args.env.RETRY === "off") return first;
   const providerId = Object.keys(PROVIDERS).find((id) => PROVIDERS[id] === provider);
   const fallback = args.env.FALLBACK_MODEL || FALLBACK_MODEL[providerId] || "";
-  await pause(args.env.RETRY_PAUSE_MS != null ? Number(args.env.RETRY_PAUSE_MS) : 700);
-  const env = fallback ? { ...args.env, MODEL: fallback } : args.env;
-  const second = await callOnce(provider, key, { ...args, env }, fetchImpl);
-  return second.error ? first : second;
+  const unit = args.env.RETRY_PAUSE_MS != null ? Number(args.env.RETRY_PAUSE_MS) : 700;
+  const plan = [
+    { wait: unit, env: fallback ? { ...args.env, MODEL: fallback } : args.env },
+    { wait: unit * 3, env: args.env },
+  ];
+  let last = first;
+  for (const step of plan) {
+    if (Date.now() - started + step.wait > RETRY_BUDGET_MS - 5000) break; // no time for another try
+    await pause(step.wait);
+    const res = await callOnce(provider, key, { ...args, env: step.env }, fetchImpl);
+    if (!res.error) return res;
+    last = res;
+    if (!BUSY.test(res.error)) break;
+  }
+  return last.error && BUSY.test(last.error) ? first : last;
 }
 
 /**

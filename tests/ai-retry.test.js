@@ -29,12 +29,26 @@ test("Google busy (429 / 503): one retry on the fallback model, and she gets her
   assert.match(urls[1], /gemini-3\.5-flash:/);
 });
 
-test("still busy after the retry: the first error is reported (the app then uses its offline answers)", async () => {
-  const { status, body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () =>
-    busy(503, "UNAVAILABLE"),
-  );
+test("still busy after all tries: three attempts (primary, backup, primary), then the app uses its offline answers", async () => {
+  const urls = [];
+  const { status, body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async (url) => {
+    urls.push(url);
+    return busy(503, "UNAVAILABLE");
+  });
   assert.equal(status, 502);
   assert.equal(body.error, "upstream-503:UNAVAILABLE");
+  assert.equal(urls.length, 3);
+  assert.match(urls[1], /gemini-3\.5-flash:/);
+});
+
+test("busy twice, free on the third try: she gets her answer", async () => {
+  const replies = [
+    busy(503, "UNAVAILABLE"),
+    busy(429, "RESOURCE_EXHAUSTED"),
+    ok({ lead: "سامعتك", steps: ["خدي نفس"] }),
+  ];
+  const { status } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => replies.shift());
+  assert.equal(status, 200);
 });
 
 test("the request leaves room for a full answer (newer models think before answering)", async () => {
