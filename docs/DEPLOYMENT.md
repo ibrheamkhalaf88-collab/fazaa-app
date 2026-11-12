@@ -25,7 +25,9 @@ long `immutable` cache for `/assets/fonts/`.
 - [ ] `CACHE_VERSION` in `sw.js` bumped (otherwise returning users keep the old files)
 - [ ] Lighthouse PWA + Accessibility on the deployed URL
 - [ ] Open on a real low-end Android phone, airplane mode after first load
-- [ ] Lawyer chat: either the API is deployed and `API_BASE` is set, or the demo is still clearly labelled. Phone numbers and the Google button are placeholders until verified.
+- [ ] Lawyer chat: either the API is deployed, `API_BASE` is set and lawyers are on duty, or the tab honestly says
+      the service is not available (default). Never ship a pretend lawyer.
+- [ ] Support contacts verified with each organisation (dashboard "أرقام التواصل", tick "verified").
 - [ ] If AI is on: proxy origin in `connect-src` and `ALLOWED_ORIGINS`
 
 ## Local

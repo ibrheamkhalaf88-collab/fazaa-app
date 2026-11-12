@@ -1,6 +1,7 @@
 // Compares every maqam-sourced article in the corpus with the live page.
 // Run on a machine with internet access:  npm run law:verify
 // A mismatch means the retyped text differs from the source: fix the corpus, then update the fingerprint.
+import { pathToFileURL } from "node:url";
 import { ARTICLES } from "../src/data/law/index.js";
 
 const strip = (s) =>
@@ -42,4 +43,6 @@ async function main() {
   process.exit(bad ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+// (2026-11-12) the old check `file://${argv[1]}` never matched on Windows, so the script silently did nothing
+// and exited 0. pathToFileURL gives the same URL form as import.meta.url on every system.
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

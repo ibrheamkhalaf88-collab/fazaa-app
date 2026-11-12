@@ -9,7 +9,8 @@ poor networks, work offline, and be auditable by a lawyer-or-engineer reading th
 2. Build the pieces with plain factory functions, passing dependencies in (no globals, no singletons):
    `createStore` -> `createState` -> `createRouter` -> `createAnswerer` -> `createChat` / `createSos` /
    `createTheme` / `createDisguise` / `createSettings`, plus `createTelemetry` (anonymous counters) and `createAccount` +
-   `createLiveLawyerSession` (only when `API_BASE` is set; otherwise the scripted demo session is used).
+   `createLiveLawyerSession` (only when `API_BASE` is set; otherwise `lawyer-session.js` shows an honest
+   "service not available, your message was not sent" — there is no pretend lawyer since 2026-11-12).
 3. Bind one delegated click handler (`src/ui/actions.js`) and the composer / keyboard inputs.
 4. Show the last screen (never the disguise), register `sw.js`.
 

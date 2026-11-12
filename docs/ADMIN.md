@@ -27,13 +27,14 @@ resets a forgotten one. Lockout: 5 wrong tries, 15 minutes. If every developer i
 ```
 woman's phone (anonymous, token on device) --\
                                               +--> /api/*  Worker (server/api)  --> D1 database (encrypted bodies)
-lawyer / developer --> Cloudflare Access login --> /admin/ + /api/v1/staff/*
+lawyer / developer --> email + password (server/api/auth.js) --> /admin/ + /api/v1/staff/*
 ```
 
-- **Sign-in:** Cloudflare Access (free up to 50 users). Staff get an email one-time PIN. The Worker verifies the signed
-  JWT; there are no passwords in our code or database.
-- **Her privacy:** no name, phone, IP or user agent is stored. The case secret is random and only its hash is stored.
-  Message bodies are encrypted (AES-GCM) with a Worker secret before they touch the database.
+- **Sign-in:** email + password per staff member, checked by the Worker (salted PBKDF2, lockout, session cookie).
+- **Her privacy:** no IP or user agent is stored. Without an account she is anonymous. With an account (only to talk
+  to a lawyer): an alias, a hashed PIN, and her name and phone ENCRYPTED, readable only by the lawyer who takes her
+  case. Message bodies are encrypted (AES-GCM) with a Worker secret before they touch the database. See
+  docs/PRIVACY.md for who can read what and how long it is kept.
 - **Retention (assumption, change if needed):** closed cases are deleted after 7 days; any case idle 30 days is deleted.
   Daily cron. Set `RETENTION_CLOSED_DAYS` / `RETENTION_IDLE_DAYS` in `server/api/wrangler.toml`.
 - **Cost:** Workers + D1 + Access fit the free tiers at small scale; the paid Workers plan is about $5/month.
@@ -73,7 +74,8 @@ Memory-only, signs you in as that email (add header `x-dev-staff` to act as anot
 
 ## Not connected yet
 
-The women's lawyer chat inside the app is still the scripted demo (`src/features/chat/lawyer-session.js`).
+The women's lawyer chat runs only when `API_BASE` is set; otherwise the tab says the service is not available
+(`src/features/chat/lawyer-session.js`, no scripted demo since 2026-11-12).
 The API for it exists (`POST /api/v1/cases`, `GET|POST /api/v1/cases/:id/messages` with `Authorization: Bearer <token>`).
 Wiring it, plus a real lawyer-availability message, is the next step. Before launch: a legal review of what is stored,
 a notice to women that a human reads their messages, and a written procedure for what lawyers do in an emergency.
@@ -88,7 +90,7 @@ a notice to women that a human reads their messages, and a written procedure for
 | إعدادات الذكاء     | المطوّر     | اختيار المزوّد والنموذج ولصق مفتاح الـ API وتجربة الاتصال. المفتاح مشفّر ولا يظهر بعد الحفظ، وكل تعديل بيتسجّل بسجل العمليات |
 | الفريق             | المطوّر     | أعمدة «آخر دخول» و«أيام الدخول»                                                                                              |
 
-**خصوصية:** المستخدمات مجهولات. العدّادات مجمّعة (يوم × حدث × منطقة) بدون هوية ولا IP ولا نص. تسجيل الدخول المعروف هو للفريق فقط (عبر Cloudflare Access).
+**خصوصية:** المستخدمات مجهولات. العدّادات مجمّعة (يوم × حدث × منطقة) بدون هوية ولا IP ولا نص. تسجيل الدخول المعروف هو للفريق فقط (إيميل وكلمة سر).
 المنطقة = اللي اختارتها المستخدمة بالإعدادات، مش موقع جغرافي.
 
 **تفعيلها:** العدّادات من التطبيق مطفية لحد ما تضبطي `TELEMETRY_ENDPOINT = "/api/v1/ping"` في `src/config.js` بعد نشر الـ API. المستخدمة تقدر تطفيها من الإعدادات («إحصاءات مجهولة»)، ولازم تظهر لها جملة توضيح. على قاعدة D1 موجودة شغّلي `schema.sql` مرة ثانية لإضافة الجداول الجديدة.

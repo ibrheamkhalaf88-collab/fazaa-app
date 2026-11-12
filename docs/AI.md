@@ -24,8 +24,10 @@ If the network, proxy or validation fails the user silently gets the offline ans
 ## Privacy contract
 
 - Off by default; the toggle is in Settings and stored only on the device.
-- When on, only the typed question (<=500 chars) and article ids/text go to **your** proxy. No cookies
-  (`credentials:"omit"`), no referrer, no user id, no history.
+- When on, after a one-time notice: the message (<=1200 chars, never cut silently), the region and the kind of
+  reply needed go to **your** server. Only if she chose «مع آخر الرسائل»: the last 6 messages of the session and
+  the limits she stated. No cookies (`credentials:"omit"`), no referrer, no user id, never the lawyer chat.
+  The session memory is RAM only and is wiped with the chat (src/ai/conversation.js).
 - The proxy does not log bodies, sends `Cache-Control: no-store`, and forwards only to the Anthropic API.
 - Phone numbers / names are not requested anywhere; still, tell users not to type identifying details.
 
