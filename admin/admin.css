@@ -1073,6 +1073,24 @@ dl.client dd {
   flex-wrap: wrap;
   gap: 8px;
 }
+/* AI model check */
+.model-table {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+.model-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--line, rgba(127, 127, 127, 0.25));
+}
+.model-row code {
+  direction: ltr;
+  min-width: 190px;
+}
 /* contacts editor */
 .contact-list {
   display: grid;

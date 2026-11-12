@@ -6,6 +6,22 @@ const SOURCE = {
   secret: ["", "من إعدادات الخادم"],
   none: ["wait", "غير مفعّل"],
 };
+/** Short reasons from the provider, in plain words. */
+const KEY_PROBLEM = {
+  "no-key": "ما في مفتاح محفوظ.",
+  API_KEY_INVALID: "المفتاح مش صحيح (ممكن انحذف أو انسخ ناقص).",
+  CONSUMER_SUSPENDED: "مشروع Google تبع المفتاح موقوف. اعملي مفتاح بمشروع جديد.",
+  PERMISSION_DENIED: "المفتاح ما إله صلاحية على Gemini.",
+  unreachable: "ما قدرنا نوصل للمزوّد. جرّبي كمان شوي.",
+};
+const MODEL_PROBLEM = (error = "", secs = "") => {
+  if (/503|429|500|504/.test(error)) return `مضغوط هلأ · ${secs} ث`;
+  if (/404/.test(error)) return "مش متاح لهالمفتاح";
+  if (/unreachable/.test(error)) return `بطيء (أكتر من 20 ث)`;
+  if (/no-tool-output|invalid-output/.test(error)) return "ردّ بس الجواب ما زبط";
+  return error || "ما اشتغل";
+};
+
 const PROBLEM = {
   "bad-key": "المفتاح شكله غير صحيح. انسخيه كامل بدون مسافات.",
   "key-required": "ألصقي المفتاح أول مرة، أو لما تغيّري المزوّد.",
@@ -64,6 +80,20 @@ export function aiSettingsView(ctx) {
     syncModel();
     provider.addEventListener("change", syncModel);
 
+    // backup model: tried when the main one is busy (free tiers are often overloaded)
+    const fallback = el("input");
+    fallback.id = "ai-fallback";
+    fallback.dir = "ltr";
+    fallback.autocomplete = "off";
+    fallback.value = cfg.fallbackModel || "";
+    fallback.placeholder = "اختياري: نموذج بيتجرّب لما الأساسي يكون مضغوط";
+
+    // the models this key can use, as suggestions for both fields
+    const list = el("datalist");
+    list.id = "ai-model-list";
+    model.setAttribute("list", list.id);
+    fallback.setAttribute("list", list.id);
+
     const key = el("input");
     key.id = "ai-key";
     key.type = "password";
@@ -90,7 +120,12 @@ export function aiSettingsView(ctx) {
       try {
         const next = await api("/ai-config", {
           method: "PUT",
-          body: { provider: provider.value, model: model.value, apiKey: key.value },
+          body: {
+            provider: provider.value,
+            model: model.value,
+            fallbackModel: fallback.value,
+            apiKey: key.value,
+          },
         });
         key.value = ""; // the key leaves the page as soon as it is saved
         render(next);
@@ -136,11 +171,110 @@ export function aiSettingsView(ctx) {
       actions.append(clear);
     }
 
+    /* ---- check the key and try every model, one by one ---- */
+    const checkBox = el("section", "card");
+    const keyState = el("p", "ai-status");
+    const table = el("div", "model-table");
+    const checkKey = el("button", "ghost", "افحصي المفتاح وشو النماذج المتاحة");
+    const tryAll = el("button", "ghost", "جرّبي النماذج وحدة وحدة");
+    tryAll.disabled = true;
+    let available = [];
+
+    checkKey.addEventListener("click", async () => {
+      checkKey.disabled = true;
+      keyState.replaceChildren(el("span", "muted", "عم نفحص…"));
+      try {
+        const r = await api("/ai-models");
+        if (!r.ok) {
+          keyState.replaceChildren(
+            pill("في مشكلة بالمفتاح", "wait"),
+            el("span", "muted", ` ${KEY_PROBLEM[r.error] || r.error}`),
+          );
+          return;
+        }
+        available = r.models;
+        list.replaceChildren(...available.map((m) => new Option(m.label || m.id, m.id)));
+        keyState.replaceChildren(
+          pill("المفتاح شغّال", "good"),
+          el(
+            "span",
+            "muted",
+            available.length
+              ? ` · ${available.length} نموذج متاح. اختاري من القائمة بخانة النموذج، أو جرّبيهم تحت.`
+              : " · هالمزوّد ما بيعطي قائمة نماذج، اكتبي اسم النموذج بإيدك.",
+          ),
+        );
+        tryAll.disabled = !available.length;
+      } catch (e) {
+        keyState.replaceChildren(pill(errorText(e), "wait"));
+      } finally {
+        checkKey.disabled = false;
+      }
+    });
+
+    tryAll.addEventListener("click", async () => {
+      // the cheap, fast families first; at most 8 so the free quota is not burnt
+      const rank = (id) => (/lite/.test(id) ? 0 : /flash/.test(id) ? 1 : 2);
+      const picks = available
+        .map((m) => m.id)
+        .filter((id) => /flash/.test(id))
+        .sort((a, b) => rank(a) - rank(b) || a.localeCompare(b))
+        .slice(0, 8);
+      if (!confirm(`رح نجرّب ${picks.length} نماذج بسؤال تجربة لكل واحد (من الحد المجاني). نكمّل؟`)) return;
+      tryAll.disabled = true;
+      table.replaceChildren();
+      for (const id of picks) {
+        const row = el("div", "model-row");
+        const verdict = el("span", "muted", "عم نجرّب…");
+        const useMain = el("button", "ghost", "خليه الأساسي");
+        const useBackup = el("button", "ghost", "خليه الاحتياطي");
+        useMain.addEventListener("click", () => {
+          model.value = id;
+          setNote(`«${id}» صار بخانة النموذج. اضغطي «حفظ».`);
+        });
+        useBackup.addEventListener("click", () => {
+          fallback.value = id;
+          setNote(`«${id}» صار بخانة الاحتياطي. اضغطي «حفظ».`);
+        });
+        useMain.hidden = useBackup.hidden = true;
+        row.append(el("code", null, id), verdict, useMain, useBackup);
+        table.append(row);
+        try {
+          const r = await api("/ai-config/test", { method: "POST", body: { model: id } });
+          const secs = (r.ms / 1000).toFixed(1);
+          verdict.replaceChildren(
+            r.ok ? pill(`شغّال · ${secs} ث`, "good") : pill(MODEL_PROBLEM(r.error, secs), "wait"),
+          );
+          useMain.hidden = useBackup.hidden = !r.ok;
+        } catch (e) {
+          verdict.replaceChildren(pill(errorText(e), "wait"));
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2500)); // be gentle with the quota
+      }
+      tryAll.disabled = false;
+    });
+
+    const checkActs = el("div", "ai-actions");
+    checkActs.append(checkKey, tryAll);
+    checkBox.append(
+      el("h2", null, "فحص المفتاح والنماذج"),
+      el(
+        "p",
+        "hint",
+        "بنسأل المزوّد بالمفتاح المحفوظ شو النماذج المتاحة، وبنجرّب كل واحد بسؤال واحد. «مضغوط» يعني المزوّد مشغول هلأ (بيصير كتير بالنسخة المجانية)، جرّبي بعد شوي.",
+      ),
+      keyState,
+      checkActs,
+      table,
+    );
+
     const form = el("section", "card");
     form.append(
       status,
       field("المزوّد", provider),
-      field("النموذج (اختياري)", model),
+      field("النموذج الأساسي (اختياري)", model),
+      field("النموذج الاحتياطي", fallback),
+      list,
       field("مفتاح الـ API", key),
       actions,
       note,
@@ -150,7 +284,7 @@ export function aiSettingsView(ctx) {
         "الذكاء بيجاوب بس من المواد القانونية الموجودة بالتطبيق، وأي جواب فيه استشهاد غير موجود بيتحذف. النسخ المجانية عند بعض المزوّدين ممكن تستخدم النصوص المرسلة لتحسين منتجاتهم.",
       ),
     );
-    body.replaceChildren(head, form);
+    body.replaceChildren(head, form, checkBox);
   }
 
   async function problemText(e) {

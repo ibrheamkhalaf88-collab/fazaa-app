@@ -134,8 +134,46 @@ function aiEnv(env, saved) {
     ...env,
     PROVIDER: saved.provider,
     MODEL: saved.model || "",
+    ...(saved.fallbackModel ? { FALLBACK_MODEL: saved.fallbackModel } : {}),
     [PROVIDERS[saved.provider].keyName]: saved.apiKey,
   };
+}
+
+/**
+ * The models this key can use (Gemini only, from Google's own list). Never returns the key.
+ * @returns {Promise<{ok: boolean, models: {id: string, label: string}[], error?: string}>}
+ */
+async function listModels(saved, fetchImpl) {
+  if (!saved?.apiKey) return { ok: false, models: [], error: "no-key" };
+  if (saved.provider !== "gemini") return { ok: true, models: [] };
+  let res;
+  try {
+    res = await fetchImpl("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", {
+      headers: { "x-goog-api-key": saved.apiKey },
+      signal: AbortSignal.timeout(8000),
+    });
+  } catch {
+    return { ok: false, models: [], error: "unreachable" };
+  }
+  let data = {};
+  try {
+    data = await res.json();
+  } catch {
+    /* no JSON */
+  }
+  if (!res.ok) {
+    const e = data?.error;
+    const reason = String(e?.details?.find?.((d) => d.reason)?.reason || e?.status || res.status);
+    return { ok: false, models: [], error: reason.replace(/[^\w.-]/g, "").slice(0, 60) };
+  }
+  const models = (data.models || [])
+    .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+    .map((m) => ({ id: String(m.name || "").replace(/^models\//, ""), label: String(m.displayName || "") }))
+    .filter(
+      (m) => /^gemini-/.test(m.id) && MODEL_RE.test(m.id) && !/(embedding|image|tts|audio|live)/.test(m.id),
+    )
+    .sort((a, b) => a.id.localeCompare(b.id));
+  return { ok: true, models };
 }
 
 /** What the dashboard may know: never the key itself, only whether one exists and its last 4 characters. */
@@ -146,6 +184,7 @@ function aiSummary(env, saved) {
   return {
     provider,
     model: saved ? saved.model || "" : env.MODEL || "",
+    fallbackModel: saved?.fallbackModel || "",
     defaultModel: def.defaultModel,
     hasKey: Boolean(key),
     keyHint: key ? `••••${key.slice(-4)}` : "",
@@ -634,6 +673,8 @@ export async function handleRequest(request, env, deps) {
       if (!PROVIDERS[provider]) return reply(fail(400, "bad-provider"));
       const model = cleanText(value.model, 80);
       if (model && !MODEL_RE.test(model)) return reply(fail(400, "bad-model"));
+      const fallbackModel = cleanText(value.fallbackModel, 80);
+      if (fallbackModel && !MODEL_RE.test(fallbackModel)) return reply(fail(400, "bad-model"));
       const typedKey = typeof value.apiKey === "string" ? value.apiKey.trim() : "";
       if (typedKey && !API_KEY_RE.test(typedKey)) return reply(fail(400, "bad-key"));
       // keep the stored key when only the model/provider changes (and the provider is the same)
@@ -641,14 +682,14 @@ export async function handleRequest(request, env, deps) {
       if (!apiKey) return reply(fail(400, "key-required"));
       await store.setSetting({
         key: AI_SETTING,
-        ...(await seal(JSON.stringify({ provider, model, apiKey }))),
+        ...(await seal(JSON.stringify({ provider, model, fallbackModel, apiKey }))),
         now,
         by: staff.email,
       });
       await store.addAudit({
         actor: staff.email,
         action: "ai-config-set",
-        target: `${provider}${model ? ` / ${model}` : ""}${typedKey ? " (new key)" : ""}`,
+        target: `${provider}${model ? ` / ${model}` : ""}${fallbackModel ? ` (+ ${fallbackModel})` : ""}${typedKey ? " (new key)" : ""}`,
         now,
       });
       return reply(
@@ -707,22 +748,34 @@ export async function handleRequest(request, env, deps) {
       return reply(json(aiSummary(env, null)));
     }
 
-    // one real round trip with a fixed sample question, so a developer knows the key works
+    // the models this key can use, straight from the provider (the key itself never leaves the server)
+    if (path === "/v1/staff/ai-models" && request.method === "GET") {
+      const denied = need("developer");
+      if (denied) return denied;
+      return reply(json(await listModels(await loadAi(store, open), fetchImpl)));
+    }
+
+    // one real round trip with a fixed sample question, so a developer knows the key works.
+    // {model} tests that one model alone (no backup, no retry) without saving it.
     if (path === "/v1/staff/ai-config/test" && request.method === "POST") {
       const denied = need("developer");
       if (denied) return denied;
+      const { value } = await readJson(request);
+      const only = cleanText(value?.model, 80);
+      if (only && !MODEL_RE.test(only)) return reply(fail(400, "bad-model"));
+      const live = aiEnv(env, await loadAi(store, open));
       const started = Date.now();
       const { status, body } = await answerQuestion(
         "حدا عم يبتزني بصوري",
         "ps-wb",
-        aiEnv(env, await loadAi(store, open)),
+        only ? { ...live, MODEL: only, RETRY: "off" } : live,
         fetchImpl,
       );
       const ok = status === 200 && Boolean(body.answer);
       await store.addAudit({
         actor: staff.email,
         action: "ai-config-test",
-        target: ok ? "ok" : body.error || "no-answer",
+        target: `${only || "current"}: ${ok ? "ok" : body.error || "no-answer"}`,
         now,
       });
       return reply(json({ ok, error: ok ? null : body.error || "no-answer", ms: Date.now() - started }));
