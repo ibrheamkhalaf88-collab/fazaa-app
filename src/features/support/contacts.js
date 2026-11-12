@@ -55,7 +55,9 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
     const info = el("div");
     info.append(el("b", null, c.name));
     if (c.desc) info.append(el("small", null, c.desc));
+    if (c.hours) info.append(el("small", null, `الدوام: ${c.hours}`));
     if (c.badge) info.append(el("span", "badge", c.badge));
+    if (c.verified && (c.phone || c.whatsapp)) info.append(el("span", "badge", "رقم مؤكد ✓"));
     const acts = el("div", "acts");
     if (c.phone) {
       const call = el("a", "chip fill");

@@ -41,7 +41,7 @@ import {
 import { createD1Store } from "./store/d1.js";
 import { scrub } from "./scrub.js";
 import { EVENTS, normalizeTopic } from "./store/days.js";
-import { DEFAULT_CONTACTS, validateContacts } from "../../src/data/contacts.js";
+import { DEFAULT_CONTACTS, publicContacts, validateContacts } from "../../src/data/contacts.js";
 
 const REGIONS = ["ps-wb", "ps-gaza"];
 const LIMITS = {
@@ -250,7 +250,12 @@ export async function handleRequest(request, env, deps) {
   /* ============ public: emergency numbers and support organisations (no personal data) ============ */
   if (path === "/v1/contacts" && request.method === "GET") {
     const { contacts, updatedAt } = await loadContacts();
-    return reply(json({ contacts, updatedAt }, 200, { "cache-control": "public, max-age=300" }));
+    // switched-off entries and the team's internal notes never leave the server
+    return reply(
+      json({ contacts: publicContacts(contacts), updatedAt }, 200, {
+        "cache-control": "public, max-age=300",
+      }),
+    );
   }
 
   /* ============ public AI endpoint: the key is the one a developer saved in the dashboard ============ */
@@ -510,13 +515,21 @@ export async function handleRequest(request, env, deps) {
       if (denied) return denied;
       if (request.method === "GET") return reply(json(await loadContacts()));
       if (request.method === "PUT") {
-        const { value, error } = await readJson(request, 16384);
+        const { value, error } = await readJson(request, 32768);
         if (error) return reply(fail(error, "bad-body"));
         let contacts;
         try {
           contacts = validateContacts(value.contacts);
         } catch (e) {
           return reply(fail(400, e.message));
+        }
+        // the confirmation date comes from the server: kept while the same number stays confirmed,
+        // set to now when she ticks "confirmed" or confirms a changed number
+        const before = new Map((await loadContacts()).contacts.map((c) => [c.id, c]));
+        for (const c of contacts) {
+          const old = before.get(c.id);
+          const same = old?.verified && old.phone === c.phone && old.whatsapp === c.whatsapp;
+          c.verifiedAt = c.verified ? (same && old.verifiedAt) || now : null;
         }
         await store.setSetting({
           key: CONTACTS_SETTING,

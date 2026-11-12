@@ -12,10 +12,18 @@ export const CONTACT_CATS = { emergency: "طوارئ", safe: "أمني", law: "�
 export const CONTACT_REGIONS = { all: "الضفة وغزة", "ps-wb": "الضفة الغربية", "ps-gaza": "قطاع غزة" };
 export const MAX_CONTACTS = 30;
 
-/** @typedef {{id:string, cat:keyof typeof CONTACT_CATS, name:string, desc:string, phone:string, whatsapp:string, badge:string, region:keyof typeof CONTACT_REGIONS}} Contact */
+/**
+ * @typedef {{id:string, cat:keyof typeof CONTACT_CATS, name:string, desc:string, phone:string, whatsapp:string,
+ *   badge:string, region:keyof typeof CONTACT_REGIONS, hours:string,
+ *   active:boolean,           // false = hidden in the app (the line is down, closed, or not ready)
+ *   verified:boolean,         // the owner confirmed the number with the organisation itself
+ *   verifiedAt:number|null,   // when (set by the server)
+ *   note:string               // internal note for the team; never sent to the app
+ * }} Contact
+ */
 
-/** @type {Contact[]} */
-export const DEFAULT_CONTACTS = [
+/** The starting list (before the owner saves her own). Completed by validateContacts below. */
+const STARTING_LIST = [
   {
     id: "police",
     cat: "emergency",
@@ -78,7 +86,7 @@ export const DEFAULT_CONTACTS = [
   },
 ];
 
-const LIMITS = { id: 24, name: 60, desc: 140, phone: 20, badge: 20 };
+const LIMITS = { id: 24, name: 60, desc: 140, phone: 20, badge: 20, hours: 40, note: 200 };
 
 const text = (v, max) =>
   typeof v === "string"
@@ -126,12 +134,24 @@ export function validateContacts(list) {
       whatsapp: number(c.whatsapp),
       badge: text(c.badge, LIMITS.badge),
       region: /** @type {Contact["region"]} */ (region),
+      hours: text(c.hours, LIMITS.hours),
+      active: c.active !== false,
+      verified: c.verified === true,
+      verifiedAt: c.verified === true && Number.isFinite(c.verifiedAt) ? Number(c.verifiedAt) : null,
+      note: text(c.note, LIMITS.note),
     };
   });
 }
 
-/** Contacts for one region (the user's choice in Settings). */
-export const contactsFor = (list, region) => list.filter((c) => c.region === "all" || c.region === region);
+/** @type {Contact[]} */
+export const DEFAULT_CONTACTS = validateContacts(STARTING_LIST);
 
-/** The number of a special contact ("police", "ambulance"), or "" if the owner removed it. */
-export const numberOf = (list, id) => list.find((c) => c.id === id)?.phone || "";
+/** What the app may see: active entries only, without the team's internal note. */
+export const publicContacts = (list) => list.filter((c) => c.active).map(({ note: _note, ...c }) => c);
+
+/** Active contacts for one region (the user's choice in Settings). */
+export const contactsFor = (list, region) =>
+  list.filter((c) => c.active !== false && (c.region === "all" || c.region === region));
+
+/** The number of a special contact ("police", "ambulance"), or "" if removed or switched off. */
+export const numberOf = (list, id) => list.find((c) => c.id === id && c.active !== false)?.phone || "";

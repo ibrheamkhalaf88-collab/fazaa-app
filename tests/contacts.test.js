@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { DEFAULT_CONTACTS, contactsFor, numberOf, validateContacts } from "../src/data/contacts.js";
+import {
+  DEFAULT_CONTACTS,
+  contactsFor,
+  numberOf,
+  publicContacts,
+  validateContacts,
+} from "../src/data/contacts.js";
 import { detectDanger } from "../src/ai/danger.js";
 import { createAnswerer } from "../src/ai/answerer.js";
 import { handleRequest } from "../server/api/worker.js";
@@ -76,7 +82,7 @@ test("emergency replies use the numbers from the list, and drop a removed one cl
 test("API: public list falls back to defaults; only a developer can edit; edits are audited and reach the app", async () => {
   const w = world();
   const pub = await (await w.call("GET", "/v1/contacts")).json();
-  assert.deepEqual(pub.contacts, DEFAULT_CONTACTS);
+  assert.deepEqual(pub.contacts, publicContacts(DEFAULT_CONTACTS));
 
   const next = [
     { id: "police", cat: "emergency", name: "الشرطة", phone: "100" },
@@ -110,4 +116,52 @@ test("API: public list falls back to defaults; only a developer can edit; edits 
   const reset = await (await w.call("DELETE", "/v1/staff/contacts", { as: "dev@fazaa.example" })).json();
   assert.equal(reset.custom, false);
   assert.deepEqual(reset.contacts, DEFAULT_CONTACTS);
+});
+
+test("availability and confirmation: switched-off entries and internal notes never reach the app; the server dates each confirmation", async () => {
+  const w = world();
+  const put = async (contacts) =>
+    (await w.call("PUT", "/v1/staff/contacts", { as: "dev@fazaa.example", body: { contacts } })).json();
+  const list = [
+    {
+      id: "police",
+      cat: "emergency",
+      name: "الشرطة",
+      phone: "100",
+      verified: true,
+      verifiedAt: 1,
+      note: "أكدنا مع المركز",
+    },
+    { id: "mind", cat: "mind", name: "خط دعم", phone: "121", active: false, hours: "24 ساعة" },
+  ];
+  const first = await put(list);
+  const police = first.contacts.find((c) => c.id === "police");
+  assert.equal(police.verifiedAt > 1, true, "the date comes from the server, not the browser");
+  assert.equal(police.note, "أكدنا مع المركز", "the team sees its note");
+  assert.equal(first.contacts.find((c) => c.id === "mind").active, false);
+
+  const pub = await (await w.call("GET", "/v1/contacts")).json();
+  assert.deepEqual(
+    pub.contacts.map((c) => c.id),
+    ["police"],
+    "switched-off entry hidden",
+  );
+  assert.equal("note" in pub.contacts[0], false, "internal note not public");
+
+  // same number, still confirmed: the date is kept
+  const again = await put(first.contacts);
+  assert.equal(again.contacts.find((c) => c.id === "police").verifiedAt, police.verifiedAt);
+  // a changed number that is still ticked gets a new date; unticked clears it
+  const changed = await put(first.contacts.map((c) => (c.id === "police" ? { ...c, phone: "112" } : c)));
+  assert.notEqual(changed.contacts.find((c) => c.id === "police").verifiedAt, police.verifiedAt);
+  const unticked = await put(first.contacts.map((c) => (c.id === "police" ? { ...c, verified: false } : c)));
+  assert.equal(unticked.contacts.find((c) => c.id === "police").verifiedAt, null);
+});
+
+test("a switched-off police entry is not used in emergency replies", () => {
+  const list = validateContacts([
+    { id: "police", cat: "emergency", name: "شرطة", phone: "100", active: false },
+  ]);
+  assert.equal(numberOf(list, "police"), "");
+  assert.deepEqual(contactsFor(list, "ps-wb"), []);
 });

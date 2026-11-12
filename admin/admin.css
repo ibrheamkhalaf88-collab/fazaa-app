@@ -1097,6 +1097,58 @@ dl.client dd {
 .contact-grid .field {
   margin-bottom: 8px;
 }
+.contact-card.is-off {
+  opacity: 0.7;
+}
+.contact-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.check input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--gold, currentColor);
+}
+.contact-kpis {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.contact-kpi {
+  display: grid;
+  justify-items: start;
+  gap: 2px;
+  min-width: 96px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--line, rgba(127, 127, 127, 0.3));
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.contact-kpi b {
+  font-size: 20px;
+}
+.contact-kpi span {
+  font-size: 12.5px;
+  opacity: 0.85;
+}
+.contact-kpi.on {
+  border-color: currentColor;
+  font-weight: 600;
+}
 .hint.bad {
   color: var(--ink);
   font-weight: 600;
