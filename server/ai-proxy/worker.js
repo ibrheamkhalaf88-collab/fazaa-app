@@ -284,8 +284,21 @@ async function callModel(provider, key, args, fetchImpl) {
   return second.error ? first : second;
 }
 
+/**
+ * Room for the answer: the fuller, warmer replies need more than the providers' 700 tokens, and the
+ * newer Gemini models spend part of the budget "thinking" before they call the tool (an empty
+ * reply, "no-tool-output", otherwise). MAX_OUTPUT_TOKENS overrides the default.
+ */
+function roomForAnswer(body, env) {
+  const n = Number(env.MAX_OUTPUT_TOKENS) || 2048;
+  if (body.generationConfig)
+    body.generationConfig.maxOutputTokens = Math.max(body.generationConfig.maxOutputTokens || 0, n);
+  if ("max_tokens" in body) body.max_tokens = Math.max(body.max_tokens || 0, n);
+}
+
 async function callOnce(provider, key, args, fetchImpl) {
   const call = provider.build(args, key);
+  roomForAnswer(call.body, args.env);
   let upstream;
   try {
     upstream = await fetchImpl(call.url, {

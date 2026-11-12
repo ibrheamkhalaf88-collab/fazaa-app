@@ -37,6 +37,15 @@ test("still busy after the retry: the first error is reported (the app then uses
   assert.equal(body.error, "upstream-503:UNAVAILABLE");
 });
 
+test("the request leaves room for a full answer (newer models think before answering)", async () => {
+  let body;
+  await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async (url, init) => {
+    body = JSON.parse(init.body);
+    return ok({ lead: "سامعتك", steps: ["خدي نفس"] });
+  });
+  assert.ok(body.generationConfig.maxOutputTokens >= 2048);
+});
+
 test("a bad key is not retried", async () => {
   let calls = 0;
   await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => {
