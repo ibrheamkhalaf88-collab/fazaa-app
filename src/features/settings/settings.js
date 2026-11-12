@@ -22,7 +22,8 @@ export function createSettings({ state, router, theme, chat, sos, aiAvailable })
     $$(".country[data-country]").forEach((c) =>
       c.classList.toggle("sel", c.getAttribute("data-country") === country),
     );
-    $("#chat-sub").textContent = `محادثة على جهازك · ${COUNTRY_NAMES[country].replace("فلسطين: ", "")}`;
+    const where = aiAvailable && state.get("aiOnline") ? "أجوبة عبر الإنترنت" : "أجوبة من جهازك بس";
+    $("#chat-sub").textContent = `${where} · ${COUNTRY_NAMES[country].replace("فلسطين: ", "")}`;
     $("#set-country").textContent = COUNTRY_NAMES[country];
 
     $$("[data-setting]").forEach((t) =>
@@ -84,7 +85,7 @@ export function createSettings({ state, router, theme, chat, sos, aiAvailable })
     /** "Delete all my data": everything stored on the device, then back to the welcome screen. */
     eraseEverything() {
       sos.reset();
-      chat.reset();
+      chat.reset({ signOut: true });
       state.reset(); // last, so nothing the resets above wrote to storage survives
       theme.apply();
       render();

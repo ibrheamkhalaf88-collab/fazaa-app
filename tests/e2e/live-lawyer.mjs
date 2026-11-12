@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 /**
  * End-to-end: the real lawyer flow in a browser. Static server + the staff API (in-memory store)
  * on one origin, with API_BASE switched on. A woman signs up in the app and writes; a lawyer
@@ -12,7 +13,7 @@ import { toBase64 } from "../../server/api/crypto.js";
 import { createMemoryStore } from "../../server/api/store/memory.js";
 import { handleRequest } from "../../server/api/worker.js";
 
-const ROOT = new URL("../../", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("../../", import.meta.url)); // works on Windows too
 const TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",

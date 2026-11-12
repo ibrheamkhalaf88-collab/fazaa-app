@@ -53,6 +53,23 @@ export function createAccount({ base, store, fetchImpl = globalThis.fetch?.bind(
       await call("POST", "/v1/logout");
       store.set(KEY, null);
     },
+    /**
+     * Quick exit / wipe: forget the session on this device AT ONCE (synchronously), then try to end it
+     * on the server too. If the network is down, the server session simply expires; the device no
+     * longer holds the token, so nothing can be reopened from here.
+     */
+    forget() {
+      const session = store.get(KEY, null);
+      store.set(KEY, null);
+      if (!session?.token) return;
+      fetchImpl(`${base}/v1/logout`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${session.token}` },
+        credentials: "omit",
+        referrerPolicy: "no-referrer",
+        keepalive: true,
+      }).catch(() => {});
+    },
     /** Delete the account and every case attached to it, then forget the session. */
     async deleteAccount() {
       const res = await call("DELETE", "/v1/me");

@@ -240,7 +240,10 @@ export function localTalk(need, memory, available = {}) {
         o.needs.every((n) => available[n]) &&
         !o.not.some((c) => memory.constraints.has(c)) &&
         (!o.only || o.only.some((c) => memory.constraints.has(c))),
-    ).slice(0, 3);
+    )
+      // what answers her stated situation first («تلفوني مراقب» -> the quick-exit button)
+      .sort((x, y) => Number(Boolean(y.only)) - Number(Boolean(x.only)))
+      .slice(0, 3);
     memory.lastOptionIds = options.map((o) => o.id);
     return {
       kind: "talk",

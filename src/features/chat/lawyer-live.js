@@ -1,4 +1,4 @@
-import { el } from "../../core/dom.js";
+import { chip, el } from "../../core/dom.js";
 import { lawyerSay } from "./lawyer-ui.js";
 import { append, systemNote } from "./messages.js";
 
@@ -32,6 +32,8 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
   let topic = "";
   let form = null;
   let restoring = false; // true while loading an existing case (show her own earlier messages too)
+  /** Bumped by reset(): any request started before it is ignored when it comes back. */
+  let epoch = 0;
   const shown = new Set();
 
   const stop = () => {
@@ -40,7 +42,7 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
   };
 
   function say(text, chips) {
-    lawyerSay(lawyerName || "محامية", text, chips);
+    lawyerSay(lawyerName || "", text, chips);
   }
 
   /* ---------- sign up / sign in card ---------- */
@@ -132,7 +134,9 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
 
   async function poll() {
     if (!caseId || (typeof document !== "undefined" && document.hidden)) return; // no requests while hidden
+    const mine = epoch;
     const res = await account.messages(caseId, lastId);
+    if (mine !== epoch) return; // wiped / signed out meanwhile: never repaint old messages
     if (res.status === 401) {
       stop();
       if (!account.signedIn()) authCard();
@@ -143,8 +147,8 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     if (lawyer) lawyerName = lawyer;
     if (next !== status) {
       if (next === "open" && status === "claimed")
-        systemNote("المحامية ما عادت متاحة. حالتك رجعت للانتظار، وأول محامية فاضية رح تستلمها.");
-      if (next === "claimed") systemNote(`المحامية ${lawyerName || ""} تولّت حالتك`.replace("  ", " "));
+        systemNote("المحامية ما عادت متاحة. حالتك رجعت للانتظار، ولما تستلمها محامية تانية بتشوفي ردها هون.");
+      if (next === "claimed") systemNote(`المحامية ${lawyerName || ""} استلمت حالتك`.replace("  ", " "));
       if (next === "closed") {
         systemNote("المحامية أنهت هالحالة. بتقدري تفتحي حالة جديدة بأي وقت.");
         stop();
@@ -169,8 +173,10 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
 
   /** After sign-in: pick up an unfinished case, otherwise wait for her first message. */
   async function resume() {
+    const mine = epoch;
     const me = await account.me();
-    if (!me.ok) return authCard();
+    if (mine !== epoch) return;
+    if (!me.ok) return me.status === 0 ? systemNote(errorText(me)) : authCard();
     const open = me.data.cases.find((c) => c.status !== "closed");
     const tools = [
       { label: "تسجيل خروج", action: "logout" },
@@ -185,7 +191,16 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
       start();
       return;
     }
-    say("أهلاً فيكِ. كل إشي بنحكيه هون سري. احكيلي شو صاير معك، وعلى مهلك.", tools);
+    systemNote(
+      "اكتبي رسالتك هون. بتوصل لمحامية لما تكون في وحدة متاحة، وممكن ياخد الرد وقت. رسايلك بيقرأها المحامي اللي بيستلم حالتك وفريق فزعة التقني.",
+    );
+    // account tools in a system box, not in a bubble that looks like it came from a lawyer
+    const box = el("div", "a");
+    box.appendChild(el("div", "muted", "حسابك:"));
+    const row = el("div", "acts");
+    for (const t of tools) row.appendChild(chip({ label: t.label, data: { action: t.action } }));
+    box.appendChild(row);
+    append(box);
   }
 
   return {
@@ -200,22 +215,25 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     /** She wrote something while in lawyer mode. */
     async reply(text) {
       if (!account.signedIn()) return authCard();
+      const mine = epoch;
       if (!caseId) {
         const res = await account.openCase(topic || "غير محدد", text);
+        if (mine !== epoch) return;
         if (res.status === 401) return authCard();
-        if (!res.ok) return systemNote(errorText(res));
+        if (!res.ok) return systemNote(`${errorText(res)} رسالتك ما انبعتت.`);
         caseId = res.data.caseId;
         lastId = 0;
         status = "open";
         restoring = false;
         shown.clear();
-        systemNote("وصل طلبك. أول محامية فاضية رح تتولى حالتك وتردّ عليك هون.");
+        systemNote("وصل طلبك وهو بالانتظار. لما تستلمه محامية بتشوفي ردها هون. ما في وقت محدد للرد.");
         start();
         return;
       }
       const res = await account.send(caseId, text);
+      if (mine !== epoch) return;
       if (res.status === 409) return systemNote("هالحالة انتهت. ابعتي رسالة جديدة لفتح حالة.");
-      if (!res.ok) systemNote(errorText(res));
+      if (!res.ok) systemNote(`${errorText(res)} رسالتك ما انبعتت.`);
     },
     /** Chip actions inside lawyer bubbles. Returns true if handled. */
     async action(name) {
@@ -230,19 +248,29 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
         if (!window.confirm("بدك تحذفي حسابك وكل محادثاتك؟ هالشي ما بيرجع.")) return true;
         stop();
         const res = await account.deleteAccount();
-        caseId = null;
-        systemNote(res.ok ? "انحذف حسابك وكل محادثاتك." : errorText(res));
+        if (res.ok) caseId = null;
+        else start(); // nothing was deleted: keep the case as it was
+        systemNote(
+          res.ok
+            ? "انحذف حسابك وكل محادثاتك من السيرفر."
+            : `${errorText(res)} ما انحذف إشي. جرّبي كمان مرة، أو اطلبي من فريق فزعة يحذفه.`,
+        );
         return true;
       }
       return false;
     },
-    reset() {
+    /** @param {{signOut?: boolean}} [opts]  quick exit / wipe: forget the sign-in on this device too */
+    reset({ signOut = false } = {}) {
+      epoch++;
       stop();
       form = null;
       caseId = null;
       lastId = 0;
       status = "";
+      lawyerName = "";
+      restoring = false;
       shown.clear();
+      if (signOut) account.forget?.();
     },
   };
 }

@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 /**
  * End-to-end smoke test in a real browser (Playwright). Run: npm run test:e2e
  * Starts its own static server, so nothing else needs to be running.
@@ -9,7 +10,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { chromium } from "playwright";
 
-const ROOT = new URL("../../", import.meta.url).pathname;
+const ROOT = fileURLToPath(new URL("../../", import.meta.url)); // works on Windows too
 const TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -23,6 +24,7 @@ const TYPES = {
 /** Apply the real `/*` block of _headers (CSP included) so the test fails if the policy blocks anything. */
 const SECURITY_HEADERS = Object.fromEntries(
   (await readFile(join(ROOT, "_headers"), "utf8"))
+    .replace(/\r\n/g, "\n") // Windows checkouts have CRLF line endings
     .split(/\n(?=\S)/)
     .find((block) => block.startsWith("/*\n"))
     .split("\n")

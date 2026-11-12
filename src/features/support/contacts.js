@@ -8,6 +8,10 @@ import {
 import { $, el, icon } from "../../core/dom.js";
 
 const KEY = "contacts";
+/** Badges that promise something (free, confidential): shown only for a verified organisation. */
+const PROMISE_BADGE = /مجان|سري|سرّي|24|مضمون/;
+/** Only entries she can actually reach. */
+const reachable = (list) => list.filter((c) => c.phone || c.whatsapp || c.link);
 const ICON = { emergency: "i-alert", safe: "i-shield", law: "i-scale", mind: "i-brain" };
 const TINT = {
   emergency: "background: var(--emphasis-soft); color: var(--emphasis)",
@@ -56,8 +60,10 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
     info.append(el("b", null, c.name));
     if (c.desc) info.append(el("small", null, c.desc));
     if (c.hours) info.append(el("small", null, `الدوام: ${c.hours}`));
-    if (c.badge) info.append(el("span", "badge", c.badge));
+    // a promise ("free", "confidential") is shown only once the owner verified it with the organisation
+    if (c.badge && (c.verified || !PROMISE_BADGE.test(c.badge))) info.append(el("span", "badge", c.badge));
     if (c.verified && (c.phone || c.whatsapp)) info.append(el("span", "badge", "رقم مؤكد ✓"));
+    else info.append(el("small", "muted", "لسا ما تأكدنا من الرقم مع الجهة نفسها"));
     const acts = el("div", "acts");
     if (c.phone) {
       const call = el("a", "chip fill");
@@ -82,7 +88,6 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
       site.append(icon("i-pin"), document.createTextNode("الموقع"));
       acts.append(site);
     }
-    if (!c.phone && !c.whatsapp && !c.link) acts.append(el("span", "muted", "الرقم بينضاف قريباً"));
     info.append(acts);
     box.append(badge, info);
     return box;
@@ -106,7 +111,8 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
 
   /** Draw the list for her region into the support screen (and the quick-call row). */
   function render() {
-    const mine = contactsFor(list, state.get("country"));
+    // an organisation she cannot reach (no phone, WhatsApp or link) is not shown at all
+    const mine = reachable(contactsFor(list, state.get("country")));
     renderQuickCall(mine);
     const root = $("#support-list");
     if (!root) return;
@@ -128,6 +134,14 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
     refresh,
     /** Numbers used inside the fixed emergency replies. */
     emergencyNumbers: () => ({ police: numberOf(list, "police"), ambulance: numberOf(list, "ambulance") }),
+    /** What the assistant may point to: support organisations she can reach; a VERIFIED mental-health line. */
+    available: () => {
+      const mine = reachable(contactsFor(list, state.get("country")));
+      return {
+        contacts: mine.some((c) => c.cat !== "emergency"),
+        mindLine: mine.some((c) => c.cat === "mind" && c.verified),
+      };
+    },
     get list() {
       return list;
     },

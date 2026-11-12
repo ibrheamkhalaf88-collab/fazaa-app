@@ -184,7 +184,10 @@ export function createAnswerer({
       answer = await online(question, need, ctx);
       // offline: only when she talks about herself (a feeling, a person, a limit, «اسمعيني»);
       // an off-topic question («كيف بطبخ مقلوبة») gets the honest "not covered" screen instead
-      if (!answer && (onTopic(question) || memory.mode === "listen" || danger?.ask))
+      // a short follow-up («شو بقدر أعمل طيب؟») belongs to the conversation already going on
+      const ongoing = Boolean(memory.person || memory.feeling || memory.constraints.size) ||
+        memory.turns.filter((t) => t.role === "user").length > 1;
+      if (!answer && (onTopic(question) || ongoing || memory.mode === "listen" || danger?.ask))
         answer = { ...localTalk(need, memory, can), general: true };
     }
     if (!answer) return null;

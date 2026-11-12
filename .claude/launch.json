@@ -16,6 +16,20 @@
       "port": 8787
     },
     {
+      "name": "app-public-config",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-server.mjs"],
+      "env": { "PORT": "8790", "PUBLIC_CONFIG": "1", "FAKE_AI": "slow" },
+      "port": 8790
+    },
+    {
+      "name": "app-live-lawyer",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["scripts/dev-server.mjs"],
+      "env": { "PORT": "8791", "SEED": "1", "DEV_STAFF_EMAIL": "salma@local.test", "FAKE_AI": "1" },
+      "port": 8791
+    },
+    {
       "name": "admin-signed-out",
       "runtimeExecutable": "node",
       "runtimeArgs": ["scripts/dev-server.mjs"],

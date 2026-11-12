@@ -47,9 +47,11 @@ const FORBIDDEN = [
   "اكيد رح تربحي",
   "المحكمه رح تحكملك",
 ].map(norm);
+// matched at a word start, with the usual prefixes («بسريه تامه», «وما رح اتركك»)
+const FORBIDDEN_RE = FORBIDDEN.map((p) => ({ p, re: new RegExp(`(?:^| )(?:و|ف|ب|بال|ل)?${p}(?= |$)`) }));
 const forbidden = (text) => {
-  const t = ` ${norm(text)} `;
-  return FORBIDDEN.find((p) => t.includes(` ${p} `)) || "";
+  const t = norm(text);
+  return FORBIDDEN_RE.find(({ re }) => re.test(t))?.p || "";
 };
 
 /** Keep only the first question: one question per reply. */

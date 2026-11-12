@@ -34,6 +34,17 @@ async function inlineSprite() {
   }
 }
 
+/** No "محامية الآن" with a live dot when no lawyer service is set up. */
+function markLawyerService(enabled) {
+  if (enabled) return;
+  for (const node of document.querySelectorAll('[data-mode="lawyer"], .path.law')) {
+    node.querySelector(".live")?.remove();
+    const small = node.querySelector("small");
+    for (const t of [...node.childNodes]) if (t.nodeType === 3 && t.textContent.includes("محامية الآن")) t.textContent = " محامية ";
+    if (small) small.textContent = "مش متاحة بهالنسخة بعد";
+  }
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.register("./sw.js").catch((err) => console.warn("service worker:", err));
@@ -51,32 +62,40 @@ async function boot() {
   const contacts = createContacts({ store, state, endpoint: CONTACTS_ENDPOINT });
 
   const aiAvailable = AI_ENDPOINT !== "";
+  const account = createAccount({ base: API_BASE, store });
   const answerer = createAnswerer({
     emergencyNumbers: contacts.emergencyNumbers,
+    available: () => ({ ...contacts.available(), lawyer: account.enabled }),
     remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT }) : undefined,
-    isRemoteEnabled: () => aiAvailable && state.get("aiOnline"),
+    isRemoteEnabled: () => aiAvailable && state.get("aiOnline") && state.get("aiNotice") !== "",
+    shareContext: () => state.get("shareContext") === true,
     onRemoteError: (err) => {
+      // the reason only (e.g. "proxy-status-502"), never the message
       console.warn("online answer failed, using offline rules:", err.message);
       telemetry.track("ai_error");
     },
   });
 
-  const account = createAccount({ base: API_BASE, store });
   const chat = createChat({
     state,
     router,
     answerer,
     telemetry,
+    lawyerAvailable: () => account.enabled,
+    aiOnline: () => aiAvailable && state.get("aiOnline"),
     ...(account.enabled ? { lawyer: createLiveLawyerSession({ account, state }) } : {}),
   });
+  markLawyerService(account.enabled);
   const sos = createSos(store);
   const theme = createTheme(state);
   const disguise = createDisguise({
     state,
     store,
     router,
+    // quick exit with "wipe" on: the chat, the AI memory, the unsent text, the safety plan and the
+    // lawyer-chat sign-in on this device (see docs/PRIVACY.md for what stays on the server)
     wipe: () => {
-      chat.reset();
+      chat.reset({ signOut: true });
       sos.reset();
     },
   });

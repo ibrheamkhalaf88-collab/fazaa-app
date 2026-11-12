@@ -20,8 +20,25 @@ const env = {
   MESSAGE_KEY: toBase64(crypto.getRandomValues(new Uint8Array(32))),
   ALLOWED_ORIGINS: `http://localhost:${port}`,
   DEVELOPER_EMAILS: process.env.DEVELOPERS || staffEmail,
+  // FAKE_AI=1: a pretend provider (no network, no key) so the AI path can be tried locally
+  ...(process.env.FAKE_AI ? { PROVIDER: "gemini", GEMINI_API_KEY: "fake-local-key", RETRY: "off" } : {}),
 };
 const store = createMemoryStore();
+
+/** LOCAL ONLY: answers like a model would, marked «(تجربة)», never contacting anything. */
+async function fakeProvider(_url, init) {
+  const body = JSON.parse(init.body);
+  const tool = body.tools?.[0]?.functionDeclarations?.[0]?.name || "";
+  const args =
+    tool === "give_support"
+      ? { lead: "(تجربة محلية) فهمت عليكِ، واللي بتحكيه مهم.", ask: "شو أكتر إشي بيضغط عليكِ هلأ؟", options: [] }
+      : { covered: false };
+  if (process.env.FAKE_AI === "slow") await new Promise((r) => setTimeout(r, 4000));
+  return new Response(
+    JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { name: tool, args } }] } }] }),
+    { status: 200, headers: { "content-type": "application/json" } },
+  );
+}
 
 /** SEED=1 fills the in-memory store with demo data (staff, a 2-week history, a few live cases). */
 if (process.env.SEED) {
@@ -143,6 +160,7 @@ createServer(async (req, res) => {
     const r = await handleRequest(request, env, {
       store,
       staffEmail: async (r) => (r.headers.get("x-dev-staff") || staffEmail).toLowerCase(),
+      ...(process.env.FAKE_AI ? { fetchImpl: fakeProvider } : {}),
     });
     res.writeHead(r.status, Object.fromEntries(r.headers));
     return res.end(Buffer.from(await r.arrayBuffer()));
@@ -151,8 +169,9 @@ createServer(async (req, res) => {
   if (existsSync(file) && statSync(file).isDirectory()) file = join(file, "index.html");
   if (!file.startsWith(root) || !existsSync(file)) return res.writeHead(404).end("not found");
   res.writeHead(200, { "content-type": types[extname(file)] || "application/octet-stream" });
-  // local only: turn the real lawyer chat on (the shipped config keeps API_BASE = "")
-  if (file.endsWith(join("src", "config.js")))
+  // local only: turn the real lawyer chat on (the shipped config keeps API_BASE = "").
+  // PUBLIC_CONFIG=1 serves config.js exactly as shipped (to test the public build's behaviour).
+  if (file.endsWith(join("src", "config.js")) && !process.env.PUBLIC_CONFIG)
     return res.end(
       readFileSync(file, "utf8")
         .replace('API_BASE = ""', 'API_BASE = "/api"')

@@ -28,9 +28,8 @@ export function bindActions({ router, chat, sos, disguise, settings }) {
   const ACTIONS = {
     google: () => settings.toggleAccount(),
     reset: () => settings.eraseEverything(),
-    mic: () => toast("التسجيل الصوتي بيشتغل بالنسخة الكاملة. هلأ اكتبي سؤالك"), // demo
-    soon: () => toast("رقم التواصل بينضاف بعد التحقق منه"), // demo
-    callback: () => toast("نسخة العرض: بالنسخة الحقيقية المحامية بتتصل فيكِ على رقمك"), // demo
+    mic: () => toast("التسجيل الصوتي مش متوفر بهالنسخة. اكتبي رسالتك"),
+    soon: () => toast("رقم التواصل بينضاف بعد التحقق منه"),
     keep: () => $("#q").focus(),
   };
 
