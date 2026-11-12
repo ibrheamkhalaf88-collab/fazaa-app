@@ -11,7 +11,7 @@
  *  - at least one step.
  */
 
-const LIMITS = { lead: 300, step: 240, note: 600, steps: 5, cites: 4, topic: 40 };
+const LIMITS = { lead: 500, step: 260, note: 800, steps: 5, cites: 4, topic: 40, closing: 240 };
 
 const clean = (v, max) =>
   typeof v === "string"
@@ -52,8 +52,10 @@ export function validateAnswer(raw, { articleIds }) {
     lead,
     steps,
     note: clean(a.note, LIMITS.note),
+    ...(clean(a.closing, LIMITS.closing) ? { closing: clean(a.closing, LIMITS.closing) } : {}),
     cites,
     sos: a.sos === true,
+    ...(a.general === true && cites.length === 0 ? { general: true } : {}),
     ...(typeof a.topic === "string" && a.topic ? { topic: clean(a.topic, LIMITS.topic) } : {}),
     source: "ai",
   };

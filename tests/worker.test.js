@@ -60,11 +60,24 @@ test("validates body size, JSON, and question length", async () => {
   assert.equal((await handleRequest(req({ question: 5 }), ENV)).status, 400);
 });
 
-test("when retrieval finds no article, the model is NEVER called", async () => {
+test("when retrieval finds no article, the model is never asked for a LAW answer: only the support tool, with no articles", async () => {
   const api = anthropic(GOOD);
-  const res = await handleRequest(req({ question: "كيف بطبخ مقلوبة؟" }), ENV, { fetchImpl: api.fetchImpl });
+  await handleRequest(req({ question: "كيف بطبخ مقلوبة؟" }), ENV, { fetchImpl: api.fetchImpl });
+  assert.equal(api.calls.length, 1);
+  assert.deepEqual(api.calls[0].body.tool_choice, { type: "tool", name: "give_support" });
+  assert.ok(!api.calls[0].body.messages[0].content.includes("<articles>"));
+
+  // and with support mode off, the model is not called at all
+  const off = anthropic(GOOD);
+  const res = await handleRequest(
+    req({ question: "كيف بطبخ مقلوبة؟" }),
+    { ...ENV, SUPPORT_MODE: "off" },
+    {
+      fetchImpl: off.fetchImpl,
+    },
+  );
   assert.deepEqual(await res.json(), { answer: null });
-  assert.equal(api.calls.length, 0);
+  assert.equal(off.calls.length, 0);
 });
 
 test("family-law question: only family-law articles reach the model; a cyber-law citation is rejected", async () => {
@@ -103,9 +116,9 @@ test("a citation outside the retrieved set is rejected (502), not shown", async 
   assert.match((await res.json()).error, /unknown-article:52/);
 });
 
-test("covered=false from the model becomes a null answer", async () => {
+test("covered=false from the model: no law answer (null when support mode is off)", async () => {
   const api = anthropic({ covered: false });
-  const res = await handleRequest(req(Q), ENV, { fetchImpl: api.fetchImpl });
+  const res = await handleRequest(req(Q), { ...ENV, SUPPORT_MODE: "off" }, { fetchImpl: api.fetchImpl });
   assert.deepEqual(await res.json(), { answer: null });
 });
 

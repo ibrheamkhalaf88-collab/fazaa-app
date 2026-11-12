@@ -11,6 +11,9 @@
  * @property {string}  [topic]    Topic label passed to the lawyer hand-off.
  * @property {boolean} [sos]      Show the "open safety plan" button.
  * @property {"rules"|"ai"} source  Where the answer came from; shown to the user.
+ * @property {string}  [closing]  A short line of hope at the end.
+ * @property {"chat"}  [kind]     A conversational reply (greeting etc.): no law / steps sections.
+ * @property {[string, string][]} [chips]  Suggested topics [label, question] (chat replies).
  *
  * @typedef {Object} AskContext
  * @property {string} country     "ps-wb" | "ps-gaza"

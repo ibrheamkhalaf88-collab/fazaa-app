@@ -58,7 +58,21 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
     return card;
   }
 
+  /** A conversational reply (hello, who are you…): just the words and topics she can tap. */
+  function renderChat(answer) {
+    const box = el("div", "a");
+    box.appendChild(el("div", null, answer.lead));
+    if (answer.chips?.length) {
+      const acts = el("div", "acts");
+      for (const [label, question] of answer.chips)
+        acts.appendChild(chip({ label, data: { ask: question } }));
+      box.appendChild(acts);
+    }
+    return box;
+  }
+
   function renderAnswer(answer) {
+    if (answer.kind === "chat") return renderChat(answer);
     const box = el("div", "a");
     box.appendChild(el("div", null, answer.lead));
 
@@ -81,8 +95,17 @@ export function createChat({ state, router, answerer, telemetry, lawyer = create
       box.appendChild(el("div", "sec", "نص القانون الأصلي"));
       answer.cites.forEach((id, i) => box.appendChild(citationCard(id, i === 0)));
     }
+    if (answer.closing) box.appendChild(el("div", "closing", answer.closing));
     if (answer.source === "ai") {
-      box.appendChild(el("div", "src", "كُتب بالذكاء الاصطناعي من نص القانون. اقرئي النص المذكور للتأكد."));
+      box.appendChild(
+        el(
+          "div",
+          "src",
+          answer.cites.length
+            ? "كُتب بالذكاء الاصطناعي من نص القانون. اقرئي النص المذكور للتأكد."
+            : "كُتب بالذكاء الاصطناعي ككلام دعم، مش كمعلومة قانونية.",
+        ),
+      );
     }
 
     const actions = el("div", "acts");

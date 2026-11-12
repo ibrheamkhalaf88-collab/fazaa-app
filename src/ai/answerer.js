@@ -1,4 +1,5 @@
-import { companionAnswer, isVenting } from "./companion.js";
+import { companionAnswer, hopeLine, isVenting } from "./companion.js";
+import { detectSmallTalk } from "./smalltalk.js";
 import { detectDanger } from "./danger.js";
 import { answerFromRules } from "./rules-engine.js";
 
@@ -39,8 +40,13 @@ export function createAnswerer({
       const danger = detectDanger(question, emergencyNumbers());
       if (danger) return { ...danger.answer, source: "rules" };
 
+      // 2) hello / how are you / who are you / help me: a warm reply that invites her to talk
+      const chat = detectSmallTalk(question);
+      if (chat) return { ...chat.answer, source: "rules" };
+
       const local = answerFromRules(question);
 
+      // 3) the online AI: a law answer from the articles, or (server-side) a listening reply
       if (remote && isRemoteEnabled()) {
         try {
           const online = await remote.answer(question, ctx);
@@ -49,9 +55,9 @@ export function createAnswerer({
           onRemoteError(/** @type {Error} */ (err));
         }
       }
-      if (local) return local;
-      // 2) she is venting and no law fits: listen instead of refusing
-      return isVenting(question) ? { ...companionAnswer(), source: "rules" } : null;
+      if (local) return { ...local, closing: local.closing || hopeLine() };
+      // 4) she is venting and no law fits: listen instead of refusing
+      return isVenting(question) ? { ...companionAnswer(question), source: "rules" } : null;
     },
   };
 }

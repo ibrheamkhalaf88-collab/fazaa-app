@@ -41,7 +41,7 @@ test("strips markup and control characters", () => {
 
 test("truncates runaway fields and caps the step count", () => {
   const a = validateAnswer({ ...good(), lead: "ا".repeat(5000), steps: Array(20).fill("خطوة") }, ALLOWED);
-  assert.ok(a.lead.length <= 300);
+  assert.ok(a.lead.length <= 500);
   assert.equal(a.steps.length, 5);
 });
 

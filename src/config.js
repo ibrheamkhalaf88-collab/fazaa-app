@@ -18,7 +18,7 @@ export const CALC_CODE = "1379";
  * Leave empty to ship WITHOUT online AI: the setting then shows "قريباً" and the app
  * works fully offline with the rules engine.
  */
-export const AI_ENDPOINT = "";
+export const AI_ENDPOINT = "/api/v1/answer";
 
 /** Answers are artificially delayed to feel conversational; milliseconds. */
 export const TYPING_DELAY = { base: 900, perChar: 12, max: 900 };
