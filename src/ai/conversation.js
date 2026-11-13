@@ -36,7 +36,7 @@ const LISTEN = [
   "بس بدي احكي",
   "خليني احكي",
 ];
-const STEPS = ["شو اعمل", "شو بعمل", "شو لازم اعمل", "شو بتنصحيني", "شو الحل", "بدي حل", "كيف بتصرف", "شو خياراتي", "شو بقدر اعمل", "ساعديني احل", "كيف اطلع من", "شو الخطوه"];
+const STEPS = ["شو كمان", "غير هيك", "شو اعمل", "شو بعمل", "شو لازم اعمل", "شو بتنصحيني", "شو الحل", "بدي حل", "كيف بتصرف", "شو خياراتي", "شو بقدر اعمل", "ساعديني احل", "كيف اطلع من", "شو الخطوه"];
 const LEGAL = ["القانون", "قانونيا", "قانوني", "حقي", "حقوقي", "بيحقلي", "عقوبه", "العقوبه", "عقوبته", "ماده", "الماده", "المحكمه", "محكمه", "شكوى", "اشتكي", "قضيه", "مسموح", "ممنوع قانونيا", "سن الزواج", "بيعاقب", "شو بيقول"];
 const UNDERSTAND = ["ليش", "مش فاهمه", "طبيعي", "انا غلطانه", "غلطي", "هل هاد", "شو يعني"];
 const QUESTION_WORDS = ["شو", "كيف", "هل", "بقدر", "بيصير", "اذا", "متى", "وين"];
@@ -122,6 +122,10 @@ export function createMemory() {
     minor: false, // she said she is under 18 (kept for the session: «عمري 16» then «جايبين عريس»)
     situation: createSituation(), // people, events, time, topics, asked/answered (src/ai/situation.js)
     carried: [], // short notes from a saved topic she chose to continue (her earlier report)
+    newConstraints: [], // constraints she stated in THIS message (acknowledged once)
+    justRejected: false, // she just refused one of our ideas
+    newGoal: "", // a goal she stated in THIS message
+    quietTurns: 0, // replies in a row without a question (after 3, one gentle check-in)
   };
 }
 
@@ -133,27 +137,37 @@ export function clearMemory(memory) {
 /** Read what she said into the memory: constraints, who, feeling, corrections. */
 export function remember(memory, text) {
   const t = norm(text);
-  for (const [id, phrases] of Object.entries(CONSTRAINTS)) if (has(t, phrases)) memory.constraints.add(id);
+  memory.newConstraints = [];
+  const rejectedBefore = memory.rejected.size;
+  for (const [id, phrases] of Object.entries(CONSTRAINTS))
+    if (has(t, phrases) && !memory.constraints.has(id)) memory.constraints.add(id), memory.newConstraints.push(id);
   // an explicit correction replaces the earlier fact («لا، قصدي أختي»)
   const correction = /(?:^| )قصدي (?:انا )?([^ ]+)/.exec(t);
   const words = t.split(" ");
   const said = words.map((w) => w.replace(/^و/, "")).find((w) => PEOPLE[w]);
   if (correction && PEOPLE[correction[1]]) memory.person = PEOPLE[correction[1]];
   else if (said) memory.person = PEOPLE[said];
-  const feel = words.find((w) => FEELINGS[w]);
-  if (feel) memory.feeling = FEELINGS[feel];
+  const feel = words.find((w) => FEELINGS[strip1(w)]);
+  if (feel) memory.feeling = FEELINGS[strip1(feel)];
+  memory.feelingNow = feel ? FEELINGS[strip1(feel)] : ""; // a sympathy line only for what she says NOW
   // her age, if she says it: a minor stays a minor for the whole session («عمري 16» … «جايبين عريس»)
   const age = /(?:^| )(?:عمري|انا عمري|صار عمري)(?: [^ ]+)? ([0-9٠-٩]{1,2})(?: |$)/.exec(t);
   if (age) memory.minor = Number(age[1].replace(/[٠-٩]/g, (d) => "٠١٢٣٤٥٦٧٨٩".indexOf(d))) < 18;
   else if (/(?:^| )(?:قاصر|قاصره|بالمدرسه|بالصف|بالتوجيهي|طالبه بمدرسه)(?: |$)/.test(t)) memory.minor = true;
   if (has(t, LISTEN)) memory.mode = "listen";
   if ((has(t, STEPS) && !LOST.test(t)) || has(t, LEGAL)) memory.mode = "";
-  observe(memory.situation, text);
   // she refused one of the ideas we just gave: never suggest it again this session
   if (memory.lastOptionIds?.length && /(?:^| )(?:ما بقدر|مش امن|مستحيل|ما بنفع|ما بزبط|ما في)(?: |$)/.test(t)) {
     for (const [id, cue] of Object.entries(REFUSAL_CUES))
       if (memory.lastOptionIds.includes(id) && cue.test(t)) memory.rejected.add(id);
   }
+  // a constraint that rules out an idea we just gave counts as refusing it («ما بقدر أحكي لحدا»)
+  if (memory.lastOptionIds?.includes("trusted") && (memory.newConstraints.includes("noTrusted") || memory.newConstraints.includes("familyUnsafe")))
+    memory.rejected.add("trusted");
+  memory.justRejected = memory.rejected.size > rejectedBefore;
+  const goalBefore = memory.situation.goal;
+  observe(memory.situation, text);
+  memory.newGoal = memory.situation.goal !== goalBefore ? memory.situation.goal : "";
 }
 
 const REFUSAL_CUES = {
@@ -212,11 +226,12 @@ const OPENERS = {
   وجع: ["اللي صار وجعك، وهاد مفهوم."],
   ضيق: ["واضح إنك مخنوقة."],
   حيرة: ["مفهوم إنك محتارة."],
-  "": ["سامعتك.", "فهمت عليكِ.", "مكمّلة معك."],
 };
 
+const strip1 = (w) => (FEELINGS[w] ? w : w.replace(/^(?:و|ف)/, ""));
+
 function opener(memory) {
-  const list = OPENERS[memory.feeling] || OPENERS[""];
+  const list = OPENERS[memory.feelingNow] || ACKS;
   const fresh = list.find((o) => !memory.usedOpeners.has(o)) || "";
   if (fresh) memory.usedOpeners.add(fresh);
   return fresh; // "" when all were used: no repeated sympathy line
@@ -254,6 +269,12 @@ export function localTalk(need, memory, available = {}) {
   if (reflected) lead.push(`فهمت إنه ${reflected}${whenWords(events[0].when)}.`);
   const empathy = progress ? "" : empathyFor(events, memory);
   if (empathy) lead.push(empathy);
+  // what she just told about herself: a refusal, what she wants, what she cannot do
+  if (memory.justRejected) lead.push("مفهوم، مش رح أقترح هالفكرة مرة تانية.");
+  if (memory.newGoal && GOAL_ACK[memory.newGoal]) lead.push(GOAL_ACK[memory.newGoal]);
+  const limit = memory.newConstraints.find((c) => CONSTRAINT_ACK[c]);
+  if (limit && !memory.justRejected) lead.push(CONSTRAINT_ACK[limit]);
+  if (!events.length && fresh.when === "since" && !lead.length) lead.push("يعني صارله وقت، مش إشي جديد.");
   if (!lead.length && need !== "steps") {
     const open = WHO_TO_TALK.test(t) ? "" : opener(memory);
     if (open) lead.push(open);
@@ -270,10 +291,40 @@ export function localTalk(need, memory, available = {}) {
   if (need === "steps") return stepsReply(memory, available, lead, topic, t);
 
   // understand: ONE question about what we do not know yet, never one she already answered
-  const q = nextQuestion(memory, topic, fresh, progress, t);
-  if (lead.length === 0) lead.push(q.ask ? "سامعتك." : "كمّلي، عم بسمعك.");
-  return { kind: "talk", lead: lead.join(" "), options: [], ask: q.ask, note: "" };
+  let q = nextQuestion(memory, topic, fresh, progress, t);
+  // after a few replies without a question, one gentle check-in on what she wants from this
+  memory.quietTurns = q.ask ? 0 : memory.quietTurns + 1;
+  if (!q.ask && memory.quietTurns >= 3) {
+    const ask = pick(memory, CHECK_INS);
+    if (ask) (q = { slot: "help", ask }), (memory.quietTurns = 0), (memory.lastAsk = "help");
+  }
+  if (lead.length === 0) lead.push(pick(memory, ACKS) || (q.ask ? "" : "كمّلي، عم بسمعك."));
+  return { kind: "talk", lead: lead.filter(Boolean).join(" "), options: [], ask: q.ask, note: "" };
 }
+
+const ACKS = ["سامعتك.", "فهمت عليكِ.", "مفهوم.", "كمّلي، عم بسمعك.", "آه، فهمت.", "تمام، كمّلي.", "عم بسمعك."];
+const CHECK_INS = [
+  "شو أكتر إشي بتحتاجيه هلأ: حدا يسمعك، ولا نفكر سوا بخطوة؟",
+  "بتحبي نرتب سوا اللي حكيتيه لهلأ؟",
+  "في إشي بدك ياه مني بالزبط هلأ؟",
+];
+const GOAL_ACK = {
+  "keep-kids": "فهمت إنه أهم إشي إلك إنه الولاد يضلوا معك.",
+  stay: "فهمت إنك مش بدك تتطلقي، وهاد قرارك.",
+  separate: "فهمت إنك بتفكري تنفصلي، وهاد قرارك إنتِ.",
+  "know-rights": "تمام، بدك تعرفي حقوقك.",
+  calm: "فهمت إنك بدك الوضع يهدى، مش أكتر من هيك.",
+  safety: "سلامتك أولاً، وهاد أهم إشي.",
+  money: "فهمت إنه المصروف هو الأهم هلأ.",
+};
+const CONSTRAINT_ACK = {
+  noMoney: "مفهوم، رح آخد ببالي إنه ما معك مصاري.",
+  noTrusted: "مفهوم إنه ما في حدا قريب بتقدري تحكيله هلأ.",
+  monitored: "مفهوم، إذا حدا بيشوف تلفونك لازم ننتبه لأي خطوة.",
+  familyUnsafe: "مفهوم، ما رح أقترح إشي بيكشفك قدام أهلك.",
+  cannotLeave: "مفهوم إنه الطلعة من البيت مش سهلة إلك.",
+  noPhone: "مفهوم إنه التلفون مش إلك لحالك.",
+};
 
 /* ---------- pieces of the local reply ---------- */
 
@@ -314,6 +365,8 @@ const EMPATHY = {
   "not-understood": ["صعب لما تحسي إنه أقرب الناس مش فاهم عليكِ."],
   pressure: ["ضغط الأهل تقيل، خصوصاً لما يطوّل."],
   helped: ["منيح إنه كان في حدا جنبك."],
+  broke: ["هاد بيخوّف، حتى لو ما في ضرب."],
+  "kids-scared": ["طبيعي تكوني قلقانة عليهم."],
 };
 
 function empathyFor(events, memory) {
@@ -412,9 +465,10 @@ const TOPIC_OPTIONS = {
 };
 const OTHER_OPTIONS = [
   { id: "danger-now", text: "إذا هي بخطر هلأ، سلامتها أولاً: الشرطة أو الإسعاف إذا بتقدر تتصل بأمان." },
+  // safety advice first: confronting him on her behalf can make it worse for her
+  { id: "no-confront-him", text: "ما تواجهي جوزها عنها، هاد ممكن يزيد الخطر عليها." },
   { id: "listen-her", text: "اسمعيها بدون ما تضغطي عليها تاخد قرار، وخليها تعرف إنه مش ذنبها." },
   { id: "ask-her", text: "اسأليها شو بدها هي، وشو بتحس إنه آمن إلها." },
-  { id: "no-confront-him", text: "ما تواجهي جوزها عنها، هاد ممكن يزيد الخطر عليها." },
   { id: "support", text: "إذا بدها، بتقدر تشوف جهات الدعم بصفحة «مين بيساعدني».", needs: ["contacts"] },
 ];
 
@@ -440,13 +494,17 @@ function stepsReply(memory, available, lead, topic, t) {
   const ordered = [...ok.filter((o) => !s.offered.has(o.id)), ...ok.filter((o) => s.offered.has(o.id))];
   // the first (most specific) version of an idea wins
   const options = ordered.filter((o, i) => ordered.findIndex((x) => x.id === o.id) === i).slice(0, 3);
+  // every idea that fits was already given: say so instead of pretending these are new
+  const nothingNew = options.length > 0 && options.every((o) => s.offered.has(o.id));
   for (const o of options) s.offered.add(o.id);
   memory.lastOptionIds = options.map((o) => o.id);
 
   const intro = forOther
     ? "إنك بدك تساعديها إشي مهم. في كم إشي ممكن يفرق معها:"
-    : pick(memory, ["خلينا نفكر بأصغر خطوة آمنة، بدون ما تخسري إشي مهم:", "في كم إشي صغير ممكن يساعد، اختاري اللي بيناسبك:"]) ||
-      "هاي كم فكرة، اختاري اللي بيناسبك:";
+    : nothingNew
+      ? "بصراحة، ما عندي أفكار صغيرة جديدة غير اللي حكيناها. إذا بتحكيلي شو أصعب إشي فيهم، بفكر معك بشكل أدق:"
+      : pick(memory, ["خلينا نفكر بأصغر خطوة آمنة، بدون ما تخسري إشي مهم:", "في كم إشي صغير ممكن يساعد، اختاري اللي بيناسبك:"]) ||
+        "هاي كم فكرة، اختاري اللي بيناسبك:";
   let ask = "";
   if (forOther) ask = "شو بتحسي إنها محتاجة أكتر هلأ؟";
   else if (LEGAL_TOPICS.includes(topic) && !s.asked.has(`offer-law:${topic}`)) {

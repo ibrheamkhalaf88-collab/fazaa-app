@@ -324,7 +324,9 @@ export function createAnswerer({
    */
   async function legalAnswer(question, ctx, can, topicHint = "") {
     const hit = findArticleByNumber(question, ctx.country);
-    const local = answerFromRules(question);
+    const topic = topicHint || currentTopic(memory.situation);
+    // context-aware: «شو حقي إذا ما صرف؟» inside a conversation about maintenance is about maintenance
+    const local = answerFromRules(question) || (TOPIC_QUESTION[topic] ? answerFromRules(TOPIC_QUESTION[topic]) : null);
     let answer;
     if (hit) answer = articleAnswer(hit, ctx.country);
     else {
@@ -345,7 +347,6 @@ export function createAnswerer({
     answer = withScope(answer, ctx.country);
     if (answer.kind === "article") return answer;
 
-    const topic = topicHint || currentTopic(memory.situation);
     let ids = answer.cites || [];
     if (!ids.length && answer.kind !== "talk" && LEGAL_TOPICS.includes(topic)) {
       const related = relatedArticles(topic, ctx.country).filter((id) => !memory.situation.shownArticles.has(id));

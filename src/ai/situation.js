@@ -65,9 +65,25 @@ const EVENTS = [
   { type: "silenced", topic: "conflict", re: /(?:^| )(?:و)?(?:بيسكتني|بسكتني|بيسكتوني)(?= |$)/, say: { m: "بيسكّتك كل ما تحكي", f: "بتسكّتك", pl: "بيسكّتوكِ", x: "ما حدا بيخليكِ تحكي" } },
   { type: "not-understood", topic: "conflict", re: /(?:^| )(?:مش|ما) (?:فاهم|فاهمين|بيفهم|بيفهموا) علي(?= |$)/, say: { m: "مش فاهم عليكِ", f: "مش فاهمة عليكِ", pl: "مش فاهمين عليكِ", x: "ما حدا فاهم عليكِ" } },
   { type: "pressure", topic: "family", re: /(?:^| )(?:ضاغطين|ضاغط|ضاغطه|بيضغطوا|بيضغط|عم يضغطوا) علي(?= |$)/, say: { m: "ضاغط عليكِ", f: "ضاغطة عليكِ", pl: "ضاغطين عليكِ", x: "في ضغط عليكِ" } },
+  { type: "broke", topic: "violence", re: /(?:^| )(?:و)?(?:كسر|بيكسر|كسروا|كسرت) (?!الباب)(?:صحن|صحون|اغراض|الاغراض|التلفون|تلفوني|الشباك|اشي|اشيا|كل اشي|الصحون)(?= |$)/, say: { m: "كسّر أغراض", f: "كسّرت أغراض", pl: "كسّروا أغراض", x: "في أغراض انكسرت" } },
+  { type: "kids-scared", topic: "", re: /(?:^| )(?:و)?(?:الولاد|ولادي|البنات|الاولاد) (?:خافوا|خايفين|انرعبوا|بيعيطوا|عيطوا)(?= |$)/, say: { m: "الولاد خافوا", f: "الولاد خافوا", pl: "الولاد خافوا", x: "الولاد خافوا" }, noSubject: true },
   { type: "helped", topic: "", re: /(?:^| )(?:و)?(?:ساعدتني|ساعدني|ساعدوني|وقفت معي|وقف معي|وقفوا معي)(?= |$)/, say: { m: "ساعدك", f: "ساعدتك", pl: "ساعدوكِ", x: "في حدا ساعدك" } },
   { type: "talked-to", topic: "", re: /(?:^| )(?:و)?(?:حكى|حكت|حكيوا|حكوا) (?:معه|معها|معهم|مع)(?= |$)/, say: { m: "حكى مع", f: "حكت مع", pl: "حكوا مع", x: "صار حكي مع" } },
 ];
+
+/** A denial right before an event («ما ضربني», «عمره ما هددني», «ولا مرة ضربني»). */
+// one word between at most («ما حدا بيضربني»), as in danger.js, so «ما بعرف ليش بيضربني» stays an event
+// «كل ما» means "whenever" («كل ما أحكي بيسكتني»), never a denial
+const NEGATED = /(?:^|(?<!كل) )(?:ما|مش|مو|ولا|عمره ما|عمرو ما|ابدا ما|بطل)(?: [^ ]+)?$/;
+/** Events whose own wording is negative («ما بيصرف», «مش فاهم علي»): the negation is the event. */
+const ev_isNegativeForm = (ev) => ev.type === "no-support" || ev.type === "not-understood";
+/** Habitual / present forms («بيصرخ», «عم يهددني») are said back in the present. */
+const HABIT = /^(?: )?(?:و|ف)?(?:بي|عم ي|عم )/;
+const NOW = {
+  yelled: { m: "بيصرّخ عليكِ", f: "بتصرّخ عليكِ", pl: "بيصرّخوا عليكِ" },
+  hit: { m: "بيضربك", f: "بتضربك", pl: "بيضربوكِ" },
+  threat: { m: "بيهددك", f: "بتهددك", pl: "بيهددوكِ" },
+};
 
 /** Things SHE did: progress worth noticing («اليوم حكيت مع المحامية»). */
 const PROGRESS = [
@@ -87,10 +103,12 @@ const WHEN = [
 ];
 
 /** What she wants (her goal), in her words. */
+// the negated forms come first: «ما بدي أتطلق» must never read as «بدي أتطلق»
 const GOALS = [
+  { goal: "stay", re: /(?:^| )(?:بدي|حابه) (?:اضل|نضل|اكمل) (?:معه|سوا)(?= |$)|(?:^| )(?:ما|مش) (?:بدي|حابه) (?:اتطلق|انفصل|اخرب البيت|اتركه)(?= |$)/ },
   { goal: "keep-kids", re: /(?:^| )بدي (?:الولاد|ولادي) (?:يضلوا|يضل|يكونوا) معي(?= |$)|(?:^| )ما بدي (?:اخسر|اترك) (?:الولاد|ولادي)(?= |$)/ },
-  { goal: "separate", re: /(?:^| )بدي (?:اتطلق|انفصل|اطلق|اترك البيت|اتركه)(?= |$)/ },
-  { goal: "stay", re: /(?:^| )(?:بدي|حابه) (?:اضل|نضل|اكمل) (?:معه|سوا)(?= |$)|(?:^| )ما بدي (?:اتطلق|انفصل|اخرب البيت)(?= |$)/ },
+  { goal: "separate", re: /(?:^| )(?<!(?:ما|مش) )بدي (?:اتطلق|انفصل|اطلق|اترك البيت|اتركه)(?= |$)/ },
+  { goal: "calm", re: /(?:^| )بدي (?:بس )?(?:يهدى|يهدا|يهدي|يتغير|يرجع زي ما كان|نرجع زي اول)(?= |$)/ },
   { goal: "know-rights", re: /(?:^| )بدي اعرف (?:حقي|حقوقي|شو حقي)(?= |$)/ },
   { goal: "safety", re: /(?:^| )بدي (?:اكون بامان|اتحمى|حدا يحميني)(?= |$)/ },
   { goal: "money", re: /(?:^| )بدي (?:مصروف|نفقه|مصاري للولاد)(?= |$)/ },
@@ -235,20 +253,22 @@ export function observe(s, text) {
 
   // 2) when
   const when = WHEN.find((w) => w.re.test(t))?.when || "";
+  fresh.when = when;
   if (when) s.answered.add("since"); // a date, a duration or «كل يوم» all answer «من إيمتى؟»
   if (when === "first" || when === "often") s.answered.add("repeat");
 
   // 3) events, each with its subject: a named person, else resolved from «هو/هي/حكى/حكت»
   const subjectNamed = named.find((d) => d.id !== "lawyer" && d.id !== "lawyer-m" && d.id !== "friend") || named[0];
-  // in the order she said them («طلقني وطردني وأخد الولاد»)
+  // in the order she said them («طلقني وطردني وأخد الولاد»); a denied event («ما ضربني», «عمره ما
+  // هددني») is NOT an event: storing it would put words in her mouth
   const matches = EVENTS.map((ev) => ({ ev, at: t.search(ev.re) }))
-    .filter((x) => x.at >= 0)
+    .filter((x) => x.at >= 0 && (ev_isNegativeForm(x.ev) || !NEGATED.test(t.slice(0, x.at + 1).trimEnd())))
     .sort((a, b) => a.at - b.at);
-  for (const { ev } of matches) {
+  for (const { ev, at } of matches) {
     // a threat to take the kids also counts as a threat: keep the specific one only
     if (ev.type === "threat" && fresh.events.some((e) => e.type === "threat-kids")) continue;
-    let who = subjectNamed ? findPerson(s, subjectNamed.id) : null;
-    const gender = who?.g || subjectGender(t, ev.type);
+    let who = subjectNamed && !ev.noSubject ? findPerson(s, subjectNamed.id) : null;
+    const gender = ev.noSubject ? "" : who?.g || subjectGender(t, ev.type);
     if (!who && gender) {
       const r = resolve(s, gender);
       if (r.person) who = r.person;
@@ -272,6 +292,7 @@ export function observe(s, text) {
       when,
       turn: s.turn,
       source: "user",
+      present: Boolean(NOW[ev.type]) && HABIT.test(t.slice(at, at + 6)),
     };
     if (ev.type === "talked-to") {
       const og = objectGender(t);
@@ -334,7 +355,7 @@ export const currentTopic = (s) => s.topics.at(-1) || "";
 export function eventClause(e) {
   const def = EVENTS.find((x) => x.type === e.type);
   if (!def) return "";
-  let verb = def.say[e.whoLabel ? e.g : "x"] || def.say.m;
+  let verb = (e.present && e.whoLabel && NOW[e.type]?.[e.g]) || def.say[e.whoLabel ? e.g : "x"] || def.say.m;
   // «صرخ عليها»: said about the person it happened to, not «عليكِ»
   if (e.on && verb.includes("عليكِ")) verb = verb.replace("عليكِ", e.on.startsWith("علي") ? e.on : `على ${e.on}`);
   else if (e.on && !e.whoLabel) verb = `${{ yelled: "في حدا صرخ", insulted: "في حدا أهان" }[e.type] || def.say.x} ${e.on.startsWith("علي") ? e.on : `على ${e.on}`}`;
@@ -365,14 +386,17 @@ export function reflectEvents(events) {
  * @returns {{topic: string, facts: string[], goal: string, progress: string[]}}
  */
 export function summarize(s, max = 6) {
-  const facts = s.events
-    .slice(-max)
-    .map((e) => {
-      const clause = eventClause(e);
-      const when = { yesterday: " (مبارح)", today: " (اليوم)", since: " (من فترة)", often: " (بيتكرر)" }[e.when] || "";
-      return clause ? `${clause}${when}` : "";
-    })
-    .filter(Boolean);
+  // one line per thing she told (the same event told twice is one note, with its latest time word)
+  const byClause = new Map();
+  for (const e of s.events) {
+    const clause = eventClause(e);
+    if (!clause) continue;
+    const when = { yesterday: " (مبارح)", today: " (اليوم)", since: " (من فترة)", often: " (بيتكرر)" }[e.when] || "";
+    const prev = byClause.get(clause);
+    byClause.delete(clause);
+    byClause.set(clause, `${clause}${when || (prev ? prev.slice(clause.length) : "")}`);
+  }
+  const facts = [...byClause.values()].slice(-max);
   const progress = s.progress.map((p) => ({ lawyer: "حكت مع محامية", complaint: "قدّمت شكوى", "told-someone": "حكت لحدا قريب", "support-org": "تواصلت مع جهة دعم" })[p.type]).filter(Boolean);
   const goal = { "keep-kids": "بدها الولاد يضلوا معها", separate: "بتفكر بالانفصال", stay: "بدها تضل بالبيت", "know-rights": "بدها تعرف حقوقها", safety: "بدها تكون بأمان", money: "بدها مصروف" }[s.goal] || "";
   return { topic: TOPIC_LABELS[currentTopic(s)] || "", facts, goal, progress: [...new Set(progress)] };

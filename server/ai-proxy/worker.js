@@ -18,6 +18,7 @@
  */
 import { articlesFor } from "../../src/data/law/index.js";
 import { DEFAULT_PROVIDER, PROVIDERS } from "./providers.js";
+import { createBreaker } from "./breaker.js";
 import { assessDanger } from "../../src/ai/danger.js";
 import { classifyNeed, createMemory } from "../../src/ai/conversation.js";
 import { CONTEXT, MAX_BODY_BYTES, MAX_MESSAGE_CHARS, MIN_MESSAGE_CHARS } from "../../src/ai/limits.js";
@@ -259,7 +260,10 @@ export async function answerQuestion(question, country, env, fetchImpl = fetch, 
   const talkNeed = need === "legal" ? "understand" : need;
 
   if (need === "legal") {
-    const articles = retrieveArticles(question, articlesFor(country), 3);
+    // context-aware retrieval: a short follow-up («شو حقي إذا ما صرف؟») is read with the topic she
+    // already named (only present when she agreed to share context)
+    let articles = retrieveArticles(question, articlesFor(country), 3);
+    if (articles.length === 0 && context?.topic) articles = retrieveArticles(`${question} ${context.topic}`, articlesFor(country), 3);
     if (articles.length === 0) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
     const res = await callModel(
       provider,
@@ -294,8 +298,18 @@ async function talkAnswer(question, need, context, provider, key, env, fetchImpl
   }
 }
 
-/** Busy or over quota: worth one more try (429 RESOURCE_EXHAUSTED, 503 UNAVAILABLE, 500/504). */
-const BUSY = /^upstream-(429|500|503|504)/;
+/**
+ * Busy or over quota: worth one more try (429 RESOURCE_EXHAUSTED, 503 UNAVAILABLE, 500/504), and a
+ * model whose circuit is open (try the backup model instead).
+ */
+const BUSY = /^(?:upstream-(?:429|500|503|504)|circuit-open)/;
+/** Failures that count toward opening the circuit (transient, not a configuration error). */
+const TRANSIENT = /^(?:upstream-(?:429|500|502|503|504)|upstream-unreachable)/;
+
+let breaker = createBreaker();
+/** Tests and the dashboard: replace or read the breaker. */
+export const setBreaker = (b) => (breaker = b);
+export const breakerSnapshot = () => breaker.snapshot();
 /** A second model with its own quota, tried once when the first is busy. FALLBACK_MODEL overrides. */
 const FALLBACK_MODEL = { gemini: "gemini-3.5-flash" }; // slower but rarely busy (tested 2026-11-12)
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -342,15 +356,30 @@ function roomForAnswer(body, env) {
   if ("max_tokens" in body) body.max_tokens = Math.max(body.max_tokens || 0, n);
 }
 
+/** One call, guarded by the circuit breaker of this provider model. */
 async function callOnce(provider, key, args, fetchImpl) {
+  const providerId = Object.keys(PROVIDERS).find((id) => PROVIDERS[id] === provider) || "unknown";
+  const model = args.env.MODEL || provider.defaultModel;
+  const circuit = `${providerId}:${model}`;
+  if (!breaker.allow(circuit)) return { error: "circuit-open" };
+  const res = await callUpstream(provider, key, args, fetchImpl, providerId);
+  if (!res.error) breaker.success(circuit);
+  else if (TRANSIENT.test(res.error)) breaker.failure(circuit);
+  return res;
+}
+
+async function callUpstream(provider, key, args, fetchImpl, providerId) {
   const call = provider.build(args, key);
   roomForAnswer(call.body, args.env);
+  // per provider: UPSTREAM_MS_GEMINI etc., then UPSTREAM_MS, then the default
+  const timeoutMs =
+    Number(args.env[`UPSTREAM_MS_${providerId.toUpperCase()}`]) || Number(args.env.UPSTREAM_MS) || LIMITS.upstreamMs;
   let upstream;
   try {
     upstream = await fetchImpl(call.url, {
       method: "POST",
       headers: { "content-type": "application/json", ...call.headers },
-      signal: AbortSignal.timeout(LIMITS.upstreamMs),
+      signal: AbortSignal.timeout(timeoutMs),
       body: JSON.stringify(call.body),
     });
   } catch {

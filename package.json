@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "check": "npm run format:check && npm run lint && npm test",
     "ai:eval": "node scripts/ai-eval.mjs",
+    "ai:assistant-eval": "node scripts/assistant-eval.mjs --transcript docs/evidence/assistant-eval.txt",
     "law:verify": "node scripts/verify-law.mjs"
   },
   "devDependencies": {

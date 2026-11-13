@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
-import { answerQuestion, SUPPORT_TOOL } from "../server/ai-proxy/worker.js";
+import { beforeEach, test } from "node:test";
+import { answerQuestion, setBreaker, SUPPORT_TOOL } from "../server/ai-proxy/worker.js";
+import { createBreaker } from "../server/ai-proxy/breaker.js";
+
+// each test starts with a closed circuit (the breaker is shared by all questions in one Worker)
+beforeEach(() => setBreaker(createBreaker()));
 
 const ENV = { PROVIDER: "gemini", GEMINI_API_KEY: "k", RETRY_PAUSE_MS: 0 };
 const ok = (args) => ({
