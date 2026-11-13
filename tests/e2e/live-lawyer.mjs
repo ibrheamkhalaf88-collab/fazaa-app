@@ -114,7 +114,10 @@ try {
 
   // the lawyer claims, sees her contact card, and answers
   const id = queue[0].id;
-  await staff(`/v1/staff/cases/${id}/claim`, { method: "POST" });
+  // since 2026-11-13 a lawyer claims only while «متاحة» (and for a region she covers): switch it on first
+  await staff("/v1/staff/profile", { method: "PUT", body: JSON.stringify({ available: true }) });
+  const claimed = await staff(`/v1/staff/cases/${id}/claim`, { method: "POST" });
+  assert.deepEqual(claimed, { ok: true }, "the lawyer could not claim the case");
   const contact = await staff(`/v1/staff/cases/${id}/client`);
   assert.equal(contact.name, "سارة محمد");
   assert.equal(contact.phone, "0599123456");
