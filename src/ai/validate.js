@@ -14,7 +14,7 @@ import { tokenize } from "./normalize.js";
  *    secrecy / safety / outcomes, no emotional dependence, and at most one question.
  */
 
-const LIMITS = { lead: 500, talk: 600, step: 260, note: 800, steps: 5, cites: 4, topic: 40, closing: 240, ask: 220, options: 3 };
+const LIMITS = { chat: 1100, lead: 500, talk: 600, step: 260, note: 800, steps: 5, cites: 4, topic: 40, closing: 240, ask: 220, options: 3 };
 
 const clean = (v, max) =>
   typeof v === "string"
@@ -145,6 +145,40 @@ export function validateAnswer(raw, { articleIds, articles }) {
     if (problems.length) throw new Error(`ungrounded:${problems[0]}`);
   }
   return answer;
+}
+
+/**
+ * Chat reply (the AI-first assistant, 2026-11-13): one natural reply that may mix support, advice and law.
+ * Law is allowed ONLY from the articles the server gave the model: every cited id must be one of them, and
+ * every number / article number in the text must be in the cited articles. With no citation, no legal claim.
+ * Plus: no forbidden promise, pet names removed, one question at most.
+ * @param {unknown} raw  {reply, ask?, steps?, cites?, sos?}
+ * @param {{articleIds: string[], articles?: Record<string, {text:string, amended?:string}>}} opts
+ */
+export function validateChat(raw, { articleIds, articles }) {
+  if (!raw || typeof raw !== "object") throw new Error("not-an-object");
+  const a = /** @type {Record<string, unknown>} */ (raw);
+  const reply = clean(a.reply ?? a.lead, LIMITS.chat);
+  if (!reply) throw new Error("missing-reply");
+  let ask = oneQuestion(clean(a.ask, LIMITS.ask));
+  const steps = (Array.isArray(a.steps) ? a.steps : [])
+    .map((s) => clean(s, LIMITS.step))
+    .filter(Boolean)
+    .slice(0, LIMITS.options);
+  const cites = [...new Set(Array.isArray(a.cites) ? a.cites.map(String) : [])];
+  if (cites.length > LIMITS.cites) throw new Error("too-many-cites");
+  const unknown = cites.find((id) => !articleIds.includes(id));
+  if (unknown) throw new Error(`unknown-article:${unknown}`);
+  if (reply.includes("؟") && ask) ask = ""; // one question per reply
+  const all = [reply, ask, ...steps].join("\n");
+  const bad = forbidden(all);
+  if (bad) throw new Error(`forbidden:${bad}`);
+  if (cites.length === 0 && legalLeak(all)) throw new Error("legal-leak");
+  if (cites.length && articles) {
+    const problems = checkGrounding({ lead: reply, note: "", steps, cites }, articles);
+    if (problems.length) throw new Error(`ungrounded:${problems[0]}`);
+  }
+  return { kind: "chat-ai", lead: reply, ask, steps, cites, sos: a.sos === true, source: "ai" };
 }
 
 /**

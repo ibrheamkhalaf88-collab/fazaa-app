@@ -54,7 +54,7 @@ test("only POST /v1/answer exists", async () => {
 
 // (2026-11-12) limits are shared with the app (src/ai/limits.js): 1200 characters, 16 KB body
 test("validates body size, JSON, and question length", async () => {
-  assert.equal((await handleRequest(req(null, { raw: "x".repeat(17000) }), ENV)).status, 413);
+  assert.equal((await handleRequest(req(null, { raw: "x".repeat(41000) }), ENV)).status, 413);
   assert.equal((await handleRequest(req(null, { raw: "{not json" }), ENV)).status, 400);
   assert.equal((await handleRequest(req({ question: "a" }), ENV)).status, 400);
   assert.equal((await handleRequest(req({ question: "ا".repeat(1201) }), ENV)).status, 400);

@@ -5,7 +5,7 @@
 import { AI_BETA_ONLY, AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, LAWYERS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
 import { createLawyerCards } from "./features/lawyers/lawyer-cards.js";
 import { createContacts } from "./features/support/contacts.js";
-import { createAnswerer } from "./ai/answerer.js";
+import { createAssistant } from "./ai/assistant.js";
 import { createRemoteEngine } from "./ai/remote-engine.js";
 import { createSavedTopics } from "./ai/saved.js";
 import { createRouter } from "./core/router.js";
@@ -83,18 +83,17 @@ async function boot() {
   // closed beta: the online AI only on a tester's device (src/config.js AI_BETA_ONLY)
   const aiAvailable = AI_ENDPOINT !== "" && (!AI_BETA_ONLY || Boolean(state.get("beta")));
   const account = createAccount({ base: API_BASE, store });
-  // opt-in, device-only notes per topic; OFF by default (src/ai/saved.js, docs/PRIVACY.md)
+  // saved topics belonged to the rule-based assistant; kept only so quick exit / erase still delete old notes
   const saved = createSavedTopics({ store, state });
-  const answerer = createAnswerer({
-    saved,
+  // the AI-first assistant (owner's decision 2026-11-13): every reply from the AI, from the law texts
+  const answerer = createAssistant({
     emergencyNumbers: contacts.emergencyNumbers,
     available: () => ({ ...contacts.available(), lawyer: account.enabled }),
     remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT, beta: () => state.get("beta") }) : undefined,
     isRemoteEnabled: () => aiAvailable && state.get("aiOnline") && state.get("aiNotice") !== "",
-    shareContext: () => state.get("shareContext") === true,
     onRemoteError: (err) => {
       // the reason only (e.g. "proxy-status-502"), never the message
-      console.warn("online answer failed, using offline rules:", err.message);
+      console.warn("online answer failed:", err.message);
       telemetry.track("ai_error");
     },
   });

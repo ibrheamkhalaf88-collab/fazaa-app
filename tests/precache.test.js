@@ -1,16 +1,17 @@
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
-const root = new URL("../", import.meta.url).pathname;
+const root = fileURLToPath(new URL("../", import.meta.url));
 const sw = readFileSync(join(root, "sw.js"), "utf8");
 const precache = [...sw.match(/const PRECACHE = \[([\s\S]*?)\];/)[1].matchAll(/"([^"]+)"/g)].map((m) => m[1]);
 
 function walk(dir) {
   return readdirSync(dir).flatMap((name) => {
     const p = join(dir, name);
-    return statSync(p).isDirectory() ? walk(p) : [relative(root, p)];
+    return statSync(p).isDirectory() ? walk(p) : [relative(root, p).replaceAll("\\", "/")];
   });
 }
 

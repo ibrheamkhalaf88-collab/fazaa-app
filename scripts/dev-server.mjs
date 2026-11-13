@@ -29,10 +29,20 @@ const store = createMemoryStore();
 async function fakeProvider(_url, init) {
   const body = JSON.parse(init.body);
   const tool = body.tools?.[0]?.functionDeclarations?.[0]?.name || "";
+  const turns = body.contents?.length || 1;
+  const ids = [...(body.systemInstruction?.parts?.[0]?.text || "").matchAll(/<article id="([^"]+)"/g)].map((m) => m[1]);
   const args =
-    tool === "give_support"
-      ? { lead: "(تجربة محلية) فهمت عليكِ، واللي بتحكيه مهم.", ask: "شو أكتر إشي بيضغط عليكِ هلأ؟", options: [] }
-      : { covered: false };
+    tool === "give_reply"
+      ? {
+          // no digits: a number not in the cited text is (rightly) rejected by the grounding check
+          reply: `(تجربة محلية، ${turns > 1 ? "مكمّلة بنفس المحادثة" : "أول رسالة"}) فهمت عليكِ.${ids.length ? " هاد النص اللي عندي عن موضوعك." : ""}`,
+          ask: "شو أكتر إشي بيضغط عليكِ هلأ؟",
+          steps: [],
+          cites: ids.slice(0, 1),
+        }
+      : tool === "give_support"
+        ? { lead: "(تجربة محلية) فهمت عليكِ، واللي بتحكيه مهم.", ask: "شو أكتر إشي بيضغط عليكِ هلأ؟", options: [] }
+        : { covered: false };
   if (process.env.FAKE_AI === "slow") await new Promise((r) => setTimeout(r, 4000));
   return new Response(
     JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { name: tool, args } }] } }] }),

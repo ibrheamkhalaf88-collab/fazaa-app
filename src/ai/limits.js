@@ -14,5 +14,12 @@ export const CONTEXT = Object.freeze({
   factChars: 80,
 });
 
-/** Body size the servers accept: message + context + JSON overhead. */
-export const MAX_BODY_BYTES = 16384;
+/**
+ * The AI-first chat (2026-11-13): the conversation of THIS device's session goes with each message, as
+ * role-tagged turns. Older turns beyond `turns` are dropped (never cut silently inside a turn: a long reply
+ * is cut at `assistantChars` with "…").
+ */
+export const CHAT = Object.freeze({ turns: 12, assistantChars: 700 });
+
+/** Body size the servers accept: the chat turns + JSON overhead (Arabic is 2 bytes per letter). */
+export const MAX_BODY_BYTES = 40960;

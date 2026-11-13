@@ -24,9 +24,10 @@ export const AI_ENDPOINT = "/api/v1/answer";
  * Closed beta of the online AI (2026-11-13). true = only a device that opened the site once with
  * `?beta=<code>` uses the online AI; everyone else gets the offline replies and nothing they type leaves
  * the phone. The server checks the code too when the Worker secret AI_BETA_CODE is set.
- * Set to false only after the live evaluation and the lawyer / safety reviews (docs/LIVE-EVAL.md).
+ * (2026-11-13, owner's decision) false: the assistant is AI-first for everyone. Set true again to limit the
+ * online AI to testers; non-testers then see that the assistant is off.
  */
-export const AI_BETA_ONLY = true;
+export const AI_BETA_ONLY = false;
 
 /** Answers are artificially delayed to feel conversational; milliseconds. */
 export const TYPING_DELAY = { base: 900, perChar: 12, max: 900 };

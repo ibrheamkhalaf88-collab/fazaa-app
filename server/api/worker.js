@@ -352,7 +352,8 @@ export async function handleRequest(request, env, deps) {
     const live = aiEnv(env, saved);
     const { status, body } = await answerQuestion(req.question, req.country, live, fetchImpl, req);
     // kept for lawyer review: law answers only (talk replies echo her words more closely)
-    if (body.answer && body.answer.kind !== "talk" && body.answer.source === "ai")
+    // (chat replies retell her story: never kept)
+    if (body.answer && body.answer.kind !== "talk" && body.answer.kind !== "chat-ai" && body.answer.source === "ai")
       await keepAnswer(store, body.answer, req.country, live, now);
     return reply(json(body, status));
   }

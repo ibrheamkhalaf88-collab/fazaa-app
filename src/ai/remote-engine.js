@@ -1,6 +1,6 @@
 import { articlesFor } from "../data/law/index.js";
 import { MAX_MESSAGE_CHARS } from "./limits.js";
-import { validateAnswer, validateTalk } from "./validate.js";
+import { validateAnswer, validateChat, validateTalk } from "./validate.js";
 
 /**
  * Client for the AI endpoint (the staff API's /api/v1/answer, or server/ai-proxy).
@@ -21,6 +21,36 @@ export function createRemoteEngine({
   beta = () => "", // closed-beta tester code (not an identity: the same code for every tester)
 }) {
   return {
+    /**
+     * The AI-first chat: this device's conversation as role-tagged turns (the last one is hers).
+     * @param {{role: "user"|"assistant", text: string}[]} turns
+     * @param {{country: string, signal?: AbortSignal}} ctx
+     * @returns {Promise<object | null>}
+     */
+    async chat(turns, ctx) {
+      const last = turns.at(-1)?.text || "";
+      if (last.length > MAX_MESSAGE_CHARS) throw new Error("message-too-long");
+      const timeout = AbortSignal.timeout(timeoutMs);
+      const signal = ctx.signal && AbortSignal.any ? AbortSignal.any([ctx.signal, timeout]) : ctx.signal || timeout;
+      const res = await fetchImpl(endpoint, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        credentials: "omit",
+        referrerPolicy: "no-referrer",
+        cache: "no-store",
+        signal,
+        body: JSON.stringify({ messages: turns, country: ctx.country, ...(beta() ? { beta: beta() } : {}) }),
+      });
+      if (!res.ok) throw new Error(`proxy-status-${res.status}`);
+      const data = await res.json();
+      if (data.answer == null) return null;
+      // a fixed safety reply from the server (danger seen there)
+      if (data.answer.source === "rules") return { ...data.answer, source: "rules" };
+      // checked again here: the app trusts its own rules, not the server's word
+      const articles = articlesFor(ctx.country);
+      return validateChat(data.answer, { articleIds: Object.keys(articles), articles });
+    },
+
     /**
      * @param {string} message
      * @param {{country: string, need?: string, context?: object, signal?: AbortSignal}} ctx

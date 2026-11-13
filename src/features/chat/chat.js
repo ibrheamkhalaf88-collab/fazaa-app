@@ -25,7 +25,7 @@ function planFor(answer) {
 }
 
 /** Bump when the text of the AI notice changes: everyone sees the new notice once. */
-export const AI_NOTICE_VERSION = "2026-11-13";
+export const AI_NOTICE_VERSION = "2026-11-13-ai-chat";
 
 const hostOf = (url) => {
   try {
@@ -166,7 +166,29 @@ export function createChat({
     return box;
   }
 
+  /** The AI-first reply: words, small steps, the law texts it used (verbatim, expandable), one question. */
+  function renderAiChat(answer) {
+    const box = el("div", "a");
+    box.appendChild(el("div", null, answer.lead));
+    if (answer.steps?.length) {
+      const list = el("ul", "opts");
+      for (const s of answer.steps) list.appendChild(el("li", null, s));
+      box.appendChild(list);
+    }
+    const cites = (answer.cites || []).filter((id) => ARTICLES[id]);
+    if (cites.length) {
+      box.appendChild(el("div", "sec", "النص القانوني اللي اعتمدت عليه"));
+      cites.forEach((id) => box.appendChild(citationCard(id, false)));
+    }
+    if (answer.ask) box.appendChild(el("div", "ask", answer.ask));
+    const src = sourceLine(answer);
+    if (src) box.appendChild(src);
+    box.appendChild(actionsFor({ ...answer, general: true }));
+    return box;
+  }
+
   function renderAnswer(answer) {
+    if (answer.kind === "chat-ai") return renderAiChat(answer);
     if (answer.kind === "chat") return renderChat(answer);
     if (answer.kind === "talk") return renderTalk(answer);
     if (answer.kind === "article") return renderArticle(answer);
@@ -243,12 +265,12 @@ export function createChat({
         el(
           "div",
           null,
-          "لجواب أوضح، رسالتك بتنبعت عبر سيرفر فزعة لخدمة ذكاء اصطناعي خارجية. اللي بينبعت: نص الرسالة ومنطقتك بس. ما بينبعت اسمك ولا رقمك ولا محادثتك مع المحامية.",
+          "الردود هون بيكتبها ذكاء اصطناعي خارجي (Google Gemini) عبر سيرفر فزعة. اللي بينبعت: رسايلك بهالمحادثة وردودها ومنطقتك، عشان يفهم عليكِ ويتذكر شو حكيتي. ما بينبعت اسمك ولا رقمك ولا محادثتك مع المحامية.",
         ),
         el(
           "div",
           "muted",
-          "إذا اخترتي «مع آخر الرسائل»، بتنبعت كمان آخر 6 رسائل من هالجلسة وملخص قصير لشو حكيتي فيها (مثلاً «جوزها هددها ياخد الولاد»)، عشان ما أرجع أسألك نفس الأسئلة. ما بنحفظ رسايلك بالسيرفر، بس مزوّد الخدمة ممكن يحتفظ فيها فترة قصيرة حسب شروطه.",
+          "ما بنحفظ رسايلك بالسيرفر، والمحادثة بتنمسح من جهازك لما تسكري أو تطلعي بسرعة. مزوّد الخدمة ممكن يحتفظ فيها فترة قصيرة حسب شروطه، فما تكتبي أسماء أو أرقام بتعرّف عليكِ.",
         ),
       );
       const row = el("div", "acts");
@@ -256,13 +278,11 @@ export function createChat({
         box.remove();
         resolve(choice);
       };
-      const b1 = chip({ label: "موافقة، رسالتي بس", fill: true });
-      const b2 = chip({ label: "موافقة مع آخر الرسائل" });
-      const b3 = chip({ label: "لأ، جاوبيني من الجهاز بس" });
-      b1.addEventListener("click", () => choose("message"));
-      b2.addEventListener("click", () => choose("context"));
+      const b1 = chip({ label: "موافقة", fill: true });
+      const b3 = chip({ label: "لأ، مش هلأ" });
+      b1.addEventListener("click", () => choose("context"));
       b3.addEventListener("click", () => choose("offline"));
-      row.append(b1, b2, b3);
+      row.append(b1, b3);
       box.appendChild(row);
       append(box);
       b1.focus({ preventScroll: true });
