@@ -21,7 +21,7 @@ const CLAIM_ERRORS = {
   "already-claimed": "هالحالة صارت مع محامية تانية.",
 };
 
-const STATUS = { open: "بانتظار محامي", claimed: "مفتوحة", closed: "منتهية" };
+const STATUS = { open: "بانتظار محامية", claimed: "مفتوحة", closed: "منتهية" };
 const dayLabel = (ms) =>
   new Date(ms).toLocaleDateString("ar", { weekday: "long", day: "numeric", month: "long" });
 
@@ -82,10 +82,10 @@ function threadPane({ ctx, c, readOnly, onBack, onClosed, headExtra = [] }) {
 
   let input;
   if (readOnly) {
-    pane.appendChild(el("div", "readonly-bar", "قراءة فقط. الرد بيكون من المحامي اللي تولّى الحالة."));
+    pane.appendChild(el("div", "readonly-bar", "قراءة فقط. الرد بيكون من المحامية اللي تولّت الحالة."));
   } else {
     input = el("textarea");
-    input.placeholder = "اكتب ردك...";
+    input.placeholder = "اكتبي ردك...";
     input.rows = 1;
     input.setAttribute("aria-label", "الرد");
     const sendBtn = el("button", "primary");
@@ -153,10 +153,22 @@ export function lawyerView(ctx) {
   let thread = null;
   let listTimer = null;
   let noteTimer = null;
+  /** A note typed but not saved yet: saved at once when she leaves the case (it used to be dropped). */
+  let pendingNote = null;
+  async function saveNote(id, text) {
+    await api(`/cases/${id}/note`, { method: "PUT", body: { note: text } });
+  }
+  function flushNote() {
+    clearTimeout(noteTimer);
+    if (!pendingNote) return;
+    const { id, text } = pendingNote;
+    pendingNote = null;
+    saveNote(id, text).catch(() => ctx.banner("ملاحظتك الأخيرة ما انحفظت. افتحي الحالة واكتبيها كمان مرة."));
+  }
 
   const root = el("div", "inbox");
   const listCol = el("aside", "inbox-list");
-  let chatCol = emptyChat("من «حالاتي»، أو استلم حالة من «بانتظار».");
+  let chatCol = emptyChat("من «حالاتي»، أو استلمي حالة من «بانتظار».");
   const info = el("aside", "info");
   root.append(listCol, chatCol, info);
   ctx.view.replaceChildren(root);
@@ -226,7 +238,7 @@ export function lawyerView(ctx) {
       el("span", "avatar", initial(c.topic)),
       el("b", null, c.topic),
       el("span", ageClass(ms), ago(ms)),
-      el("small", null, `${REGION[c.region]} · بتستنى محامي`),
+      el("small", null, `${REGION[c.region]} · بتستنى محامية`),
       take,
     );
     return row;
@@ -296,7 +308,7 @@ export function lawyerView(ctx) {
 
   function openCase(c) {
     thread?.stop();
-    clearTimeout(noteTimer);
+    flushNote();
     state.current = c;
     root.classList.add("chatting");
     root.classList.remove("show-info");
@@ -327,7 +339,7 @@ export function lawyerView(ctx) {
   async function finishCase(id) {
     if (
       !window.confirm(
-        "بعد إنهاء الحالة ما بتقدر المستخدمة تكتب فيها، وبتنحذف المحادثة تلقائياً بعد مدة. متأكد؟",
+        "بعد إنهاء الحالة ما بتقدر المستخدمة تكتب فيها، وبتنحذف المحادثة تلقائياً بعد مدة. متأكدة؟",
       )
     )
       return;
@@ -343,10 +355,10 @@ export function lawyerView(ctx) {
   function closeChat() {
     thread?.stop();
     thread = null;
-    clearTimeout(noteTimer);
+    flushNote();
     state.current = null;
     root.classList.remove("chatting", "show-info");
-    setChat(emptyChat("من «حالاتي»، أو استلم حالة من «بانتظار»."));
+    setChat(emptyChat("من «حالاتي»، أو استلمي حالة من «بانتظار»."));
     info.replaceChildren();
     renderList();
   }
@@ -379,7 +391,7 @@ export function lawyerView(ctx) {
     repliesCard.append(
       el("h2", null, "ردود جاهزة"),
       list,
-      el("p", "hint", "بتنضاف لمربع الرد وبتقدر تعدّلها."),
+      el("p", "hint", "بتنضاف لمربع الرد وبتقدري تعدّليها."),
     );
 
     const clientCard = el("section", "card");
@@ -403,23 +415,28 @@ export function lawyerView(ctx) {
       clientCard.appendChild(el("p", "hint", "ما في بيانات تواصل لهالحالة."));
     }
 
-    try {
-      noteArea.value = (await api(`/cases/${id}/note`)).note;
-    } catch (e) {
-      ctx.banner(errorText(e));
-    }
     noteArea.addEventListener("input", () => {
       noteState.textContent = "…";
       clearTimeout(noteTimer);
+      pendingNote = { id, text: noteArea.value };
       noteTimer = setTimeout(async () => {
+        if (!pendingNote) return;
+        const { text } = pendingNote;
+        pendingNote = null;
         try {
-          await api(`/cases/${id}/note`, { method: "PUT", body: { note: noteArea.value } });
+          await saveNote(id, text);
           noteState.textContent = "تم الحفظ";
         } catch (e) {
           noteState.textContent = errorText(e);
         }
       }, 800);
     });
+    try {
+      const saved = (await api(`/cases/${id}/note`)).note;
+      if (!pendingNote) noteArea.value = saved; // never overwrite what she started typing meanwhile
+    } catch (e) {
+      ctx.banner(errorText(e));
+    }
   }
 
   /* ----- go ----- */
@@ -431,7 +448,7 @@ export function lawyerView(ctx) {
     destroy() {
       thread?.stop();
       clearInterval(listTimer);
-      clearTimeout(noteTimer);
+      flushNote();
     },
   };
 }
@@ -453,7 +470,7 @@ export function conversationsView(ctx) {
   const chips = el("div", "chips");
   for (const [id, label] of [
     ["all", "الكل"],
-    ["open", "بانتظار محامي"],
+    ["open", "بانتظار محامية"],
     ["claimed", "مفتوحة"],
     ["closed", "منتهية"],
   ]) {

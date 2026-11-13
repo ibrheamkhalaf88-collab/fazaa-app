@@ -3,7 +3,7 @@ import { el } from "../src/core/dom.js";
 export { el };
 
 export const REGION = { "ps-wb": "الضفة الغربية", "ps-gaza": "غزة" };
-export const ROLE = { lawyer: "محامي", developer: "مطوّر" };
+export const ROLE = { lawyer: "محامية", developer: "مطوّر" };
 export const ACTION = {
   claim: "تولّت حالة",
   close: "أنهت حالة",
@@ -52,9 +52,16 @@ export const minutes = (ms) => Math.max(0, Math.floor(ms / 60000));
 export function ago(ms) {
   const min = minutes(ms);
   if (min < 1) return "الآن";
-  if (min < 60) return `قبل ${min} دقيقة`;
+  if (min < 60) return `قبل ${count(min, "دقيقة", "دقيقتين", "دقايق")}`;
   const h = Math.floor(min / 60);
-  return h < 24 ? `قبل ${h} ساعة` : `قبل ${Math.floor(h / 24)} يوم`;
+  return h < 24 ? `قبل ${count(h, "ساعة", "ساعتين", "ساعات")}` : `قبل ${count(Math.floor(h / 24), "يوم", "يومين", "أيام")}`;
+}
+
+/** Arabic counting: 1 → «ساعة», 2 → «ساعتين», 3–10 → «3 ساعات», 11+ → «11 ساعة». */
+export function count(n, one, two, few) {
+  if (n === 1) return one;
+  if (n === 2) return two;
+  return n <= 10 ? `${n} ${few}` : `${n} ${one}`;
 }
 
 /** Short duration, e.g. "12 د" / "2 س 10 د". */

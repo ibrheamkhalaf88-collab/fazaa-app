@@ -3,6 +3,9 @@ import { barRows, barsChart, kpi, legend } from "./charts.js";
 import { ACTION, ago, dateTime, duration, el, every, pill, REGION, ROLE } from "./util.js";
 
 const REFRESH_MS = 30_000;
+const OWNER_ONLY = "إدارة حسابات المطوّرين للمالكة بس (أول مطوّرة بالفريق)، حتى ما يقدر حساب مسروق يتحكم بالباقي.";
+/** A clear reason when the server refuses (owner-only actions), otherwise the usual message. */
+const teamError = async (e) => ((await e.body?.())?.error === "owner-only" ? OWNER_ONLY : errorText(e));
 const STATUS = { open: "بانتظار محامية", claimed: "قيد المتابعة", closed: "منتهية" };
 export const DAILY_DEFS = [
   { key: "created", color: "var(--primary)", label: "حالات جديدة" },
@@ -58,8 +61,8 @@ export function overviewView(ctx) {
       const list = el("ul", "policy");
       for (const t of [
         `المحادثات المنتهية بتنحذف بعد ${s.retention.closedDays} أيام، وأي حالة بدون نشاط بتنحذف بعد ${s.retention.idleDays} يوماً.`,
-        "نص الرسائل مشفّر بالتخزين. المحامي والمطوّرون بيقدروا يقرؤوا المحادثات، وكل فتح من مطوّر بينسجّل بسجل العمليات.",
-        "اسم المستخدمة ورقمها مشفّرين، وما بيشوفهم غير المحامي اللي تولّى حالتها. ما بنخزّن عنوان IP.",
+        "نص الرسائل مشفّر بالتخزين. المحامية اللي تولّت الحالة والمطوّرون بيقدروا يقرؤوا المحادثات، وكل فتح من مطوّر بينسجّل بسجل العمليات.",
+        "اسم المستخدمة ورقمها مشفّرين، وما بيشوفهم غير المحامية اللي تولّت حالتها. ما بنخزّن عنوان IP.",
         "الأعداد اليومية مجمّعة ومجهولة، فبتضل للرسم حتى بعد حذف الحالات القديمة.",
       ])
         list.appendChild(el("li", null, t));
@@ -161,7 +164,7 @@ export function teamView(ctx) {
       const head = el("div", "page-head");
       head.append(
         el("h1", null, "الفريق"),
-        el("span", "muted", "المحامي بيرد على المحادثات، والمطوّر بيدير النظام وبيقرأ المحادثات"),
+        el("span", "muted", "المحامية بترد على المحادثات، والمطوّر بيدير النظام وبيقرأ المحادثات"),
       );
 
       const table = el("table", "table");
@@ -174,18 +177,25 @@ export function teamView(ctx) {
       for (const m of team) {
         const tr = el("tr");
         const isMe = m.email === ctx.me.email;
+        // only the owner manages developers (the server enforces it; the buttons say so up front)
+        const locked = isMe || (m.role === "developer" && !ctx.me.owner);
         const roleSel = el("select");
         roleSel.setAttribute("aria-label", `صلاحية ${m.email}`);
-        for (const [v, l] of Object.entries(ROLE)) roleSel.append(new Option(l, v, false, v === m.role));
-        roleSel.disabled = isMe;
+        for (const [v, l] of Object.entries(ROLE)) {
+          const opt = new Option(l, v, false, v === m.role);
+          if (v === "developer" && !ctx.me.owner && m.role !== "developer") opt.disabled = true;
+          roleSel.append(opt);
+        }
+        roleSel.disabled = locked;
         roleSel.addEventListener("change", () => save({ email: m.email, name: m.name, role: roleSel.value }));
         const toggle = el("button", null, m.active === false ? "تفعيل" : "تعليق");
-        toggle.disabled = isMe;
+        toggle.disabled = locked;
+        if (locked && !isMe) tr.title = OWNER_ONLY;
         toggle.addEventListener("click", () =>
           save({ email: m.email, name: m.name, role: m.role, active: m.active === false }),
         );
         const reset = el("button", null, "كلمة سر جديدة");
-        reset.disabled = isMe;
+        reset.disabled = locked;
         reset.addEventListener("click", async () => {
           if (!window.confirm(`عمل كلمة سر مؤقتة جديدة لـ ${m.email}؟ القديمة بتوقف وبينطلع من كل أجهزته.`))
             return;
@@ -194,18 +204,18 @@ export function teamView(ctx) {
             shown = { email: m.email, password: r.tempPassword };
             load();
           } catch (e) {
-            ctx.banner(errorText(e));
+            ctx.banner(await teamError(e));
           }
         });
         const rm = el("button", null, "حذف");
-        rm.disabled = isMe;
+        rm.disabled = locked;
         rm.addEventListener("click", async () => {
           if (!window.confirm(`حذف ${m.email} من الفريق؟`)) return;
           try {
             await api(`/team?email=${encodeURIComponent(m.email)}`, { method: "DELETE" });
             load();
           } catch (e) {
-            ctx.banner(errorText(e));
+            ctx.banner(await teamError(e));
           }
         });
         const emailCell = el("td", null, m.email);
@@ -274,7 +284,7 @@ export function teamView(ctx) {
       ctx.banner();
       load();
     } catch (e) {
-      ctx.banner(e.status === 400 ? "تأكدي من البريد والصلاحية." : errorText(e));
+      ctx.banner(e.status === 400 ? "تأكدي من البريد والصلاحية." : await teamError(e));
     }
   }
 
