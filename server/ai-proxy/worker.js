@@ -23,6 +23,7 @@ import { assessDanger } from "../../src/ai/danger.js";
 import { classifyNeed, createMemory } from "../../src/ai/conversation.js";
 import { CONTEXT, MAX_BODY_BYTES, MAX_MESSAGE_CHARS, MIN_MESSAGE_CHARS } from "../../src/ai/limits.js";
 import { retrieveArticles } from "../../src/ai/retrieve.js";
+import { findSpecificArticles } from "../../src/ai/legal.js";
 import { validateAnswer, validateTalk } from "../../src/ai/validate.js";
 
 const LIMITS = { bodyBytes: MAX_BODY_BYTES, questionMin: MIN_MESSAGE_CHARS, questionMax: MAX_MESSAGE_CHARS, upstreamMs: 20000 };
@@ -262,7 +263,9 @@ export async function answerQuestion(question, country, env, fetchImpl = fetch, 
   if (need === "legal") {
     // context-aware retrieval: a short follow-up («شو حقي إذا ما صرف؟») is read with the topic she
     // already named (only present when she agreed to share context)
-    let articles = retrieveArticles(question, articlesFor(country), 3);
+    // a specific question («قديش مدة العدة؟») gets the article that answers it, not the whole topic list
+    const specific = findSpecificArticles(question, country);
+    let articles = specific?.found.length ? specific.found : retrieveArticles(question, articlesFor(country), 3);
     if (articles.length === 0 && context?.topic) articles = retrieveArticles(`${question} ${context.topic}`, articlesFor(country), 3);
     if (articles.length === 0) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
     const res = await callModel(

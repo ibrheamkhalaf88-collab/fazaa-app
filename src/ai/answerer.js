@@ -14,7 +14,7 @@ import {
 } from "./conversation.js";
 import { currentTopic, LEGAL_TOPICS } from "./situation.js";
 import { assessDanger, forcedMarriageAnswer } from "./danger.js";
-import { findArticleByNumber } from "./legal.js";
+import { findArticleByNumber, findSpecificArticles } from "./legal.js";
 import { answerFromRules } from "./rules-engine.js";
 import { detectSmallTalk } from "./smalltalk.js";
 import { ventingFeeling } from "./companion.js";
@@ -29,7 +29,9 @@ const RECALL = /(?:^| )(?:بتتذكري|بتذكري|متذكره|فاكره|ح
 const NEWS = /(?:^| )صار (?:معي )?(?:اشي|شي) جديد(?= |$)|(?:^| )في (?:اشي|شي) جديد(?= |$)/;
 /** «بدي نكمل موضوع الحضانة», «نكمل من وين وقفنا». */
 const RESUME = /(?:^| )(?:بدي |خلينا )?نكمل(?: (?:موضوع|بموضوع|حكي|حديث|من وين وقفنا|اللي حكينا))?(?= |$)/;
-const SHOW_ME = /(?:^| )(?:وريني|فرجيني|ورجيني|بدي اعرف|احكيلي)(?= |$)/;
+/** «وإذا بغزة؟», «طب بالضفة؟». */
+const OTHER_REGION = /(?:^| )(?:ب|في |ف)?((?:ال)?غزه|(?:ال)?ضفه|بالضفه|بغزه)(?= |$)/;
+const SHOW_ME =/(?:^| )(?:وريني|فرجيني|ورجيني|بدي اعرف|احكيلي)(?= |$)/;
 const TOPIC_WORDS = {
   custody: /حضان|الولاد|ولادي/,
   nafaqa: /نفق|مصروف/,
@@ -38,6 +40,8 @@ const TOPIC_WORDS = {
   violence: /تهديد|عنف|ضرب/,
   family: /اهلي/,
   inherit: /ميراث|ورث/,
+  inlaws: /حماتي|اهله|اهل جوزي|السكن/,
+  polygamy: /يتجوز|الزواج التاني|ضره/,
 };
 /** The question a topic stands for, when she says «آه» to «بتحبي أوريكِ شو بيقول القانون؟». */
 const TOPIC_QUESTION = {
@@ -47,6 +51,7 @@ const TOPIC_QUESTION = {
   blackmail: "شو عقوبة الابتزاز الإلكتروني؟",
   privacy: "شو عقوبة نشر الصور بدون إذن؟",
   inherit: "شو حقي بالميراث؟",
+  inlaws: "شو حقي بمسكن لحالي بعيد عن أهله؟",
 };
 
 /** She is talking about her own situation (not asking for a recipe or a restaurant). */
@@ -248,7 +253,13 @@ export function createAnswerer({
         : { ...answer, scope: [...(answer.scope || []), ask], sos: true };
     }
     memory.lastAsk = about === "forced" ? "forced" : about === "family" ? "family" : "safety";
-    if (answer.kind === "talk") return { ...answer, ask, sos: true };
+    if (answer.kind === "talk") {
+      // the question this reply was going to ask was replaced by the safety one: it was NOT asked
+      const s = memory.situation;
+      if (answer.ask && s.pending?.slot) s.asked.delete(s.pending.slot);
+      s.pending = null;
+      return { ...answer, ask, sos: true };
+    }
     return { ...answer, safetyAsk: ask, sos: true };
   }
 
@@ -301,6 +312,29 @@ export function createAnswerer({
     };
   }
 
+  /** «قديش مدة العدة؟»: the article(s) that answer exactly that, verbatim; or an honest "not for your region". */
+  function specificAnswer(spec, country, can) {
+    if (!spec.found.length) {
+      return {
+        kind: "talk",
+        lead: `النص اللي عندي عن «${spec.label}» من قانون بيطبق بمنطقة غير منطقتك، فما رح أعتمد عليه إلك.`,
+        options: [],
+        ask: can.lawyer ? "بتحبي تسألي محامية شو بيطبق عندك؟" : "",
+        note: "",
+        general: true,
+      };
+    }
+    return {
+      kind: "article",
+      lead: `هاد النص اللي بيحكي عن «${spec.label}» بقانون منطقتك، زي ما هو:`,
+      steps: [],
+      note: "النص الأصلي تحت. شو بيعني لوضعك بالزبط بيحتاج محامية، لأنه بيعتمد على تفاصيل حالتك.",
+      cites: spec.found.slice(0, 2).map((a) => a.id),
+      general: false,
+      country,
+    };
+  }
+
   async function online(question, need, ctx) {
     if (!remote || !isRemoteEnabled()) return null;
     try {
@@ -327,8 +361,10 @@ export function createAnswerer({
     const topic = topicHint || currentTopic(memory.situation);
     // context-aware: «شو حقي إذا ما صرف؟» inside a conversation about maintenance is about maintenance
     const local = answerFromRules(question) || (TOPIC_QUESTION[topic] ? answerFromRules(TOPIC_QUESTION[topic]) : null);
+    const specific = hit ? null : findSpecificArticles(question, ctx.country);
     let answer;
     if (hit) answer = articleAnswer(hit, ctx.country);
+    else if (specific) answer = specificAnswer(specific, ctx.country, can);
     else {
       const remoteAnswer = await online(question, "legal", ctx);
       // the offline rules know some cases are dangerous (blackmail): keep the safety-plan button
@@ -345,7 +381,11 @@ export function createAnswerer({
       };
     }
     answer = withScope(answer, ctx.country);
-    if (answer.kind === "article") return answer;
+    if (answer.kind === "article") {
+      if (!specific) return answer;
+      answer.cites.forEach((id) => memory.situation.shownArticles.add(id));
+      return { ...answer, scope: [...(answer.scope || []), ...jurisdiction(answer.cites, topic, ctx.country)] };
+    }
 
     let ids = answer.cites || [];
     if (!ids.length && answer.kind !== "talk" && LEGAL_TOPICS.includes(topic)) {
@@ -373,6 +413,8 @@ export function createAnswerer({
 
     // answers to our own last question come first
     if (memory.lastAsk === "safety" && answeredNo(question)) return rememberDanger(assessDanger("مش بامان", numbers));
+    // «آه بأمان» to our safety question: said back, then the conversation goes on
+    const safeNow = memory.lastAsk === "safety" && (answeredYes(question) || /(?:^| )(?:بامان|امنه)(?= |$)/.test(norm(question)));
     // After a danger reply we asked ONE safety question. Her answer is about her safety: never drift to
     // "since when?" while she may still be in danger.
     if (memory.dangerKind && ["safe-place", "alone"].includes(memory.lastAsk)) {
@@ -440,8 +482,21 @@ export function createAnswerer({
         memory.lastNeed = "legal";
         return legalAnswer(TOPIC_QUESTION[topic], ctx, can, topic);
       }
-      if (answeredNo(question))
+      // a short «لا» only: «ما بقدر أطلع من البيت» is something she tells, not a refusal of the offer
+      if (answeredNo(question) && t.split(" ").length <= 3)
         return { kind: "talk", lead: "تمام، مش لازم هلأ.", options: [], ask: "بدك نكمل حكي، ولا في إشي تاني على بالك؟", note: "" };
+    }
+
+    // «وإذا بغزة؟» right after a legal answer: the same topic under the OTHER region's law (her region stays)
+    const other = OTHER_REGION.exec(t);
+    const legalTopic = currentTopic(memory.situation);
+    if (other && t.split(" ").length <= 4 && TOPIC_QUESTION[legalTopic]) {
+      const country = /غزه/.test(other[1]) ? "ps-gaza" : "ps-wb";
+      const name = country === "ps-gaza" ? "غزة" : "الضفة";
+      memory.lastNeed = "legal";
+      if (country === ctx.country) return { kind: "talk", lead: `منطقتك هلأ هي ${name}، فاللي حكيتلك ياه هو عن ${name}.`, options: [], ask: "", note: "" };
+      const a = await legalAnswer(TOPIC_QUESTION[legalTopic], { ...ctx, country }, can, legalTopic);
+      return { ...a, lead: a.related?.length || a.cites?.length ? `ب${name} في قانون تاني، وهاي النصوص اللي عندي منه:` : `ب${name} في قانون تاني. ${a.lead}`, scope: [...(a.scope || []), `منطقتك بالتطبيق لسا ${ctx.country === "ps-gaza" ? "غزة" : "الضفة"}؛ هاد بس للمعلومة.`] };
     }
 
     let need = classifyNeed(question, memory);
@@ -463,6 +518,7 @@ export function createAnswerer({
         answer = { ...localTalk(need, memory, can), general: true };
     }
     if (!answer) return null;
+    if (safeNow && answer.kind === "talk") answer = { ...answer, lead: `منيح إنك بأمان هلأ. ${answer.lead}` };
     return withSafetyQuestion(answer, danger?.ask, danger?.about);
   }
 
@@ -479,8 +535,14 @@ export function createAnswerer({
       memory.country = ctx.country;
       remember(memory, question);
       pushTurn(memory, "user", question);
-      const answer = await decide(question, ctx);
+      let answer = await decide(question, ctx);
       if (ctx.signal?.aborted) return null; // wiped while thinking: write nothing back
+      // never the same opening sentence twice in a session (a law reply repeated word for word)
+      if (answer?.lead && answer.kind !== "chat" && !answer.sos) {
+        if (memory.usedLeads.has(answer.lead))
+          answer = { ...answer, lead: answer.cites?.length || answer.related?.length ? "هاي النصوص اللي عندي عن سؤالك:" : "متل ما حكيتلك، هاد بيعتمد على تفاصيل وضعك، والمحامية بتقدر تقلك بالزبط." };
+        memory.usedLeads.add(answer.lead);
+      }
       pushTurn(memory, "assistant", [answer?.lead, answer?.ask].filter(Boolean).join(" "));
       // opt-in only: short labels of what she told, per topic; never after a self-harm reply
       if (saved?.enabled?.() && memory.dangerKind !== "selfharm" && memory.lastAsk !== "selfharm") saved.remember(memory);

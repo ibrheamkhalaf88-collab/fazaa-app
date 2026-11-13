@@ -219,6 +219,60 @@ export const CONVERSATIONS = [
   },
 ];
 
+CONVERSATIONS.push(
+  {
+    id: "C26 overwhelmed and short of breath: slow down first, a plain medical line, no advice list",
+    turns: [{ say: "مخنوقة كتير ومش قادرة أتنفس", expect: { lead: /خدي نفس ببطء/, noOptions: true } }],
+    check: (answers) => (/إسعاف/.test(answers[0].lead) ? true : "says when breathing trouble needs an ambulance"),
+  },
+  {
+    id: "C27 «أمي وأختي بيحكوا عني»: both of them, then «هي» is asked about",
+    turns: [
+      { say: "أمي وأختي بيحكوا عني من ورا ظهري", expect: { lead: /إمك وأختك بيحكوا عنك من ورا ظهرك/ } },
+      { say: "هي اللي بدأت", expect: { ask: /قصدك (?:إمك|أختك) ولا/ } },
+    ],
+  },
+  {
+    id: "C28 a sentence starting with «ما» after the law offer is not a «no»",
+    turns: [
+      { say: "حماتي ساكنة معنا وكل يوم بتعيّرني", expect: {} },
+      { say: "شو بتنصحيني؟", expect: { ask: /القانون/ } },
+      { say: "ما بقدر أطلع من البيت، ما إلي مكان", expect: { notLead: /مش لازم هلأ/, lead: /الطلعة من البيت مش سهلة/ } },
+    ],
+  },
+  {
+    id: "C29 a question replaced by the safety question is asked later",
+    turns: [
+      { say: "جوزي بيهددني يتجوز علي", expect: { ask: /بأمان/ } },
+      { say: "آه بأمان", expect: { lead: /منيح إنك بأمان/, ask: /بيقلقك/ } },
+      { say: "حكى مع أهله رسمي", expect: { lead: /جوزك حكى مع أهله/, notAsk: /بيقلقك/ } },
+    ],
+  },
+  {
+    id: "C23 mother-in-law insults, husband silent: understood as an in-laws story, law offered for a separate home",
+    turns: [
+      { say: "حماتي ساكنة معنا وكل يوم بتعيّرني", expect: { lead: /حماتك ساكنة معكم وبتعيّرك/, notLead: /بتهينك/ } },
+      { say: "وجوزي ما بيحكي ولا كلمة", expect: { lead: /جوزك ما بيوقف معكِ/ } },
+      { say: "شو بتنصحيني؟", expect: { options: /احكي مع جوزك لحالكم/, ask: /القانون عن السكن مع أهل جوزك/ } },
+      { say: "آه", expect: { cites: ["psl:38"] } },
+    ],
+  },
+  {
+    id: "C24 a threat of a second marriage, then «حكى مع أهله»: his family is the other side, not the subject",
+    turns: [
+      { say: "جوزي بيهددني يتجوز علي", expect: { lead: /جوزك هددك يتجوز عليكِ/ } },
+      { say: "حكى مع أهله رسمي", expect: { lead: /جوزك حكى مع أهله/ } },
+    ],
+  },
+  {
+    id: "C25 «وإذا بغزة؟» after a maintenance answer: Gaza's law, her region unchanged",
+    turns: [
+      { say: "شو حقي بالنفقة؟", expect: { related: ["psl:66"] } },
+      { say: "وإذا بغزة؟", expect: { lead: /بغزة في قانون تاني/, related: ["gz:59"], scope: /هاد بس للمعلومة/ } },
+    ],
+  },
+);
+
 export const LEGAL = [
   { id: "L01 article by number", say: "شو بتقول المادة 15؟", expect: { kind: "article", cites: ["15"] } },
   { id: "L02 unknown article: honest", say: "شو بتقول المادة 999؟", expect: { lead: /مش موجودة/ } },
@@ -239,6 +293,11 @@ export const LEGAL = [
   { id: "L17 law hint picks the right law", say: "المادة 66 من قانون الأحوال الشخصية", expect: { kind: "article", cites: ["psl:66"] } },
   { id: "L18 the same texts are not shown twice in one session", turns: ["شو حقي بالحضانة؟", "شو حقي بالحضانة؟"], expect2: (b) => (!(b.related || []).includes("psl:154") ? true : "psl:154 shown again") },
   { id: "L19 jurisdiction named on a cited answer", say: "شو عقوبة نشر الصور بدون إذن؟", expect: { scope: /الجرائم الإلكترونية/ } },
+  { id: "L22 «قديش مدة العدة؟» shows «مدة العدة», not unrelated divorce texts", say: "قديش مدة العدة؟", expect: { kind: "article", cites: ["psl:135"], notCites: ["psl:132", "psl:134"] } },
+  { id: "L23 staying home during the waiting period: the article about it", say: "وبضل بالبيت خلال العدة؟", expect: { cites: ["psl:146"] } },
+  { id: "L24 dowry in Gaza uses the Gaza text", say: "شو حقي بالمهر؟", country: "ps-gaza", expect: { cites: ["gz:55"], notCites: ["psl:61"] } },
+  { id: "L25 a WB-only specific text asked from Gaza: honest, nothing shown", say: "قديش مدة العدة؟", country: "ps-gaza", expect: { lead: /منطقة غير منطقتك/, notCites: ["psl:135"] } },
+  { id: "L26 the same law reply twice is not repeated word for word", turns: ["شو حقي بالنفقة؟", "شو حقي بالنفقة؟"], expect2: (b) => (!/بيضغط كتير/.test(b.lead) ? true : `repeated lead: ${b.lead}`) },
   { id: "L20 minor and online abuse", say: "بنتي عمرها ١٥ وفي حدا عم يبعتلها صور إباحية", expect: { cites: ["52"] } },
 ];
 

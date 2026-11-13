@@ -58,6 +58,7 @@ const CONSTRAINTS = {
   monitored: ["بيفتش تلفوني", "بيفتشوا تلفوني", "بيراقب تلفوني", "بيراقبوا تلفوني", "بيقرأ رسايلي", "بيشوف تلفوني", "بيفتحوا تلفوني"],
   noTrusted: ["ما عندي حدا", "ما الي حدا", "ما في حدا اوثق فيه", "ما بثق بحدا", "ما في حدا"],
   familyUnsafe: ["اهلي هم المشكله", "ما بقدر احكي لاهلي", "خايفه من اهلي", "اهلي ضدي", "اهلي بيقتلوني", "اذا عرفوا اهلي"],
+  noFamilyTell: ["ما بدي احكي لاهلي", "مش بدي اهلي يعرفوا", "ما بدي اهلي يعرفوا", "ما بدي حدا من اهلي يعرف"],
   cannotLeave: ["ما بقدر اطلع", "ما عندي مواصلات", "ما بقدر اروح", "ما الي مكان اروح عليه", "ما بقدر اترك البيت"],
 };
 export const CONSTRAINT_LABELS = {
@@ -66,6 +67,7 @@ export const CONSTRAINT_LABELS = {
   monitored: "تلفونها ممكن يكون مراقب",
   noTrusted: "ما عندها شخص بتثق فيه",
   familyUnsafe: "أهلها مش آمنين إلها أو مصدر خوف",
+  noFamilyTell: "مش بدها أهلها يعرفوا",
   cannotLeave: "ما بتقدر تطلع من البيت بسهولة",
 };
 
@@ -100,6 +102,7 @@ const FEELINGS = {
   لحالي: "وحدة",
   مكسوره: "وجع",
   ضايعه: "حيرة",
+  غريبه: "وحدة",
   محتاره: "حيرة",
 };
 
@@ -126,6 +129,7 @@ export function createMemory() {
     justRejected: false, // she just refused one of our ideas
     newGoal: "", // a goal she stated in THIS message
     quietTurns: 0, // replies in a row without a question (after 3, one gentle check-in)
+    usedLeads: new Set(), // opening sentences already given (never repeated word for word)
   };
 }
 
@@ -275,7 +279,16 @@ export function localTalk(need, memory, available = {}) {
   const limit = memory.newConstraints.find((c) => CONSTRAINT_ACK[c]);
   if (limit && !memory.justRejected) lead.push(CONSTRAINT_ACK[limit]);
   if (!events.length && fresh.when === "since" && !lead.length) lead.push("يعني صارله وقت، مش إشي جديد.");
-  if (!lead.length && need !== "steps") {
+  // overwhelmed: slow down first (once), and a plain word about breathing trouble that does not pass
+  if (OVERWHELMED.test(t)) {
+    if (!memory.situation.asked.has("calm")) {
+      memory.situation.asked.add("calm");
+      lead.push("خلينا نبطّئ شوي: خدي نفس ببطء من أنفك، وطلّعيه أبطأ. مش لازم تحلي إشي هلأ.");
+      if (/(?:^| )(?:اتنفس|بتنفس|نفسي مقطوع)(?= |$)/.test(t)) lead.push("وإذا ضيق النفس ما خفّ، أو في وجع بصدرك، اطلبي إسعاف.");
+    } else lead.push("واضح إنه كتير عليكِ هلأ.");
+  }
+  // (listen has its own short invitation; steps its own intro: no extra «سامعتك.» in front)
+  if (!lead.length && need !== "steps" && !(need === "listen" && !memory.feelingNow)) {
     const open = WHO_TO_TALK.test(t) ? "" : opener(memory);
     if (open) lead.push(open);
   }
@@ -322,13 +335,17 @@ const CONSTRAINT_ACK = {
   noTrusted: "مفهوم إنه ما في حدا قريب بتقدري تحكيله هلأ.",
   monitored: "مفهوم، إذا حدا بيشوف تلفونك لازم ننتبه لأي خطوة.",
   familyUnsafe: "مفهوم، ما رح أقترح إشي بيكشفك قدام أهلك.",
+  noFamilyTell: "تمام، هاد قرارك، ومش لازم أهلك يعرفوا.",
   cannotLeave: "مفهوم إنه الطلعة من البيت مش سهلة إلك.",
   noPhone: "مفهوم إنه التلفون مش إلك لحالك.",
 };
 
 /* ---------- pieces of the local reply ---------- */
 
-const WHO_TO_TALK = /(?:^| )(?:مع مين|لمين) (?:احكي|بدي احكي)(?= |$)|(?:^| )ما في حدا احكي معه(?= |$)/;
+/** «مش قادرة أتنفس», «كل اشي فوق راسي», «منهارة». */
+const OVERWHELMED = /(?:^| )(?:و)?(?:(?:مش|ما) (?:قادره|بقدر) (?:اتنفس|اتحمل|اكمل)|فوق راسي|منهاره|انهرت|راسي رح ينفجر|نفسي مقطوع|مش ملحقه)(?= |$)/;
+
+const WHO_TO_TALK =/(?:^| )(?:مع مين|لمين) (?:احكي|بدي احكي)(?= |$)|(?:^| )ما في حدا احكي معه(?= |$)/;
 
 const PROGRESS_ACK = {
   lawyer: "منيح إنك قدرتِ تحكي مع المحامية.",
@@ -367,6 +384,10 @@ const EMPATHY = {
   pressure: ["ضغط الأهل تقيل، خصوصاً لما يطوّل."],
   helped: ["منيح إنه كان في حدا جنبك."],
   broke: ["هاد بيخوّف، حتى لو ما في ضرب."],
+  "not-defending": ["صعب لما اللي المفروض يوقف معكِ يضل ساكت."],
+  "second-wife": ["هاد بيوجع، وطبيعي تكوني مصدومة أو محتارة."],
+  "lives-with": [],
+  taunted: ["من حقك تنعاملي باحترام، مش بالتعيير."],
   "kids-scared": ["طبيعي تكوني قلقانة عليهم."],
 };
 
@@ -397,8 +418,17 @@ const SLOTS = {
   money: [["goal", () => "شو أكتر إشي ضاغط عليكِ هلأ بموضوع المصاري؟"]],
   divorce: [["goal", () => "شو أكتر إشي محتاجة تفهميه هلأ: حقوقك، ولا الولاد، ولا وين رح تكوني؟"]],
   family: [
-    ["about", () => "ضاغطين عليكِ بخصوص شو؟"],
+    ["about", (s) => (s.events.some((e) => e.type === "pressure") ? "ضاغطين عليكِ بخصوص شو؟" : "")],
+    ["goal", (s) => (s.events.some((e) => e.type === "gossip") ? "شو أكتر إشي بيوجعك بهالموضوع؟" : "")],
     ["since", () => "من إيمتى صاير هاد؟"],
+  ],
+  inlaws: [
+    ["since", () => "من إيمتى صاير هاد؟"],
+    ["goal", () => "شو أكتر إشي بيوجعك: الكلام نفسه، ولا إنه ما في حدا بيوقف معكِ، ولا السكن سوا؟"],
+  ],
+  polygamy: [
+    ["what", (s) => (s.events.some((e) => e.type === "second-wife") ? "" : "شو اللي صار بالزبط؟")],
+    ["goal", () => "شو أكتر إشي بيقلقك بهالموضوع هلأ؟"],
   ],
   conflict: [
     ["since", () => "من إيمتى صاير هاد؟"],
@@ -407,7 +437,8 @@ const SLOTS = {
 };
 const GENERIC_SLOTS = [
   ["what", (s) => (s.events.length || s.people.length ? "" : "شو اللي صاير معك؟")],
-  ["after", (s) => (["yesterday", "today"].includes(s.events.at(-1)?.when) ? "وشو صار بعدها؟" : "")],
+  // only right after she told the event, never three turns later
+  ["after", (s) => (["yesterday", "today"].includes(s.events.at(-1)?.when) && s.events.at(-1).turn === s.turn ? "وشو صار بعدها؟" : "")],
   ["since", (s) => (s.events.length ? "من إيمتى صاير هاد؟" : "")],
   ["help", () => "بدك نفكر سوا بخطوة صغيرة، ولا بدك تحكي أكتر؟"],
 ];
@@ -463,6 +494,14 @@ const TOPIC_OPTIONS = {
     { id: "plan", text: "زر «افتحي خطة الأمان» فيه خطوات حسب وضعك." },
   ],
   money: [{ id: "own-docs", text: "خلي هويتك وأوراقك الشخصية بمكان بتوصليله إنتِ." }],
+  inlaws: [
+    { id: "talk-husband", text: "إذا آمن إلك، احكي مع جوزك لحالكم بوقت هادي عن شو بدك منه بالزبط." },
+    { id: "own-space", text: "فكّري بإشي صغير بيعطيكِ مساحة إلك جوّا البيت، وقت أو مكان." },
+  ],
+  polygamy: [
+    { id: "no-sign", text: "ما توقّعي على أي ورقة أو تنازل قبل ما تفهمي حقوقك." },
+    { id: "rights-first", text: "قبل أي قرار، افهمي من محامية حقوقك: المهر، النفقة، والسكن.", needs: ["lawyer"] },
+  ],
 };
 const OTHER_OPTIONS = [
   { id: "danger-now", text: "إذا هي بخطر هلأ، سلامتها أولاً: الشرطة أو الإسعاف إذا بتقدر تتصل بأمان." },

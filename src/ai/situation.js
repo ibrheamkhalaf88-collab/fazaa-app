@@ -36,6 +36,8 @@ const PEOPLE = {
   اهلي: { id: "family", label: "أهلك", g: "pl" },
   حماتي: { id: "mil", label: "حماتك", g: "f" },
   حماي: { id: "fil", label: "حماكِ", g: "m" },
+  اهله: { id: "his-family", label: "أهله", g: "pl" },
+  سلفتي: { id: "sil", label: "سلفتك", g: "f" },
   سلفي: { id: "bil", label: "سلفك", g: "m" },
   مديري: { id: "boss", label: "مديرك", g: "m" },
   صاحبتي: { id: "friend", label: "صاحبتك", g: "f" },
@@ -63,14 +65,20 @@ const EVENTS = [
   { type: "no-support", topic: "nafaqa", re: /(?:^| )(?:ما|مش) (?:بيصرف|عم يصرف|بيدفع|عم يدفع|بيعطيني|دفع|صرف)(?= |$)/, say: { m: "ما بيصرف عليكِ", f: "ما بتصرف عليكِ", pl: "ما بيصرفوا عليكِ", x: "ما في مصروف" } },
   { type: "money-held", topic: "money", re: /(?:^| )(?:ماسك|ماسكه|ماسكين|اخد|اخذ) (?:المصاري|مصاريي|راتبي|فلوسي)(?= |$)/, say: { m: "ماسك المصاري", f: "ماسكة المصاري", pl: "ماسكين المصاري", x: "المصاري مش بإيدك" } },
   { type: "yelled", topic: "conflict", re: /(?:^| )(?:و)?(?:صرخ|بيصرخ|بيصرخوا|عم يصرخ|صرخوا)(?= |$)/, say: { m: "صرخ عليكِ", f: "صرخت عليكِ", pl: "صرخوا عليكِ", x: "في صراخ" } },
-  { type: "insulted", topic: "conflict", re: /(?:^| )(?:و)?(?:بيهينني|بيذلني|بيسبني|بيشتمني|بيحقرني|بيهينوني|هانني)(?= |$)/, say: { m: "بيهينك", f: "بتهينك", pl: "بيهينوكِ", x: "في إهانة" } },
+  { type: "second-wife", topic: "polygamy", re: /(?:^| )(?:ي|بي|رح ي|بده ي|بدو ي)?(?:تجوز|تزوج|اتجوز|اتزوج) علي(?= |$)|(?:^| )(?:بده|بدو|رح) (?:يتجوز|يتزوج)(?= |$)/, say: { m: "بده يتجوز عليكِ", f: "بدها تجوّزه عليكِ", pl: "بدهم يجوّزوه عليكِ", x: "في حكي عن زواج تاني" }, threatSay: { m: "هددك يتجوز عليكِ", f: "هددتك يتجوز عليكِ", pl: "هددوكِ يجوّزوه عليكِ" } },
+  { type: "gossip", topic: "family", re: /(?:^| )(?:و)?(?:بيحكوا|بيحكي|بتحكي|عم يحكوا|حكوا|حكت) (?:عني|عليي)(?= |$)|(?:^| )من ورا ظهري(?= |$)/, say: { m: "بيحكي عنك من ورا ظهرك", f: "بتحكي عنك من ورا ظهرك", pl: "بيحكوا عنك من ورا ظهرك", x: "في حكي عنك من ورا ظهرك" } },
+  { type: "lives-with", topic: "inlaws", re: /(?:^| )(?:ساكنه|ساكن|ساكنين|عايشه|عايش|عايشين) (?:معنا|عنا|معي|بنفس البيت)(?= |$)/, say: { m: "ساكن معكم", f: "ساكنة معكم", pl: "ساكنين معكم", x: "في حدا ساكن معكم" } },
+  { type: "not-defending", topic: "conflict", re: /(?:^| )(?:ما بيحكي ولا كلمه|ما بيحكي ولا حرف|ما بيحكي اشي|ساكت|ضال ساكت|ما بيدافع عني|ما بيوقف معي|ما بيوقف جنبي)(?= |$)/, say: { m: "ما بيوقف معكِ وبيضل ساكت", f: "ما بتوقف معكِ", pl: "ما بيوقفوا معكِ", x: "ما حدا بيوقف معكِ" } },
+  { type: "taunted", topic: "conflict", re: /(?:^| )(?:و)?(?:بتعيرني|بيعيرني|بيعيروني|عيرتني|عيرني)(?= |$)/, say: { m: "بيعيّرك", f: "بتعيّرك", pl: "بيعيّروكِ", x: "في حدا بيعيّرك" } },
+  { type: "insulted", topic: "conflict", re: /(?:^| )(?:و)?(?:بيهينني|بيذلني|بيسبني|بيشتمني|بيحقرني|بيهينوني|هانني|بتهينني|بتذلني|بتسبني|بتحقرني|بتشتمني)(?= |$)/, say: { m: "بيهينك", f: "بتهينك", pl: "بيهينوكِ", x: "في إهانة" } },
   { type: "silenced", topic: "conflict", re: /(?:^| )(?:و)?(?:بيسكتني|بسكتني|بيسكتوني)(?= |$)/, say: { m: "بيسكّتك كل ما تحكي", f: "بتسكّتك", pl: "بيسكّتوكِ", x: "ما حدا بيخليكِ تحكي" } },
   { type: "not-understood", topic: "conflict", re: /(?:^| )(?:مش|ما) (?:فاهم|فاهمين|بيفهم|بيفهموا) علي(?= |$)/, say: { m: "مش فاهم عليكِ", f: "مش فاهمة عليكِ", pl: "مش فاهمين عليكِ", x: "ما حدا فاهم عليكِ" } },
   { type: "pressure", topic: "family", re: /(?:^| )(?:ضاغطين|ضاغط|ضاغطه|بيضغطوا|بيضغط|عم يضغطوا) علي(?= |$)/, say: { m: "ضاغط عليكِ", f: "ضاغطة عليكِ", pl: "ضاغطين عليكِ", x: "في ضغط عليكِ" } },
   { type: "broke", topic: "violence", re: /(?:^| )(?:و)?(?:كسر|بيكسر|كسروا|كسرت) (?!الباب)(?:صحن|صحون|اغراض|الاغراض|التلفون|تلفوني|الشباك|اشي|اشيا|كل اشي|الصحون)(?= |$)/, say: { m: "كسّر أغراض", f: "كسّرت أغراض", pl: "كسّروا أغراض", x: "في أغراض انكسرت" } },
   { type: "kids-scared", topic: "", re: /(?:^| )(?:و)?(?:الولاد|ولادي|البنات|الاولاد) (?:خافوا|خايفين|انرعبوا|بيعيطوا|عيطوا)(?= |$)/, say: { m: "الولاد خافوا", f: "الولاد خافوا", pl: "الولاد خافوا", x: "الولاد خافوا" }, noSubject: true },
   { type: "helped", topic: "", re: /(?:^| )(?:و)?(?:ساعدتني|ساعدني|ساعدوني|وقفت معي|وقف معي|وقفوا معي)(?= |$)/, say: { m: "ساعدك", f: "ساعدتك", pl: "ساعدوكِ", x: "في حدا ساعدك" } },
-  { type: "talked-to", topic: "", re: /(?:^| )(?:و)?(?:حكى|حكت|حكيوا|حكوا) (?:معه|معها|معهم|مع)(?= |$)/, say: { m: "حكى مع", f: "حكت مع", pl: "حكوا مع", x: "صار حكي مع" } },
+  { type: "talked-to", topic: "", // (normalisation writes «حكى» as «حكي»)
+    re: /(?:^| )(?:و)?(?:حكي|حكت|حكيوا|حكوا) (?:معه|معها|معهم|مع)(?= |$)/, say: { m: "حكى مع", f: "حكت مع", pl: "حكوا مع", x: "صار حكي مع" } },
 ];
 
 /** A denial right before an event («ما ضربني», «عمره ما هددني», «ولا مرة ضربني»). */
@@ -128,10 +136,13 @@ export const TOPIC_LABELS = {
   conflict: "مشاكل بالبيت",
   money: "المصاري",
   inherit: "الميراث",
+  inlaws: "السكن مع أهل جوزك",
+  polygamy: "زواج جوزك التاني",
 };
 const INTENT_TOPIC = { custody: "custody", nafaqa: "nafaqa", divorce: "divorce", blackmail: "blackmail", privacy: "privacy", porn: "privacy", violence: "violence", inherit: "inherit" };
 /** Topics that can be ASKED as law (the corpus has articles for them). */
-export const LEGAL_TOPICS = ["custody", "nafaqa", "divorce", "blackmail", "privacy", "inherit"];
+// "inlaws" is answered by the separate-home article (psl:38); "polygamy" has no text in the corpus yet
+export const LEGAL_TOPICS = ["custody", "nafaqa", "divorce", "blackmail", "privacy", "inherit", "inlaws"];
 
 /** A fresh situation for one session. */
 export function createSituation() {
@@ -189,8 +200,9 @@ function subjectGender(t, type) {
   if (/(?:^| )هي(?= |$)/.test(t)) return "f";
   if (/(?:^| )هو(?= |$)/.test(t)) return "m";
   if (/(?:^| )(?:هم|همه)(?= |$)/.test(t)) return "pl";
-  const female = /(?:^| )(?:و)?(?:حكت|قالت|ساعدتني|هددتني|ضربتني|طردتني|اخدت|اخذت|وقفت معي)(?= |$)/;
-  const plural = /(?:^| )(?:و)?(?:حكوا|حكيوا|قالوا|ساعدوني|هددوني|ضربوني|طردوني|اخدوا|اخذوا|ضاغطين|بيضغطوا|بيهينوني|بيسكتوني|ياخدوا|ياخذوا|وقفوا معي)(?= |$)/;
+  // «بتعيّرني», «بتهينني»: the 3rd person feminine present («بت…ني») is a she
+  const female = /(?:^| )(?:و)?(?:حكت|قالت|ساعدتني|هددتني|ضربتني|طردتني|اخدت|اخذت|وقفت معي|بت[^ ]+ني|ساكنه)(?= |$)/;
+  const plural = /(?:^| )(?:و)?(?:بي[^ ]+وا|حكوا|حكيوا|قالوا|ساعدوني|هددوني|ضربوني|طردوني|اخدوا|اخذوا|ضاغطين|بيضغطوا|بيهينوني|بيسكتوني|ياخدوا|ياخذوا|وقفوا معي)(?= |$)/;
   if (female.test(t)) return "f";
   if (plural.test(t)) return "pl";
   // the remaining verb forms in EVENTS are masculine 3rd person
@@ -260,7 +272,22 @@ export function observe(s, text) {
   if (when === "first" || when === "often") s.answered.add("repeat");
 
   // 3) events, each with its subject: a named person, else resolved from «هو/هي/حكى/حكت»
-  const subjectNamed = named.find((d) => d.id !== "lawyer" && d.id !== "lawyer-m" && d.id !== "friend") || named[0];
+  // «حكى مع أهله»: a person right after «مع / على» is the OTHER side, never the subject
+  // …and so is a person she just denied («مش جوزي، أخوي»)
+  const objects = [...t.matchAll(/(?:^| )(?:مع|على|ل|مش|مو) ([^ ]+)/g)].map((m) => PEOPLE[strip(m[1])]?.id).filter(Boolean);
+  const subjects = named.filter((d) => !objects.includes(d.id));
+  const subjectNamed =
+    subjects.find((d) => d.id !== "lawyer" && d.id !== "lawyer-m" && d.id !== "friend") || subjects[0] || null;
+  /** Which named person is mentioned for each event: the nearest one BEFORE the event in the text. */
+  const nearestSubject = (at) => {
+    let best = null;
+    for (const d of subjects) {
+      const i = t.split(" ").findIndex((w) => PEOPLE[strip(w)]?.id === d.id);
+      const pos = i < 0 ? -1 : t.split(" ").slice(0, i).join(" ").length;
+      if (pos >= 0 && pos <= at && (!best || pos > best.pos)) best = { d, pos };
+    }
+    return best?.d || subjectNamed;
+  };
   // in the order she said them («طلقني وطردني وأخد الولاد»); a denied event («ما ضربني», «عمره ما
   // هددني») is NOT an event: storing it would put words in her mouth
   const matches = EVENTS.map((ev) => ({ ev, at: t.search(ev.re) }))
@@ -269,7 +296,8 @@ export function observe(s, text) {
   for (const { ev, at } of matches) {
     // a threat to take the kids also counts as a threat: keep the specific one only
     if (ev.type === "threat" && fresh.events.some((e) => e.type === "threat-kids")) continue;
-    let who = subjectNamed && !ev.noSubject ? findPerson(s, subjectNamed.id) : null;
+    const subj = ev.noSubject ? null : nearestSubject(at);
+    let who = subj ? findPerson(s, subj.id) : null;
     const gender = ev.noSubject ? "" : who?.g || subjectGender(t, ev.type);
     if (!who && gender) {
       const r = resolve(s, gender);
@@ -280,8 +308,8 @@ export function observe(s, text) {
     }
     // «حكى رح ياخد الولاد» right after «جوزي هددني»: the same threat, now with what it was about
     const last = s.events.at(-1);
-    if (ev.type === "threat-kids" && last?.type === "threat" && (!who || last.who === who.id) && last.turn >= s.turn - 2) {
-      Object.assign(last, { type: "threat-kids", topic: "custody", present: false });
+    if (["threat-kids", "second-wife"].includes(ev.type) && last?.type === "threat" && (!who || last.who === who.id) && last.turn >= s.turn - 2) {
+      Object.assign(last, { type: ev.type, topic: ev.topic, present: false, threatened: true });
       if (!fresh.events.includes(last)) fresh.events.push(last); // same message: one event, said once
       continue;
     }
@@ -296,7 +324,14 @@ export function observe(s, text) {
       source: "user",
       present: Boolean(NOW[ev.type]) && HABIT.test(t.slice(at, at + 6)),
     };
-    if (ev.type === "talked-to") {
+    // «أمي وأختي بيحكوا عني»: a plural verb after two named people is BOTH of them
+    const group = subjects.filter((d) => !["lawyer", "lawyer-m", "friend"].includes(d.id));
+    if (!ev.noSubject && group.length >= 2 && subjectGender(t, ev.type) === "pl")
+      Object.assign(e, { who: group[0].id, whoLabel: group.map((d) => findPerson(s, d.id).label).join(" و"), g: "pl" });
+    // «حكى مع أهله»: the other side is named
+    const withNamed = ev.type === "talked-to" ? [...t.matchAll(/(?:^| )مع ([^ ]+)/g)].map((m) => PEOPLE[strip(m[1])]).find(Boolean) : null;
+    if (withNamed) e.with = touchPerson(s, withNamed).label;
+    else if (ev.type === "talked-to") {
       const og = objectGender(t);
       const target = og ? resolve(s, og, who ? [who.id] : []) : null;
       if (target?.person) e.with = target.person.label;
@@ -338,7 +373,11 @@ export function observe(s, text) {
   const before = s.topics.at(-1) || "";
   const intents = Object.keys(detectIntents(text));
   const found = [...intents.map((i) => INTENT_TOPIC[i]).filter(Boolean), ...fresh.events.map((e) => e.topic).filter(Boolean)];
+  // her in-laws in the story: the topic is living with them, whatever they did
+  if (subjects.some((d) => ["mil", "fil", "his-family", "sil", "bil"].includes(d.id)) && fresh.events.length) found.push("inlaws");
   for (const topic of found) {
+    // a general "problems at home" never replaces a more specific topic already going on
+    if (topic === "conflict" && s.topics.some((x) => x !== "conflict")) continue;
     s.topics = s.topics.filter((x) => x !== topic);
     s.topics.push(topic);
   }
@@ -357,7 +396,11 @@ export const currentTopic = (s) => s.topics.at(-1) || "";
 export function eventClause(e) {
   const def = EVENTS.find((x) => x.type === e.type);
   if (!def) return "";
-  let verb = (e.present && e.whoLabel && NOW[e.type]?.[e.g]) || def.say[e.whoLabel ? e.g : "x"] || def.say.m;
+  let verb =
+    (e.threatened && e.whoLabel && def.threatSay?.[e.g]) ||
+    (e.present && e.whoLabel && NOW[e.type]?.[e.g]) ||
+    def.say[e.whoLabel ? e.g : "x"] ||
+    def.say.m;
   // «صرخ عليها»: said about the person it happened to, not «عليكِ»
   if (e.on && verb.includes("عليكِ")) verb = verb.replace("عليكِ", e.on.startsWith("علي") ? e.on : `على ${e.on}`);
   else if (e.on && !e.whoLabel) verb = `${{ yelled: "في حدا صرخ", insulted: "في حدا أهان" }[e.type] || def.say.x} ${e.on.startsWith("علي") ? e.on : `على ${e.on}`}`;

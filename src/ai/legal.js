@@ -45,6 +45,39 @@ export function findArticleByNumber(question, region) {
   return { number, found, missing: found.length === 0, ambiguous: found.length > 1, outOfRegion };
 }
 
+/**
+ * Specific questions that one or two articles answer directly («قديش مدة العدة؟» -> «مدة العدة»), checked in
+ * order (the most specific first). Without this, a keyword like «العدة» only reached the whole divorce list
+ * and the app showed «الشقاق» and «التعويض» for a question about the waiting period (found 2026-11-13).
+ * Each entry: all regexes must match the normalised question.
+ */
+const SPECIFIC = [
+  { label: "الاعتداد ببيت الزوجية", all: [/عده|عدتي|اعتد/, /بيت|البيت|اضل|بضل|مسكن|اطلع/], ids: ["psl:146", "psl:135"] },
+  { label: "نفقة العدة", all: [/عده|عدتي|اعتد/, /نفقه|مصروف|مصاري/], ids: ["psl:79", "psl:135"] },
+  { label: "مدة العدة", all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:عده|عدتي)(?= |$)|اعتد/], ids: ["psl:135", "psl:146"] },
+  { label: "المهر", all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:مهر|مهري|مؤخر|مقدم)(?= |$)/], ids: ["psl:61", "gz:55", "gz:38"] },
+  { label: "الخلع", all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:خلع|مخالعه|اخلعه)(?= |$)/], ids: ["psl:102"] },
+  { label: "رؤية الولاد", all: [/(?:اشوف|بشوف|رؤيه|مشاهده|زياره|يشوف)/, /(?:الولاد|ولادي|الصغير|البنات|ابني|بنتي)/], ids: ["psl:163"] },
+  { label: "شروط الحاضنة", all: [/(?:شروط|تسقط|بتسقط|بسقط|سقوط) (?:ال)?(?:حضانه|حضانتي|الحاضنه)/], ids: ["psl:155", "psl:157"] },
+  { label: "التعويض عن الطلاق", all: [/(?:تعويض|تعسفي)/], ids: ["psl:134"] },
+  { label: "التفريق للشقاق", all: [/(?:شقاق|نزاع|تفريق للضرر|بدي افسخ)/], ids: ["psl:132", "psl:123", "gz:94"] },
+  { label: "المسكن المستقل", all: [/(?:مسكن|بيت|اسكن|ساكنه|ساكنين|عايشه|عايشين)/, /(?:لحالي|مستقل|حماتي|اهله|اهل جوزي|سلفي|معنا)/, /(?:حقي|بيحقلي|القانون|مسموح|بقدر اطلب)/], ids: ["psl:38"] },
+  { label: "نفقة الولاد", all: [/(?:نفقه|مصروف) (?:ال)?(?:ولاد|اولاد|ولادي|الصغير)/], ids: ["psl:168", "gz:59"] },
+];
+
+/**
+ * @param {string} question
+ * @param {string} region
+ * @returns {null | {label: string, found: object[], outOfRegion: object[]}}
+ */
+export function findSpecificArticles(question, region) {
+  const t = norm(question);
+  const hit = SPECIFIC.find((s) => s.all.every((re) => re.test(t)));
+  if (!hit) return null;
+  const all = hit.ids.map((id) => ARTICLES[id]).filter(Boolean);
+  return { label: hit.label, found: all.filter((a) => a.regions.includes(region)), outOfRegion: all.filter((a) => !a.regions.includes(region)) };
+}
+
 /** Numbers written as digits or as Arabic number words, normalised for comparison. */
 const NUMBER_WORDS = [
   "مائتي",
