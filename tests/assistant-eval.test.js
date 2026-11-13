@@ -14,7 +14,8 @@ import { answerQuestion, buildUserMessage, cleanContext, setBreaker } from "../s
 import { createBreaker } from "../server/ai-proxy/breaker.js";
 import { PROVIDERS as PROVIDER_TABLE } from "../server/ai-proxy/providers.js";
 import { ARTICLES, articlesFor, INTENT_TO_ARTICLES } from "../src/data/law/index.js";
-import { CONVERSATIONS, LEGAL, SAFETY } from "./fixtures/assistant-scenarios.js";
+import { CONVERSATIONS, LEGAL, REAL_MODEL_LINES, SAFETY } from "./fixtures/assistant-scenarios.js";
+import { validateTalk } from "../src/ai/validate.js";
 import { checkAnswer, sentences } from "./fixtures/check.js";
 
 const NUMBERS = { police: "100", ambulance: "101" };
@@ -120,6 +121,12 @@ test("S15 the model may not promise to never leave her, or secrecy", async () =>
   const r = await a.answer("تعبانة من جوزي", { country: "ps-wb" });
   assert.match(errors[0], /forbidden/);
   assert.equal(r.source, "rules");
+});
+
+test("S16 lines Gemini really wrote: dependence, false safety and promised outcomes are blocked; pet names removed", () => {
+  for (const line of REAL_MODEL_LINES.blocked) assert.throws(() => validateTalk({ lead: line }), /forbidden/, line);
+  for (const [line, after] of REAL_MODEL_LINES.cleaned) assert.match(validateTalk({ lead: line }).lead, after, line);
+  for (const line of REAL_MODEL_LINES.allowed) assert.doesNotThrow(() => validateTalk({ lead: line }), line);
 });
 
 /* ---------- privacy and memory ---------- */

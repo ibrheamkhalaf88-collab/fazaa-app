@@ -18,7 +18,7 @@ const LIMITS = { lead: 500, talk: 600, step: 260, note: 800, steps: 5, cites: 4,
 
 const clean = (v, max) =>
   typeof v === "string"
-    ? v
+    ? dropPetNames(v)
         // strip control characters and angle brackets on purpose
         // eslint-disable-next-line no-control-regex
         .replace(/[\u0000-\u001F\u007F<>]/g, " ")
@@ -46,11 +46,49 @@ const FORBIDDEN = [
   "امانك مضمون",
   "اكيد رح تربحي",
   "المحكمه رح تحكملك",
+  // (2026-11-13) said by Gemini on the live site to a synthetic «جوزي هددني مبارح» / «مش عارفة مع مين أحكي»:
+  // dependence on the app
+  "ما اتركك",
+  "ما رح اتركك لحالك",
+  "هون دايما",
+  "معك دايما",
+  "دايما معك",
+  "دايما هون",
+  "مش لوحدك ابدا",
+  "مش لحالك ابدا",
+  // safety nobody can know from a chat
+  "انت بمكان امن",
+  "انتي بمكان امن",
+  "انت بامان هلا",
+  "انتي بامان هلا",
+  "انت بامان",
+  "انتي بامان",
+  "ما تخافي من",
+  "ما رح يصيرلك اشي",
+  "رح تكوني بخير",
+  // legal outcomes promised
+  "القانون واقف معك",
+  "القانون بيحميكي",
+  "حقك محمي",
+  "رح تاخدي حقك",
+  "رح ترجعي تاخدي حقك",
+  "رح تاخذي حقك",
+  "رح ترجعي تاخذي حقك",
+  "رح نطلع من",
 ].map(norm);
+
+/** Pet names: removed from the reply (not a reason to throw it away), never said to her. */
+const PET_NAMES = /(?:^|[\s،,.!؟])(?:يا\s+)(?:حبيبتي|حبيبه|قلبي|عمري|روحي|حياتي|عسل|غاليه|غالية|حبيبة\s+قلبي)(?=[\s،,.!؟]|$)/g;
+const dropPetNames = (s) => s.replace(PET_NAMES, " ").replace(/\s+([،,.!؟])/g, "$1").replace(/\s{2,}/g, " ").replace(/^[\s،,]+/, "").trim();
 // matched at a word start, with the usual prefixes («بسريه تامه», «وما رح اتركك»)
 const FORBIDDEN_RE = FORBIDDEN.map((p) => ({ p, re: new RegExp(`(?:^| )(?:و|ف|ب|بال|ل)?${p}(?= |$)`) }));
 const forbidden = (text) => {
-  const t = norm(text);
+  // a QUESTION may ask it («إنتِ بأمان هلأ؟»); only a statement may not claim it
+  const statements = String(text)
+    .split(/(?<=[.!؟?\n])/)
+    .filter((s) => !/[؟?]\s*$/.test(s))
+    .join(" ");
+  const t = norm(statements);
   return FORBIDDEN_RE.find(({ re }) => re.test(t))?.p || "";
 };
 
