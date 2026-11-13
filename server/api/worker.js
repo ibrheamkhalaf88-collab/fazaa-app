@@ -16,7 +16,7 @@
  * Staff sign in with email + password (see auth.js): salted PBKDF2 hashes, lockout after 5 wrong
  * tries, temporary passwords that must be changed, HttpOnly SameSite=Strict session cookie.
  */
-import { answerQuestion, parseAnswerRequest } from "../ai-proxy/worker.js";
+import { answerQuestion, betaAllowed, parseAnswerRequest } from "../ai-proxy/worker.js";
 import { MAX_BODY_BYTES } from "../../src/ai/limits.js";
 import { DEFAULT_PROVIDER, PROVIDERS } from "../ai-proxy/providers.js";
 import {
@@ -345,6 +345,8 @@ export async function handleRequest(request, env, deps) {
     if (error) return reply(fail(error === 413 ? 413 : 400, "bad-question"));
     const req = parseAnswerRequest(value);
     if (req.error) return reply(fail(400, req.error));
+    // closed beta: not a tester -> no model call, no quota used; the app answers offline
+    if (!betaAllowed(req, env)) return reply(json({ answer: null }, 200, { "cache-control": "no-store" }));
     if (!(await takeAiSlot(store, env, now))) return reply(fail(429, "daily-limit"));
     const saved = await loadAi(store, open);
     const live = aiEnv(env, saved);

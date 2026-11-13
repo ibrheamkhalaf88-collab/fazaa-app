@@ -2,7 +2,7 @@
  * Entry point: build the pieces, wire them together, open the first screen.
  * No logic lives here; each feature owns its own behaviour (see docs/ARCHITECTURE.md).
  */
-import { AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, LAWYERS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
+import { AI_BETA_ONLY, AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, LAWYERS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
 import { createLawyerCards } from "./features/lawyers/lawyer-cards.js";
 import { createContacts } from "./features/support/contacts.js";
 import { createAnswerer } from "./ai/answerer.js";
@@ -46,6 +46,23 @@ function markLawyerService(enabled) {
   }
 }
 
+/**
+ * `?beta=<code>` once on a tester's device: remembered on this device, then removed from the address bar
+ * (so it does not stay in history or get shared). `?beta=off` leaves the beta.
+ */
+function readBetaCode(state) {
+  try {
+    const url = new URL(location.href);
+    const code = url.searchParams.get("beta");
+    if (code === null) return;
+    state.set("beta", code === "off" ? "" : code.replace(/[^\w-]/g, "").slice(0, 64));
+    url.searchParams.delete("beta");
+    history.replaceState(null, "", url.pathname + url.search + url.hash);
+  } catch {
+    /* no URL API: not a tester */
+  }
+}
+
 function registerServiceWorker() {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.register("./sw.js").catch((err) => console.warn("service worker:", err));
@@ -62,7 +79,9 @@ async function boot() {
 
   const contacts = createContacts({ store, state, endpoint: CONTACTS_ENDPOINT });
 
-  const aiAvailable = AI_ENDPOINT !== "";
+  readBetaCode(state);
+  // closed beta: the online AI only on a tester's device (src/config.js AI_BETA_ONLY)
+  const aiAvailable = AI_ENDPOINT !== "" && (!AI_BETA_ONLY || Boolean(state.get("beta")));
   const account = createAccount({ base: API_BASE, store });
   // opt-in, device-only notes per topic; OFF by default (src/ai/saved.js, docs/PRIVACY.md)
   const saved = createSavedTopics({ store, state });
@@ -70,7 +89,7 @@ async function boot() {
     saved,
     emergencyNumbers: contacts.emergencyNumbers,
     available: () => ({ ...contacts.available(), lawyer: account.enabled }),
-    remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT }) : undefined,
+    remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT, beta: () => state.get("beta") }) : undefined,
     isRemoteEnabled: () => aiAvailable && state.get("aiOnline") && state.get("aiNotice") !== "",
     shareContext: () => state.get("shareContext") === true,
     onRemoteError: (err) => {

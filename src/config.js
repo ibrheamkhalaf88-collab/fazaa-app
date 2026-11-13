@@ -20,6 +20,14 @@ export const CALC_CODE = "1379";
  */
 export const AI_ENDPOINT = "/api/v1/answer";
 
+/**
+ * Closed beta of the online AI (2026-11-13). true = only a device that opened the site once with
+ * `?beta=<code>` uses the online AI; everyone else gets the offline replies and nothing they type leaves
+ * the phone. The server checks the code too when the Worker secret AI_BETA_CODE is set.
+ * Set to false only after the live evaluation and the lawyer / safety reviews (docs/LIVE-EVAL.md).
+ */
+export const AI_BETA_ONLY = true;
+
 /** Answers are artificially delayed to feel conversational; milliseconds. */
 export const TYPING_DELAY = { base: 900, perChar: 12, max: 900 };
 

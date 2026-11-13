@@ -18,6 +18,7 @@ export function createRemoteEngine({
   endpoint,
   timeoutMs = 45000 /* the server may wait for a busy model, then try a backup one */,
   fetchImpl = fetch,
+  beta = () => "", // closed-beta tester code (not an identity: the same code for every tester)
 }) {
   return {
     /**
@@ -42,6 +43,7 @@ export function createRemoteEngine({
           country: ctx.country,
           ...(ctx.need ? { need: ctx.need } : {}),
           ...(ctx.context ? { context: ctx.context } : {}),
+          ...(beta() ? { beta: beta() } : {}),
         }),
       });
       if (!res.ok) throw new Error(`proxy-status-${res.status}`);

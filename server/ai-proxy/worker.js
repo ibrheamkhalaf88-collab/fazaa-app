@@ -205,8 +205,15 @@ export function parseAnswerRequest(body) {
     country: COUNTRIES.includes(body.country) ? body.country : "ps-wb",
     need: NEEDS.includes(body.need) ? body.need : "",
     context: cleanContext(body.context),
+    beta: typeof body.beta === "string" ? body.beta.slice(0, 64) : "",
   };
 }
+
+/**
+ * Closed beta: when the secret AI_BETA_CODE is set, only requests carrying that code reach the model; the
+ * others get `answer: null` (the app answers offline) without using the daily quota.
+ */
+export const betaAllowed = (req, env) => !env.AI_BETA_CODE || req.beta === env.AI_BETA_CODE;
 
 /**
  * @param {Request} request
@@ -236,6 +243,7 @@ export async function handleRequest(request, env, { fetchImpl = fetch } = {}) {
   }
   const req = parseAnswerRequest(body);
   if (req.error) return json({ error: req.error }, 400, cors);
+  if (!betaAllowed(req, env)) return json({ answer: null }, 200, cors);
   const { status, body: out } = await answerQuestion(req.question, req.country, env, fetchImpl, req);
   return json(out, status, cors);
 }
@@ -268,37 +276,64 @@ export async function answerQuestion(question, country, env, fetchImpl = fetch, 
     let articles = specific?.found.length ? specific.found : retrieveArticles(question, articlesFor(country), 3);
     if (articles.length === 0 && context?.topic) articles = retrieveArticles(`${question} ${context.topic}`, articlesFor(country), 3);
     if (articles.length === 0) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
-    const res = await callModel(
+    const byId = Object.fromEntries(articles.map((a) => [a.id, a]));
+    const out = await checkedCall(
       provider,
       key,
       { system: SYSTEM_PROMPT, user: buildUserMessage(question, articles, country, context), tool: ANSWER_TOOL, env },
       fetchImpl,
+      (input) => (input.covered === false ? NOT_COVERED : validateAnswer(input, { articleIds: articles.map((a) => a.id), articles: byId })),
     );
-    if (res.error) return { status: 502, body: { error: res.error } };
-    if (res.input.covered === false) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
-    try {
-      const byId = Object.fromEntries(articles.map((a) => [a.id, a]));
-      const answer = validateAnswer(res.input, { articleIds: articles.map((a) => a.id), articles: byId });
-      return { status: 200, body: { answer } };
-    } catch (err) {
-      return { status: 502, body: { error: `invalid-output:${err.message}` } };
-    }
+    if (out.answer === NOT_COVERED) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
+    return out.error ? { status: 502, body: { error: out.error } } : { status: 200, body: { answer: out.answer } };
   }
   return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
+}
+
+const NOT_COVERED = Symbol("not-covered");
+
+/**
+ * Model reply that breaks a rule (a promise of safety, law in a support reply, a number not in the article):
+ * ONE rewrite, told exactly which rule it broke; still broken -> the app answers offline. Rules are never
+ * relaxed for the second try, and the reason sent back names the rule, never her words.
+ * env.REWRITE = "off" disables the second try.
+ */
+async function checkedCall(provider, key, args, fetchImpl, check) {
+  const res = await callModel(provider, key, args, fetchImpl);
+  if (res.error) return { error: res.error };
+  try {
+    return { answer: check(res.input) };
+  } catch (err) {
+    if (args.env.REWRITE === "off") return { error: `invalid-output:${err.message}` };
+    const feedback = `\n<feedback>Your previous reply was rejected by the app for breaking a rule: ${REWRITE_HINT(err.message)} Write it again, following every rule.</feedback>`;
+    const again = await callModel(provider, key, { ...args, user: args.user + feedback }, fetchImpl);
+    if (again.error) return { error: `invalid-output:${err.message}` };
+    try {
+      return { answer: check(again.input), rewritten: true };
+    } catch (err2) {
+      return { error: `invalid-output:${err2.message}` };
+    }
+  }
+}
+
+/** What to fix, in words the model understands (from the validator's short reason). */
+function REWRITE_HINT(reason) {
+  if (reason.startsWith("forbidden")) return "it promised safety, an outcome or that you will always be there, or used a forbidden phrase.";
+  if (reason.startsWith("legal-leak")) return "a support reply may not state any law, penalty, article or court outcome.";
+  if (reason.startsWith("ungrounded")) return `it stated something not written in the given articles (${reason.slice(11, 60)}).`;
+  if (reason.startsWith("unknown-article")) return "it cited an article id that was not given.";
+  return `the reply was malformed (${reason.slice(0, 40)}).`;
 }
 
 /** Listening / understanding / small options. env.SUPPORT_MODE = "off" disables it. */
 async function talkAnswer(question, need, context, provider, key, env, fetchImpl) {
   if (env.SUPPORT_MODE === "off") return { status: 200, body: { answer: null } };
   const user = `<need>${need}</need>\n${contextBlock(context)}<question>\n${safe(question)}\n</question>`;
-  const res = await callModel(provider, key, { system: TALK_PROMPT, user, tool: TALK_TOOL, env }, fetchImpl);
-  if (res.error) return { status: 502, body: { error: res.error } };
-  try {
-    const answer = validateTalk(res.input, { need });
-    return { status: 200, body: { answer: { ...answer, general: true, topic: "دعم" } } };
-  } catch (err) {
-    return { status: 502, body: { error: `invalid-output:${err.message}` } };
-  }
+  const out = await checkedCall(provider, key, { system: TALK_PROMPT, user, tool: TALK_TOOL, env }, fetchImpl, (input) =>
+    validateTalk(input, { need }),
+  );
+  if (out.error) return { status: 502, body: { error: out.error } };
+  return { status: 200, body: { answer: { ...out.answer, general: true, topic: "دعم" } } };
 }
 
 /**

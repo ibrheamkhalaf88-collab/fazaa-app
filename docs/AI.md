@@ -30,6 +30,19 @@ reply -> chat; "written by AI" label only when source = "ai"; null -> "not cover
 
 If the network, proxy or validation fails she gets the offline reply, never labelled as AI.
 
+### Closed beta and one rewrite (2026-11-13)
+
+- **Closed beta** (`src/config.js` `AI_BETA_ONLY = true`): the online AI runs only on a device that opened the
+  site once with `?beta=<code>` (stored on that device, removed from the address bar; `?beta=off` leaves).
+  Everyone else gets the offline replies, sees «قريباً» for the online AI, and nothing they type leaves the
+  phone. Server side, set the Worker secret `AI_BETA_CODE` (`cd server/api && npx wrangler secret put AI_BETA_CODE`)
+  and requests without that code never reach the model and use no quota. Open to everyone only after the live
+  evaluation and the reviews: `AI_BETA_ONLY = false` and delete the secret.
+- **One rewrite:** a model reply that breaks a rule (safety promised, "always here", law in a support reply,
+  a number not in the article) is sent back ONCE with the rule it broke; if the rewrite still breaks a rule,
+  the app answers offline. `REWRITE=off` disables it.
+- Lines Gemini actually wrote on the live site on 2026-11-13 are test cases (`REAL_MODEL_LINES`).
+
 ### Provider reliability (`server/ai-proxy/worker.js`, `breaker.js`)
 
 Per model: retries while busy (primary, backup model, primary) within 35 s; a **circuit breaker** stops calling a
