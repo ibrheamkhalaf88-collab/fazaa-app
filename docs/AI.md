@@ -5,28 +5,51 @@
 Answer free-text questions in plain dialect **without ever inventing law**. The model may only rephrase and
 organise text that the app has already retrieved from its own law corpus.
 
-## Flow (`src/ai/answerer.js`)
+## Flow (`src/ai/answerer.js`, updated 2026-11-13)
 
 ```
-question
-  |- offline rules (always)  ---> Answer | null          src/ai/rules-engine.js
-  |- online AI, only if opt-in:
-  |     retrieve articles (keyword overlap)              src/ai/retrieve.js
-  |     none found?  -> STOP, model is never called
-  |     POST {question, articles} to proxy               src/ai/remote-engine.js
-  |     validate reply (citations ⊆ retrieved ids)       src/ai/validate.js
-  '- safety merge: if rules detect danger, force sos=true on any answer
-result -> chat shows it, labelled "written by AI" when source = "ai"; null -> "not covered" screen
+her message
+  1. read into memory (RAM only)                       conversation.js remember() + situation.js observe()
+       people («جوزي», «أختي»), events with who/when («هددني مبارح»), denials dropped («ما ضربني»),
+       pronouns resolved only when unambiguous («هي حكت معه» -> asks «مع مين؟»), topics, goal, progress,
+       limits she stated, which questions were asked / answered, corrections («مش جوزي، أخوي»)
+  2. answers to OUR last question (safety question, danger follow-up, «بتحبي أوريكِ القانون؟»)
+  3. danger                                           danger.js  fixed reviewed text, offline, before any model
+  4. small talk, «بتتذكري شو قلتلك؟», «صار معي إشي جديد», «بدي نكمل موضوع …» (opt-in saved topics)
+  5. what she needs: listen / understand / steps / legal   conversation.js classifyNeed()
+       legal: exact article by number | online AI (grounded) | offline rules (+ the topic of the conversation
+              when the question alone is too short) ; then verbatim region texts for the topic when nothing
+              is cited, the law and region named, the missing Gaza custody text said plainly
+       other: online AI (talk, no law) | offline reply built from the situation (localTalk):
+              say back what she told, one fitting line, ONE question never asked/answered before,
+              topic-specific smallest safe steps, check-in after 3 replies without a question
+  6. one gentle safety question when violence was mentioned without a clear "now"
+  7. opt-in only: short notes per topic saved on the device              saved.js
+reply -> chat; "written by AI" label only when source = "ai"; null -> "not covered" screen
 ```
 
-If the network, proxy or validation fails the user silently gets the offline answer.
+If the network, proxy or validation fails she gets the offline reply, never labelled as AI.
+
+### Provider reliability (`server/ai-proxy/worker.js`, `breaker.js`)
+
+Per model: retries while busy (primary, backup model, primary) within 35 s; a **circuit breaker** stops calling a
+model after 3 transient failures for 60 s (the app answers offline at once instead of waiting); per-provider
+timeouts (`UPSTREAM_MS_GEMINI`, `UPSTREAM_MS`). A bad key is never retried and never opens the circuit.
+Cross-provider fallback is deliberately not wired (see `docs/PRIVACY.md` §3).
+
+### Evaluation
+
+`npm run ai:assistant-eval` runs `tests/fixtures/assistant-scenarios.js` on the offline path and prints measured
+rates (pass rates, repetition, questions asked twice, latency) and a transcript in `docs/evidence/`. The same set
+runs in `npm test` (`tests/assistant-eval.test.js`). It measures the app's own behaviour, NOT the model's.
 
 ## Privacy contract
 
 - Off by default; the toggle is in Settings and stored only on the device.
 - When on, after a one-time notice: the message (<=1200 chars, never cut silently), the region and the kind of
-  reply needed go to **your** server. Only if she chose «مع آخر الرسائل»: the last 6 messages of the session and
-  the limits she stated. No cookies (`credentials:"omit"`), no referrer, no user id, never the lawyer chat.
+  reply needed go to **your** server. Only if she chose «مع آخر الرسائل»: the last 6 messages of the session, the
+  limits she stated, and a short summary (topic, notes labelled as her unverified report, goal, questions already
+  asked). No cookies (`credentials:"omit"`), no referrer, no user id, never the lawyer chat.
   The session memory is RAM only and is wiped with the chat (src/ai/conversation.js).
 - The proxy does not log bodies, sends `Cache-Control: no-store`, and forwards only to the Anthropic API.
 - Phone numbers / names are not requested anywhere; still, tell users not to type identifying details.
