@@ -66,6 +66,10 @@ const VIOLENCE = compile([
   "هددني",
   "دفشني",
   "شدني من شعري",
+  // (2026-11-13) everyday ways of saying it, found in an unseen-conversation check
+  "رفع ايده علي",
+  "مد ايده علي",
+  "رفعلي ايده",
 ]);
 
 const SELF_HARM = compile([
@@ -89,6 +93,9 @@ const SELF_HARM_INDIRECT = compile([
   "تعبت من الحياه",
   "تعبت من كل اشي",
   "بدي اختفي",
+  "بفكر اختفي",
+  "نفسي اختفي",
+  "ما حدا يلاقيني",
   "بدي انام وما اصحى",
   "انام وما اصحى",
   "الكل احسن بدوني",
