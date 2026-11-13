@@ -72,6 +72,11 @@ for (const [how, act] of [
       as: DEV,
       body: { email: "b@fazaa.example", role: "lawyer", name: "منى" },
     });
+    // (2026-11-13) a lawyer may claim only while on duty and for her regions
+    await w.call("PUT", "/v1/staff/lawyers", {
+      as: DEV,
+      body: { email: "b@fazaa.example", available: true, regions: ["ps-wb"] },
+    });
     assert.ok(!(await queueIds(w, "b@fazaa.example")).includes(caseId));
 
     assert.equal((await act(w, "a@fazaa.example")).status, 200);

@@ -3,6 +3,7 @@ import { test } from "node:test";
 import { handleRequest, purgeExpired } from "../server/api/worker.js";
 import { createMemoryStore } from "../server/api/store/memory.js";
 import { toBase64 } from "../server/api/crypto.js";
+import { PROVIDERS } from "../server/ai-proxy/providers.js";
 
 const ORIGIN = "https://fazaa.example";
 const KEY = toBase64(crypto.getRandomValues(new Uint8Array(32)));
@@ -595,7 +596,8 @@ test("/v1/answer uses the dashboard key and falls back to the Worker secret", as
   await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
   await ask(ENV);
   assert.equal(seen.at(-1).key, SECRET_KEY);
-  assert.match(seen.at(-1).url, /gemini-flash-lite-latest/);
+  // the default model name changes with Google's catalogue: follow the provider table, not a literal
+  assert.ok(seen.at(-1).url.includes(`/models/${PROVIDERS.gemini.defaultModel}:`), seen.at(-1).url);
 
   await w.call("DELETE", "/v1/staff/ai-config", { as: DEV });
   await ask({ ...ENV, GEMINI_API_KEY: "secret-from-worker-1234567890" });

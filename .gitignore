@@ -4,3 +4,5 @@ node_modules/
 *.log
 
 server/api/public/
+# an accidental nested clone kept on disk (see commit 2402a95); never part of this repo or its tests
+server/api/sanad-app/
