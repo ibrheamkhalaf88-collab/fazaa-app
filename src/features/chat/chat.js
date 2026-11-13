@@ -62,6 +62,12 @@ export function createChat({
   let epoch = 0;
   let controller = null;
   let busy = false;
+  /** While a reply is being prepared the send button looks (and is announced as) unavailable. */
+  function setBusy(on) {
+    busy = on;
+    const send = document.querySelector("#composer .round.send");
+    if (send) send.setAttribute("aria-disabled", String(on));
+  }
 
   /* ---------- rendering ---------- */
 
@@ -271,9 +277,10 @@ export function createChat({
 
   /**
    * @param {string} rawQuestion
+   * @param {{onTaken?: () => void}} [opts]  called as soon as the message is accepted (before the reply)
    * @returns {Promise<boolean>} false when the message was NOT taken (too long, or busy): keep it in the box
    */
-  async function ask(rawQuestion) {
+  async function ask(rawQuestion, { onTaken } = {}) {
     const question = (rawQuestion || "").trim();
     if (!question) return false;
     if (question.length > MAX_MESSAGE_CHARS) {
@@ -286,6 +293,8 @@ export function createChat({
     }
     if (router.current !== "chat") router.show("chat");
     $("#suggest")?.remove();
+    // the message is taken: empty the box now, not after the reply (that took seconds and looked stuck)
+    onTaken?.();
 
     if (mode === "lawyer") {
       append(el("div", "u", question));
@@ -294,7 +303,7 @@ export function createChat({
     }
 
     const myEpoch = epoch;
-    busy = true;
+    setBusy(true);
     try {
       append(el("div", "u", question));
       controller = new AbortController();
@@ -318,7 +327,7 @@ export function createChat({
       return true;
     } finally {
       if (myEpoch === epoch) {
-        busy = false;
+        setBusy(false);
         controller = null;
       }
     }
@@ -329,7 +338,7 @@ export function createChat({
     epoch++;
     controller?.abort();
     controller = null;
-    busy = false;
+    setBusy(false);
     $$(".typing-dots").forEach((n) => n.closest(".a")?.remove());
   }
 
@@ -409,13 +418,15 @@ export function createChat({
       e.preventDefault();
       const value = input.value;
       if (!value.trim()) return;
-      // the text leaves the box only once the message was really taken
-      const taken = await ask(value);
-      if (taken && input.value === value) {
-        input.value = "";
-        input.style.height = "";
-        updateCounter();
-      }
+      // the text leaves the box as soon as the message is taken (a refused one stays for her to resend)
+      await ask(value, {
+        onTaken: () => {
+          if (input.value !== value) return; // she already started the next message
+          input.value = "";
+          input.style.height = "";
+          updateCounter();
+        },
+      });
     });
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {

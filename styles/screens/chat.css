@@ -272,6 +272,11 @@
   color: var(--on-accent);
   border-color: transparent;
 }
+/* while a reply is being prepared */
+.round.send[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: progress;
+}
 
 .round.mic {
   background: var(--info-soft);
