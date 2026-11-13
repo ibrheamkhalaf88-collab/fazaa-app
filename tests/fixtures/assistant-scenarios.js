@@ -26,6 +26,10 @@ export const CONVERSATIONS = [
     ],
   },
   {
+    id: "C01b threat and its content in one message are said back once (found in the browser)",
+    turns: [{ say: "جوزي هددني مبارح ياخد الولاد", expect: { lead: /^فهمت إنه جوزك هددك ياخد الولاد مبارح\./ } }],
+  },
+  {
     id: "C02 sister reference resolved, unknown «him» asked, never invented",
     turns: [
       { say: "أختي ساعدتني امبارح", expect: { lead: /أختك ساعدتك/ } },

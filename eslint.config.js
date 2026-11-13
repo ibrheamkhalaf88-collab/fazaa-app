@@ -25,7 +25,7 @@ export default [
   { files: ["sw.js"], languageOptions: { globals: globals.serviceworker } },
   // Workers + Node scripts/tests
   {
-    files: ["server/**", "scripts/**", "tests/**"],
+    files: ["server/**", "scripts/**", "tests/**", "docs/evidence/**"],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 ];

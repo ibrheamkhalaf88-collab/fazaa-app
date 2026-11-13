@@ -279,8 +279,8 @@ export function observe(s, text) {
     // «حكى رح ياخد الولاد» right after «جوزي هددني»: the same threat, now with what it was about
     const last = s.events.at(-1);
     if (ev.type === "threat-kids" && last?.type === "threat" && (!who || last.who === who.id) && last.turn >= s.turn - 2) {
-      Object.assign(last, { type: "threat-kids", topic: "custody" });
-      fresh.events.push(last);
+      Object.assign(last, { type: "threat-kids", topic: "custody", present: false });
+      if (!fresh.events.includes(last)) fresh.events.push(last); // same message: one event, said once
       continue;
     }
     const e = {
