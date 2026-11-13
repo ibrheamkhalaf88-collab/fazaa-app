@@ -24,9 +24,6 @@ function planFor(answer) {
   return "violence";
 }
 
-/** Bump when the text of the AI notice changes: everyone sees the new notice once. */
-export const AI_NOTICE_VERSION = "2026-11-13-ai-chat";
-
 const hostOf = (url) => {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -50,7 +47,6 @@ const hostOf = (url) => {
  *   telemetry?: any,
  *   lawyer?: any,
  *   lawyerAvailable?: () => boolean,
- *   aiOnline?: () => boolean,     // the online AI is configured AND switched on
  * }} deps
  */
 export function createChat({
@@ -60,7 +56,6 @@ export function createChat({
   telemetry,
   lawyer = createLawyerSession(),
   lawyerAvailable = () => false,
-  aiOnline = () => false,
 }) {
   let mode = "ai";
   /** Bumped by reset() and mode changes: a reply that arrives later is dropped. */
@@ -272,47 +267,6 @@ export function createChat({
     return box;
   }
 
-  /* ---------- the one-time notice before anything is sent to the AI provider ---------- */
-
-  function needsNotice() {
-    return aiOnline() && state.get("aiNotice") !== AI_NOTICE_VERSION;
-  }
-
-  /** @returns {Promise<"message"|"context"|"offline">} */
-  function askNotice() {
-    return new Promise((resolve) => {
-      const box = el("div", "a notice");
-      box.setAttribute("role", "group");
-      box.setAttribute("aria-label", "قبل ما نبعت رسالتك");
-      box.append(
-        el("b", null, "قبل ما أبعت رسالتك"),
-        el(
-          "div",
-          null,
-          "الردود هون بيكتبها ذكاء اصطناعي خارجي (Google Gemini) عبر سيرفر فزعة. اللي بينبعت: رسايلك بهالمحادثة وردودها ومنطقتك، عشان يفهم عليكِ ويتذكر شو حكيتي. ما بينبعت اسمك ولا رقمك ولا محادثتك مع المحامية.",
-        ),
-        el(
-          "div",
-          "muted",
-          "ما بنحفظ رسايلك بالسيرفر، والمحادثة بتنمسح من جهازك لما تسكري أو تطلعي بسرعة. مزوّد الخدمة ممكن يحتفظ فيها فترة قصيرة حسب شروطه، فما تكتبي أسماء أو أرقام بتعرّف عليكِ.",
-        ),
-      );
-      const row = el("div", "acts");
-      const choose = (choice) => {
-        box.remove();
-        resolve(choice);
-      };
-      const b1 = chip({ label: "موافقة", fill: true });
-      const b3 = chip({ label: "لأ، مش هلأ" });
-      b1.addEventListener("click", () => choose("context"));
-      b3.addEventListener("click", () => choose("offline"));
-      row.append(b1, b3);
-      box.appendChild(row);
-      append(box);
-      b1.focus({ preventScroll: true });
-    });
-  }
-
   /* ---------- asking ---------- */
 
   /**
@@ -342,13 +296,6 @@ export function createChat({
     const myEpoch = epoch;
     busy = true;
     try {
-      if (needsNotice()) {
-        const choice = await askNotice();
-        if (myEpoch !== epoch) return true;
-        state.set("aiNotice", AI_NOTICE_VERSION);
-        state.set("shareContext", choice === "context");
-        if (choice === "offline") state.set("aiOnline", false);
-      }
       append(el("div", "u", question));
       controller = new AbortController();
       const typing = typingBubble("a", "فزعة عم تكتب");

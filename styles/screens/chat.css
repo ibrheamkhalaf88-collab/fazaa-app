@@ -336,15 +336,6 @@
   margin-top: 10px;
   font-weight: 500;
 }
-/* the notice shown once, before anything is sent to the AI provider */
-.a.notice {
-  display: grid;
-  gap: 8px;
-  border: 1px solid var(--primary);
-}
-.a.notice .acts {
-  flex-wrap: wrap;
-}
 /* character counter near the limit */
 .q-count {
   align-self: center;

@@ -103,18 +103,15 @@ async function test(name, fn, { serviceWorkers = "block" } = {}) {
   }
 }
 /**
- * Open a screen. By default the answers come from the device (deterministic offline engine) and the AI
- * notice is marked as seen; `{ ai: true }` keeps the shipped default (AI on, notice not yet answered).
+ * Open a screen. By default the answers come from the device (deterministic offline engine);
+ * `{ ai: true }` keeps the shipped default (AI on).
  */
 const open = async (page, screen, { ai = false } = {}) => {
   await page.evaluate(
     ([s, withAi]) => {
       localStorage.setItem("fazaa:last", JSON.stringify(s));
       localStorage.setItem("fazaa:introSeen", "true"); // the intro is first-run only
-      if (!withAi) {
-        localStorage.setItem("fazaa:aiOnline", "false");
-        localStorage.setItem("fazaa:aiNotice", JSON.stringify("2026-11-12"));
-      }
+      if (!withAi) localStorage.setItem("fazaa:aiOnline", "false");
     },
     [screen, ai],
   );
@@ -258,20 +255,18 @@ await test("no lawyer service: the tab says it is not available, no pretend lawy
   assert.equal(await page.locator('[data-mode="lawyer"] .live').count(), 0, "no 'live' dot");
 });
 
-await test("AI on by default: a notice comes before anything is sent, and her text stays until she answers", async (page) => {
+// owner's decision (2026-11-13): no notice before sending; Settings explains what is sent and turns it off
+await test("AI on by default: her message goes out at once, no notice in the chat", async (page) => {
   await open(page, "chat", { ai: true });
   let sent = 0;
   page.on("request", (r) => r.url().includes("/api/v1/answer") && sent++);
   await page.fill("#q", "تعبانة كتير");
   await page.press("#q", "Enter");
-  await page.locator(".a.notice").waitFor({ timeout: 4000 });
-  assert.equal(sent, 0, "nothing sent before her answer");
-  assert.equal(await page.inputValue("#q"), "تعبانة كتير");
-  await page.click(".a.notice >> text=لأ، جاوبيني من الجهاز بس");
   await page.locator("#msgs .u", { hasText: "تعبانة كتير" }).waitFor();
-  await page.waitForSelector("#msgs .a:not(.notice) >> nth=1", { timeout: 6000 });
-  assert.equal(sent, 0, "she chose the device only: still nothing sent");
-  assert.equal(await page.evaluate(() => localStorage.getItem("fazaa:aiOnline")), "false");
+  await page.waitForSelector("#msgs .a >> nth=1", { timeout: 8000 }); // a reply (the test server has no AI key)
+  assert.ok(sent >= 1, "the message was sent to the AI");
+  assert.equal(await page.locator("#msgs", { hasText: "قبل ما أبعت رسالتك" }).count(), 0, "no notice");
+  problems.length = 0; // the test server has no AI key: its 503 is expected here
 });
 
 await test("settings: theme switch, erase everything", async (page) => {

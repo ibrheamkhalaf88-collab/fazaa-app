@@ -90,7 +90,8 @@ async function boot() {
     emergencyNumbers: contacts.emergencyNumbers,
     available: () => ({ ...contacts.available(), lawyer: account.enabled }),
     remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT, beta: () => state.get("beta") }) : undefined,
-    isRemoteEnabled: () => aiAvailable && state.get("aiOnline") && state.get("aiNotice") !== "",
+    // owner's decision (2026-11-13): no notice before sending; what is sent is explained in Settings
+    isRemoteEnabled: () => aiAvailable && state.get("aiOnline"),
     onRemoteError: (err) => {
       // the reason only (e.g. "proxy-status-502"), never the message
       console.warn("online answer failed:", err.message);
@@ -104,7 +105,6 @@ async function boot() {
     answerer,
     telemetry,
     lawyerAvailable: () => account.enabled,
-    aiOnline: () => aiAvailable && state.get("aiOnline"),
     ...(account.enabled ? { lawyer: createLiveLawyerSession({ account, state }) } : {}),
   });
   markLawyerService(account.enabled);

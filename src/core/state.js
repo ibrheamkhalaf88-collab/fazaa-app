@@ -11,8 +11,6 @@ export const DEFAULT_STATE = Object.freeze({
   dg: "weather", // disguise: "weather" | "calc" | "notes"
   user: null, // demo sign-in name
   aiOnline: true, // owner's decision (2026-11-12): on by default, she can switch it off in Settings
-  aiNotice: "", // version of the "what is sent" notice she answered ("" = not seen: nothing is sent yet)
-  shareContext: false, // send the last messages of the session as context (her choice in the notice)
   beta: "", // tester code for the closed AI beta (from ?beta=…); "" = not a tester
   memoryOn: false, // saved topics across visits (src/ai/saved.js): OFF unless she switches it on
   memoryDays: 30, // saved notes older than this are deleted on read

@@ -58,9 +58,9 @@ runs in `npm test` (`tests/assistant-eval.test.js`). It measures the app's own b
 
 ## Privacy contract
 
-- Off by default; the toggle is in Settings and stored only on the device.
-- When on, after a one-time notice: the message (<=1200 chars, never cut silently), the region and the kind of
-  reply needed go to **your** server. Only if she chose «مع آخر الرسائل»: the last 6 messages of the session, the
+- On by default (since 2026-11-12); the toggle is in Settings and stored only on the device.
+- When on (no notice in the chat since 2026-11-13, owner's decision; Settings explains it): the message (<=1200 chars, never cut silently), the region and the kind of
+  reply needed go to **your** server. With it: the last 6 messages of the session, the
   limits she stated, and a short summary (topic, notes labelled as her unverified report, goal, questions already
   asked). No cookies (`credentials:"omit"`), no referrer, no user id, never the lawyer chat.
   The session memory is RAM only and is wiped with the chat (src/ai/conversation.js).

@@ -8,12 +8,12 @@ app (`index.html`, `src/features/chat/chat.js`, `src/features/chat/lawyer-live.j
 | Data | Where | Who can read it | Kept for |
 | --- | --- | --- | --- |
 | Chat with Fazaa (the assistant) | the phone's screen; session memory in RAM only (`src/ai/conversation.js`) | her | until wipe, quick exit (with wipe on), or the page is closed/reloaded |
-| Message sent to the online AI (only after the one-time notice) | in transit: Fazaa server → AI provider | the provider, under its terms | Fazaa does not store it. The provider may keep it for a short time (see the provider's terms; `server/ai-proxy/providers.js` lists them) |
-| Session context (last 6 messages, stated limits, and since 2026-11-13 a short summary of what she told: topic, up to 8 one-line notes marked "her report, not verified", her stated goal, which questions were already asked) | same as above | same | only sent if she chose «مع آخر الرسائل» (the notice text says so; its version was bumped so everyone sees it again) |
+| Message sent to the online AI (AI on by default; no notice in the chat since 2026-11-13, see below) | in transit: Fazaa server → AI provider | the provider, under its terms | Fazaa does not store it. The provider may keep it for a short time (see the provider's terms; `server/ai-proxy/providers.js` lists them) |
+| Session context (last 6 messages, stated limits, and since 2026-11-13 a short summary of what she told: topic, up to 8 one-line notes marked "her report, not verified", her stated goal, which questions were already asked) | same as above | same | sent with each AI message while the AI is on (the notice that asked first was removed on 2026-11-13) |
 | Working memory of the session (people, events, time words, topics, asked/answered; `src/ai/situation.js`) | RAM only, inside the answerer | her | until «محادثة جديدة», quick exit, region change, or the page is closed/reloaded |
 | **Saved topics** (OFF by default; `src/ai/saved.js`) | the phone's localStorage (`fazaa:savedTopics`): per topic, up to 8 short notes like «جوزك هددك ياخد الولاد (مبارح)» + her stated goal. Never the messages, never limits such as "her phone is checked", never anything from a self-harm exchange, never the lawyer chat. **Not encrypted.** | anyone holding the unlocked phone (Settings lists them) | 30 days (deleted on every read), or until she deletes a note / a topic / all, switches it off, quick exit with wipe, or «امسحي كل شي». Never sent to a server, never shown in a greeting or notification. |
 | AI LAW answers (never the question; names, phones, links scrubbed) | D1 `ai_answers` | lawyers and developers (review) | 90 days |
-| Settings (region, theme, disguise, AI on/off, notice answered) | the phone's localStorage (`fazaa:*`) | anyone holding the unlocked phone | until «امسحي كل شي» in Settings |
+| Settings (region, theme, disguise, AI on/off) | the phone's localStorage (`fazaa:*`) | anyone holding the unlocked phone | until «امسحي كل شي» in Settings |
 | Lawyer-chat account: alias, hashed PIN, region | D1 `users` | developers see alias/region/dates only | deleted on request, or after 180 days without sign-in |
 | Name + phone given for the lawyer | D1 `users`, ENCRYPTED | only the lawyer who took her case (every opening is audited) | with the account |
 | Case messages (her and the lawyer) | D1 `messages`, ENCRYPTED | the lawyer who took the case; **developers (read-only, audited — owner's decision 2026-11-11)** | closed case: 7 days; idle case: 30 days; or with the account |
@@ -51,6 +51,8 @@ Quick exit does **not** erase the browser history or other traces outside the ap
 - **Cross-provider fallback is NOT wired** (2026-11-13). `configuredProviders()` in the uncommitted
   `providers.js` would let a question go to a second provider; that sends her text to a company the notice does
   not name. Wire it only together with a notice that names every provider in the chain.
-- **AI on by default** (decided 2026-11-12). Nothing is sent before the one-time notice; she can choose
-  «جاوبيني من الجهاز بس». Re-check the provider's data terms before launch (see the uncommitted work in
+- **AI on by default** (decided 2026-11-12). **No notice in the chat (owner's decision, 2026-11-13):** her first
+  message goes to the AI provider (Google Gemini) without asking first. What is sent is explained only under
+  «أجوبة أذكى عبر الإنترنت» in Settings, where she can switch it off. Risk accepted by the owner: a woman who never
+  opens Settings may not know her text leaves for a third party. A legal review of this is advised before launch. Re-check the provider's data terms before launch (see the uncommitted work in
   `server/ai-proxy/providers.js`, which adds per-provider privacy summaries and requires a PAID Gemini project).
