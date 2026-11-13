@@ -25,7 +25,7 @@ function planFor(answer) {
 }
 
 /** Bump when the text of the AI notice changes: everyone sees the new notice once. */
-export const AI_NOTICE_VERSION = "2026-11-12";
+export const AI_NOTICE_VERSION = "2026-11-13";
 
 const hostOf = (url) => {
   try {
@@ -195,6 +195,15 @@ export function createChat({
       box.appendChild(el("div", "sec", "نص القانون الأصلي"));
       answer.cites.forEach((id, i) => box.appendChild(citationCard(id, i === 0)));
     }
+    // 4) no summary, but verified texts on the topic for her region: shown as they are, not explained
+    const related = (answer.related || []).filter((id) => ARTICLES[id]);
+    if (!answer.cites.length && related.length) {
+      box.appendChild(el("div", "sec", "نصوص من قانون منطقتك عن الموضوع"));
+      box.appendChild(
+        el("div", "note-line general", "هاي النصوص زي ما هي، للقراءة. أنا ما فسّرتها، وشو بتعني لوضعك بيحتاج محامية."),
+      );
+      related.forEach((id) => box.appendChild(citationCard(id, false)));
+    }
     if (answer.safetyAsk) box.appendChild(el("div", "ask", answer.safetyAsk));
     const src = sourceLine(answer);
     if (src) box.appendChild(src);
@@ -239,7 +248,7 @@ export function createChat({
         el(
           "div",
           "muted",
-          "إذا اخترتي «مع آخر الرسائل»، بتنبعت كمان آخر 6 رسائل من هالجلسة عشان أفهم عليكِ أحسن. ما بنحفظ رسايلك بالسيرفر، بس مزوّد الخدمة ممكن يحتفظ فيها فترة قصيرة حسب شروطه.",
+          "إذا اخترتي «مع آخر الرسائل»، بتنبعت كمان آخر 6 رسائل من هالجلسة وملخص قصير لشو حكيتي فيها (مثلاً «جوزها هددها ياخد الولاد»)، عشان ما أرجع أسألك نفس الأسئلة. ما بنحفظ رسايلك بالسيرفر، بس مزوّد الخدمة ممكن يحتفظ فيها فترة قصيرة حسب شروطه.",
         ),
       );
       const row = el("div", "acts");

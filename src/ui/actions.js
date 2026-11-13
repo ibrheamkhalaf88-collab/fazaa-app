@@ -31,6 +31,11 @@ export function bindActions({ router, chat, sos, disguise, settings }) {
     mic: () => toast("التسجيل الصوتي مش متوفر بهالنسخة. اكتبي رسالتك"),
     soon: () => toast("رقم التواصل بينضاف بعد التحقق منه"),
     keep: () => $("#q").focus(),
+    // a fresh conversation: this one is erased from the device (saved topics are separate)
+    "new-chat": () => {
+      chat.reset();
+      toast("بدأنا محادثة جديدة. اللي قبل انمسح من الجهاز.");
+    },
   };
 
   const handlers = [
@@ -81,6 +86,8 @@ export function bindActions({ router, chat, sos, disguise, settings }) {
           .forEach((o) => (o.hidden = !(cat === "all" || attr(o, "data-cat") === cat)));
       },
     ],
+    ["[data-forget-fact]", (n) => settings.forgetFact(attr(n, "data-forget-fact"))],
+    ["[data-forget]", (n) => settings.forget(attr(n, "data-forget"))],
     ["[data-setting]", (n) => settings.toggle(attr(n, "data-setting"))],
     ["[data-theme-set]", (n) => settings.setTheme(attr(n, "data-theme-set"))],
     [".dg", (n) => settings.setDisguise(attr(n, "data-dg"), n.textContent.trim())],

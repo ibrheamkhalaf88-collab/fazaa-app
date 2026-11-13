@@ -417,6 +417,14 @@
                 </span>
               </div>
             </div>
+            <button
+              class="iconbtn"
+              data-action="new-chat"
+              aria-label="محادثة جديدة: بتمسح هالمحادثة من الجهاز"
+              title="محادثة جديدة"
+            >
+              <svg class="ic"><use href="#i-trash" /></svg>
+            </button>
             <button class="iconbtn xbtn" data-exit aria-label="خروج سريع" title="خروج سريع">
               <svg class="ic"><use href="#i-exit" /></svg>
             </button>
@@ -760,6 +768,29 @@
                   aria-label="أجوبة أذكى عبر الإنترنت"
                 ></button>
                 <span class="badge badge-flat" id="ai-soon">قريباً</span>
+              </div>
+              <div class="set">
+                <span class="si">
+                  <svg class="ic"><use href="#i-note" /></svg>
+                </span>
+                <div>
+                  <b>تذكّر المواضيع بين الزيارات</b>
+                  <small>
+                    مطفي إلا إذا شغّلتيه. المحادثة نفسها بتنمسح لما تسكري التطبيق. إذا شغّلتيه: بنحفظ على هالجهاز
+                    بس ملاحظات قصيرة عن كل موضوع (مثلاً «حكت مع محامية»)، مش رسايلك، عشان تقدري تكتبي «بدي نكمل
+                    موضوع الحضانة». الملاحظات مش مشفّرة: أي حدا بيفتح التطبيق على تلفونك بيقدر يشوفها، فما تشغّليه
+                    إذا تلفونك مش إلك لحالك. ما بتنبعت لأي سيرفر، وبتنمسح لحالها بعد 30 يوم، أو بالخروج السريع، أو
+                    لما تطفيه.
+                  </small>
+                  <div id="saved-topics" class="saved-topics" aria-live="polite"></div>
+                </div>
+                <button
+                  class="tg"
+                  role="switch"
+                  aria-checked="false"
+                  data-setting="memoryOn"
+                  aria-label="تذكّر المواضيع بين الزيارات"
+                ></button>
               </div>
               <div class="set">
                 <span class="si">

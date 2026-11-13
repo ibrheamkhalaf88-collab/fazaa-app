@@ -12,7 +12,9 @@ const CASES = [
   ["بعتولي صور ومقاطع إباحية بدون ما أطلب", ["porn"], ["blackmail"]],
   ["طليقي ما عم يدفع نفقة الولاد", ["nafaqa"], ["divorce"]],
   ["جوزي طلّقني، شو حقوقي؟", ["divorce"], ["nafaqa"]],
-  ["بيهددني ياخد الولاد مني", ["custody", "blackmail"], []],
+  // (2026-11-13) a threat to take the children is a threat, not cyber blackmail (no article 15)
+  ["بيهددني ياخد الولاد مني", ["custody", "threat"], ["blackmail"]],
+  ["جوزي هددني مبارح", ["threat"], ["blackmail"]],
   ["جوزي بيضربني", ["violence"], []],
   ["بدي أعرف حصتي من الميراث", ["inherit"], []],
   // guards against false positives: a keyword must start a word, and numbers must match exactly

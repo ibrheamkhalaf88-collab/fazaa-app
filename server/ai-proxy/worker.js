@@ -53,7 +53,15 @@ export const TALK_PROMPT = `You are "فزعة", a digital assistant in an app fo
 WHAT SHE NEEDS NOW is given in <need>:
 - listen: she wants to be heard. Reflect ONE real detail she said, in 1 to 3 short sentences. No advice, no options, no lists. You may end with one gentle open question, or none.
 - understand: she is telling what happens. Reflect one real detail and ask ONE question that helps her say what matters to her (who, since when, what she wants). No advice yet.
-- steps: she asked what to do. Give 2 or 3 SMALL options that fit what she said (see <context>), and say what you would need to know to suggest better. Then at most one question.
+- steps: she asked what to do. Give 2 or 3 SMALL options that fit what she said (see <context>): first what protects her safety and her children, then what costs her least (the smallest safe step, not a big decision). Then at most one question.
+
+USING THE CONVERSATION (<context>, only when she agreed to share it)
+- "What she told" lines are HER report of events, not verified facts: refer to them as what she said, never as proven.
+- Use them: answer the situation she already described («طيب شو بقدر أعمل؟» is about THAT situation). Never ask again for something she already told or already answered ("Already asked" lists questions you must not repeat).
+- If she made progress (talked to a lawyer, told someone), notice it in a few words before anything else.
+- If a "he"/"she" in her message could mean two people, ask which one in a few words. Never guess a person.
+- If she is overwhelmed (panicking, "مخنوقة", "منهارة"), slow down: one short calming sentence (e.g. a slow breath, one thing at a time) before anything else.
+- Usually 2 to 5 short sentences. Do not start with the same words as your previous replies.
 
 HARD RULES
 1. Say NOTHING about laws, articles, penalties, courts, deadlines or rights. If she asks something legal, say a lawyer can answer it exactly.
@@ -128,6 +136,11 @@ export function cleanContext(raw) {
     person: str(raw.person, 20),
     constraints: list(raw.constraints, CONTEXT.facts, CONTEXT.factChars),
     rejected: list(raw.rejected, CONTEXT.facts, 30),
+    topic: str(raw.topic, 40),
+    facts: list(raw.facts, CONTEXT.facts, CONTEXT.factChars),
+    goal: str(raw.goal, CONTEXT.factChars),
+    progress: list(raw.progress, 4, 40),
+    asked: list(raw.asked, CONTEXT.facts, 20).filter((x) => /^[a-z-]+$/.test(x)),
     turns,
   };
 }
@@ -136,6 +149,11 @@ function contextBlock(ctx) {
   if (!ctx) return "";
   const lines = [];
   if (ctx.person) lines.push(`She is talking about: ${ctx.person}`);
+  if (ctx.topic) lines.push(`Topic: ${ctx.topic}`);
+  if (ctx.facts?.length) lines.push(`What she told (her report, not verified): ${ctx.facts.join("؛ ")}`);
+  if (ctx.goal) lines.push(`What she wants: ${ctx.goal}`);
+  if (ctx.progress?.length) lines.push(`Her progress: ${ctx.progress.join("؛ ")}`);
+  if (ctx.asked?.length) lines.push(`Already asked (do not ask again): ${ctx.asked.join(", ")}`);
   if (ctx.constraints.length) lines.push(`She said (do not suggest against it): ${ctx.constraints.join("؛ ")}`);
   if (ctx.rejected.length) lines.push(`Ideas she refused (never suggest again): ${ctx.rejected.join(", ")}`);
   for (const t of ctx.turns) lines.push(`${t.role === "user" ? "She" : "You"}: ${t.text}`);

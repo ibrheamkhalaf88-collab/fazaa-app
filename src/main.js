@@ -7,6 +7,7 @@ import { createLawyerCards } from "./features/lawyers/lawyer-cards.js";
 import { createContacts } from "./features/support/contacts.js";
 import { createAnswerer } from "./ai/answerer.js";
 import { createRemoteEngine } from "./ai/remote-engine.js";
+import { createSavedTopics } from "./ai/saved.js";
 import { createRouter } from "./core/router.js";
 import { createState } from "./core/state.js";
 import { createStore } from "./core/store.js";
@@ -63,7 +64,10 @@ async function boot() {
 
   const aiAvailable = AI_ENDPOINT !== "";
   const account = createAccount({ base: API_BASE, store });
+  // opt-in, device-only notes per topic; OFF by default (src/ai/saved.js, docs/PRIVACY.md)
+  const saved = createSavedTopics({ store, state });
   const answerer = createAnswerer({
+    saved,
     emergencyNumbers: contacts.emergencyNumbers,
     available: () => ({ ...contacts.available(), lawyer: account.enabled }),
     remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT }) : undefined,
@@ -97,9 +101,10 @@ async function boot() {
     wipe: () => {
       chat.reset({ signOut: true });
       sos.reset();
+      saved.clear(); // saved topics too: quick exit leaves nothing that tells her story
     },
   });
-  const settings = createSettings({ state, router, theme, chat, sos, aiAvailable });
+  const settings = createSettings({ state, router, theme, chat, sos, aiAvailable, saved });
 
   renderTabs();
   chat.bindComposer();
@@ -114,6 +119,8 @@ async function boot() {
 
   telemetry.visit();
   router.onChange((name) => name === "sos" && telemetry.track("sos_open"));
+  // the saved-topics list changes while she chats: redraw it when Settings opens
+  router.onChange((name) => name === "settings" && settings.render());
   // the list follows her region, so redraw whenever she opens the support screen
   contacts.render();
   router.onChange((name) => (name === "support" || name === "sos") && contacts.render());

@@ -1,4 +1,4 @@
-import { $, $$ } from "../../core/dom.js";
+import { $, $$, el } from "../../core/dom.js";
 import { COUNTRY_NAMES } from "../../core/state.js";
 import { toast } from "../../core/toast.js";
 import { DISGUISE_HINTS } from "../disguise/disguise.js";
@@ -16,8 +16,46 @@ import { DISGUISE_HINTS } from "../disguise/disguise.js";
  *   aiAvailable: boolean,   // false when no AI endpoint is configured
  * }} deps
  */
-export function createSettings({ state, router, theme, chat, sos, aiAvailable }) {
+export function createSettings({ state, router, theme, chat, sos, aiAvailable, saved = null }) {
+  /** The saved topics, only when she switched the feature on; built with DOM nodes, never HTML. */
+  function renderSaved() {
+    const box = $("#saved-topics");
+    if (!box) return;
+    box.replaceChildren();
+    if (!saved || state.get("memoryOn") !== true) return;
+    const list = saved.list();
+    if (!list.length) {
+      box.appendChild(el("p", "fine", "ما في مواضيع محفوظة لهلأ."));
+      return;
+    }
+    for (const t of list) {
+      const card = el("div", "saved-topic");
+      card.appendChild(el("b", null, t.title));
+      const notes = el("ul", "opts");
+      t.facts.forEach((f, i) => {
+        const li = el("li", null, f);
+        const fix = el("button", "chip", "مش صح، احذفيها");
+        fix.setAttribute("data-forget-fact", `${t.id}|${i}`);
+        li.appendChild(fix);
+        notes.appendChild(li);
+      });
+      card.appendChild(notes);
+      const acts = el("div", "acts");
+      const cont = el("button", "chip", "كمّلي هالموضوع");
+      cont.setAttribute("data-ask", `بدي نكمل موضوع ${t.title}`);
+      const del = el("button", "chip", "احذفي الموضوع");
+      del.setAttribute("data-forget", t.id);
+      acts.append(cont, del);
+      card.appendChild(acts);
+      box.appendChild(card);
+    }
+    const all = el("button", "chip", "احذفي كل المواضيع المحفوظة");
+    all.setAttribute("data-forget", "*");
+    box.appendChild(all);
+  }
+
   function render() {
+    renderSaved();
     const country = state.get("country");
     $$(".country[data-country]").forEach((c) =>
       c.classList.toggle("sel", c.getAttribute("data-country") === country),
@@ -61,13 +99,34 @@ export function createSettings({ state, router, theme, chat, sos, aiAvailable })
     },
     toggle(key) {
       state.set(key, !state.get(key));
+      // switching memory off withdraws consent: everything saved is deleted at once
+      if (key === "memoryOn" && !state.get(key)) saved?.clear();
       render();
+      if (key === "memoryOn")
+        toast(
+          state.get(key)
+            ? "شغّلناه. بنحفظ ملاحظات قصيرة عن المواضيع على هالجهاز بس، وبتقدري تحذفيها من هون بأي وقت."
+            : "طفّيناه، وانمسحت كل المواضيع المحفوظة.",
+        );
       if (key === "aiOnline")
         toast(
           state.get(key)
             ? "هلأ أسئلتك بتنبعت لسيرفر فزعة عشان جواب أوضح. بتقدري تطفيها بأي وقت."
             : "طفّيناها. الأجوبة هلأ من جهازك بس، بدون نت.",
         );
+    },
+    /** Delete one saved topic ("*" = all) or one note in it ("id|index"). */
+    forget(id) {
+      if (id === "*") saved?.clear();
+      else saved?.remove(id);
+      render();
+      toast(id === "*" ? "انحذفت كل المواضيع المحفوظة" : "انحذف الموضوع");
+    },
+    forgetFact(ref) {
+      const [id, index] = String(ref).split("|");
+      saved?.removeFact(id, Number(index));
+      render();
+      toast("انحذفت الملاحظة");
     },
     /** Demo sign-in (no real Google flow yet). */
     toggleAccount() {

@@ -4,7 +4,7 @@
  * Add words here; run `npm test` to make sure no existing example breaks.
  */
 
-/** @typedef {"minor"|"porn"|"blackmail"|"nafaqa"|"divorce"|"custody"|"violence"|"inherit"|"privacy"} IntentId */
+/** @typedef {"minor"|"porn"|"blackmail"|"nafaqa"|"divorce"|"custody"|"violence"|"threat"|"inherit"|"privacy"} IntentId */
 
 /** @type {{id: IntentId, words: string[]}[]} */
 export const INTENTS = [
@@ -54,9 +54,8 @@ export const INTENTS = [
       "ابتز",
       "يبتز",
       "ابتزاز",
-      "هدد",
-      "تهديد",
-      "بيهددني",
+      // (2026-11-13) «هدد / تهديد» alone moved to "threat": «جوزي هددني» is not cyber blackmail.
+      // detect.js counts a threat as blackmail only with an online / images / money cue.
       "فضيحة",
       "يفضح",
       "افضح",
@@ -134,11 +133,21 @@ export const INTENTS = [
       "حرمني من ولادي",
       "مشاهدة الولاد",
       "رؤية الولاد",
+      // (2026-11-13) «وبضل الولاد معي؟»
+      "الولاد معي",
+      "ولادي معي",
+      "يضلوا الولاد",
+      "بضلوا معي",
     ],
   },
   {
     id: "violence",
     words: ["ضربني", "يضربني", "عنف", "إيذاء", "بيأذيني", "بيهينني"],
+  },
+  {
+    // a threat of any kind; becomes blackmail only with a cyber / money cue (see detect.js)
+    id: "threat",
+    words: ["هدد", "تهديد", "بيهددني"],
   },
   {
     id: "inherit",

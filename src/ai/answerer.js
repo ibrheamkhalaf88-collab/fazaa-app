@@ -1,5 +1,18 @@
-import { ARTICLES } from "../data/law/index.js";
-import { answeredNo, answeredYes, classifyNeed, clearMemory, contextFor, createMemory, localTalk, pushTurn, remember } from "./conversation.js";
+import { ARTICLES, INTENT_TO_ARTICLES, LAWS, articlesFor } from "../data/law/index.js";
+import {
+  answeredNo,
+  answeredYes,
+  classifyNeed,
+  clearMemory,
+  contextFor,
+  createMemory,
+  localTalk,
+  newsReply,
+  pushTurn,
+  recallReply,
+  remember,
+} from "./conversation.js";
+import { currentTopic, LEGAL_TOPICS } from "./situation.js";
 import { assessDanger, forcedMarriageAnswer } from "./danger.js";
 import { findArticleByNumber } from "./legal.js";
 import { answerFromRules } from "./rules-engine.js";
@@ -9,6 +22,32 @@ import { detectIntents } from "./detect.js";
 import { tokenize } from "./normalize.js";
 
 const norm = (s) => tokenize(s).join(" ");
+
+/** «بتتذكري شو قلتلك؟», «حكيتلك قبل»: she asks what we remember. */
+const RECALL = /(?:^| )(?:بتتذكري|بتذكري|متذكره|فاكره|حكيتلك قبل|قلتلك قبل|شو قلتلك|شو حكيتلك)(?= |$)/;
+/** «صار معي إشي جديد». */
+const NEWS = /(?:^| )صار (?:معي )?(?:اشي|شي) جديد(?= |$)|(?:^| )في (?:اشي|شي) جديد(?= |$)/;
+/** «بدي نكمل موضوع الحضانة», «نكمل من وين وقفنا». */
+const RESUME = /(?:^| )(?:بدي |خلينا )?نكمل(?: (?:موضوع|بموضوع|حكي|حديث|من وين وقفنا|اللي حكينا))?(?= |$)/;
+const SHOW_ME = /(?:^| )(?:وريني|فرجيني|ورجيني|بدي اعرف|احكيلي)(?= |$)/;
+const TOPIC_WORDS = {
+  custody: /حضان|الولاد|ولادي/,
+  nafaqa: /نفق|مصروف/,
+  divorce: /طلاق|طلق/,
+  blackmail: /ابتزاز|بيبتز|صور/,
+  violence: /تهديد|عنف|ضرب/,
+  family: /اهلي/,
+  inherit: /ميراث|ورث/,
+};
+/** The question a topic stands for, when she says «آه» to «بتحبي أوريكِ شو بيقول القانون؟». */
+const TOPIC_QUESTION = {
+  custody: "شو حقي بالحضانة؟",
+  nafaqa: "شو حقي بالنفقة؟",
+  divorce: "شو حقوقي بالطلاق؟",
+  blackmail: "شو عقوبة الابتزاز الإلكتروني؟",
+  privacy: "شو عقوبة نشر الصور بدون إذن؟",
+  inherit: "شو حقي بالميراث؟",
+};
 
 /** She is talking about her own situation (not asking for a recipe or a restaurant). */
 const onTopic = (q) =>
@@ -48,8 +87,65 @@ export function createAnswerer({
   onRemoteError = () => {},
   emergencyNumbers = () => ({}),
   available = () => ({}),
+  saved = null, // optional, opt-in saved topics across visits (src/ai/saved.js); null = never persists
 } = {}) {
   const memory = createMemory();
+
+  /* ---------- verified texts for a topic (offline), with where they apply ---------- */
+
+  /** Up to `n` articles for this topic that apply in her region, in the curated order. */
+  function relatedArticles(topic, country, n = 2) {
+    const intent = { privacy: "privacy", blackmail: "blackmail" }[topic] || topic;
+    const inRegion = articlesFor(country);
+    return (INTENT_TO_ARTICLES[intent] || []).filter((id) => inRegion[id]).slice(0, n);
+  }
+
+  /** Which law and region the texts come from, and what the corpus does NOT have. */
+  function jurisdiction(ids, topic, country) {
+    const lines = [];
+    const region = country === "ps-gaza" ? "قطاع غزة" : "الضفة الغربية";
+    const laws = [...new Set(ids.map((id) => ARTICLES[id]?.lawKey))].map((k) => LAWS.find((l) => l.key === k)).filter(Boolean);
+    if (laws.length) lines.push(`النصوص من ${laws.map((l) => `«${l.name}»`).join(" و")}، حسب منطقتك (${region}).`);
+    if (topic === "custody" && country === "ps-gaza")
+      lines.push("ما عندي نص الحضانة المعمول فيه بغزة، فما بقدر أقلك شو بيقول القانون هناك عن الحضانة. محامية بتقدر.");
+    return lines;
+  }
+
+  /** «بدي نكمل موضوع الحضانة»: only from topics she chose to save, never brought up by itself. */
+  function resume(question) {
+    const t = norm(question);
+    const topic = Object.entries(TOPIC_WORDS).find(([, re]) => re.test(t))?.[0] || "";
+    if (!saved?.enabled?.()) {
+      return {
+        kind: "talk",
+        lead: "أنا ما بحفظ المحادثات بين الزيارات، لأنه «تذكّر المواضيع» مطفي بالإعدادات. ما في مشكلة، احكيلي باختصار وين وصل الموضوع.",
+        options: [],
+        ask: "",
+        note: "",
+      };
+    }
+    const threads = saved.list();
+    const thread = topic ? threads.find((x) => x.topic === topic) : threads.length === 1 ? threads[0] : null;
+    if (!thread) {
+      return {
+        kind: "talk",
+        lead: threads.length ? "عندي أكتر من موضوع محفوظ. أي واحد بدك نكمل؟" : "ما في موضوع محفوظ بهالاسم. احكيلي باختصار وين وصل الموضوع.",
+        options: threads.map((x) => x.title),
+        ask: "",
+        note: "",
+      };
+    }
+    memory.carried = thread.facts.slice(-6);
+    memory.situation.topics = [thread.topic];
+    if (thread.goal) memory.situation.goal = thread.goal;
+    return {
+      kind: "talk",
+      lead: `أكيد، نكمل بموضوع ${thread.title}. آخر مرة حكيتيلي:`,
+      options: thread.facts.slice(-3),
+      ask: "صار إشي جديد من وقتها؟",
+      note: "",
+    };
+  }
 
   /* ---------- after a danger reply (fixed text, see docs/SAFETY-REVIEW.md) ---------- */
 
@@ -145,6 +241,12 @@ export function createAnswerer({
     if (memory.safetyAsked || !ask) return answer;
     memory.safetyAsked = true;
     // each question has its own polarity: «لا» to «إنتِ بأمان؟» is danger, «لا» to «بخطر هلأ؟» is not
+    // about someone else: a reminder, not a question to her (keep the question we already asked)
+    if (about === "other") {
+      return answer.kind === "talk"
+        ? { ...answer, options: [ask, ...(answer.options || [])].slice(0, 4), sos: true, sosPlan: "violence" }
+        : { ...answer, scope: [...(answer.scope || []), ask], sos: true };
+    }
     memory.lastAsk = about === "forced" ? "forced" : about === "family" ? "family" : "safety";
     if (answer.kind === "talk") return { ...answer, ask, sos: true };
     return { ...answer, safetyAsk: ask, sos: true };
@@ -215,6 +317,55 @@ export function createAnswerer({
     }
   }
 
+  /**
+   * A legal question: the exact article when she names one, else the online AI (grounded in retrieved
+   * texts), else the offline rules. Then: where the texts apply, verbatim texts for the topic when the
+   * answer cites none, and her worry acknowledged when she said she is afraid to ask for her right.
+   */
+  async function legalAnswer(question, ctx, can, topicHint = "") {
+    const hit = findArticleByNumber(question, ctx.country);
+    const local = answerFromRules(question);
+    let answer;
+    if (hit) answer = articleAnswer(hit, ctx.country);
+    else {
+      const remoteAnswer = await online(question, "legal", ctx);
+      // the offline rules know some cases are dangerous (blackmail): keep the safety-plan button
+      answer = remoteAnswer ? (local?.sos ? { ...remoteAnswer, sos: true } : remoteAnswer) : local;
+    }
+    if (!answer) {
+      answer = {
+        kind: "talk",
+        lead: "ما عندي نص قانوني بيغطي هالسؤال بالزبط، وما بدي أعطيكِ معلومة مش متأكدة منها.",
+        options: [],
+        ask: can.lawyer ? "بتحبي تسألي محامية؟" : "بتحبي تحكيلي شو اللي صاير معك أكتر؟",
+        note: "",
+        general: true,
+      };
+    }
+    answer = withScope(answer, ctx.country);
+    if (answer.kind === "article") return answer;
+
+    const topic = topicHint || currentTopic(memory.situation);
+    let ids = answer.cites || [];
+    if (!ids.length && answer.kind !== "talk" && LEGAL_TOPICS.includes(topic)) {
+      const related = relatedArticles(topic, ctx.country).filter((id) => !memory.situation.shownArticles.has(id));
+      if (related.length) answer = { ...answer, related };
+      ids = related;
+    }
+    ids.forEach((id) => memory.situation.shownArticles.add(id));
+    const where = jurisdiction(ids, topic, ctx.country);
+    if (where.length) answer = { ...answer, scope: [...(answer.scope || []), ...where] };
+
+    // «بدي أعرف حقي بالنفقة، بس خايفة أطالب فيه»: the worry first, the information after
+    if (ventingFeeling(question) === "afraid") {
+      answer = { ...answer, lead: `خوفك مفهوم، وما في إشي لازم تقرريه اليوم. ${answer.lead}` };
+      const worry = "خايفة من ردة فعل حدا إذا طالبتي بحقك؟";
+      if (answer.kind === "talk") answer.ask = answer.ask || worry;
+      else if (!answer.safetyAsk) answer.safetyAsk = worry;
+    }
+    return answer;
+  }
+
   async function decide(question, ctx) {
     const numbers = emergencyNumbers();
     const can = available();
@@ -274,6 +425,24 @@ export function createAnswerer({
     if (small && !memory.turns.some((t) => t.role === "assistant")) return small.answer;
     if (small?.kind === "thanks" || small?.kind === "name") return small.answer;
 
+    // the conversation itself: what we remember, news, continuing a saved topic
+    const t = norm(question);
+    if (RECALL.test(t)) return recallReply(memory);
+    if (RESUME.test(t)) return resume(question);
+    if (NEWS.test(t) && t.split(" ").length <= 6) return newsReply(memory);
+
+    // her answer to «بتحبي أوريكِ شو بيقول القانون عن …؟»
+    if (memory.lastAsk === "offer-law") {
+      const topic = memory.situation.pending?.topic || currentTopic(memory.situation);
+      memory.lastAsk = "";
+      if ((answeredYes(question) || SHOW_ME.test(t)) && TOPIC_QUESTION[topic]) {
+        memory.lastNeed = "legal";
+        return legalAnswer(TOPIC_QUESTION[topic], ctx, can, topic);
+      }
+      if (answeredNo(question))
+        return { kind: "talk", lead: "تمام، مش لازم هلأ.", options: [], ask: "بدك نكمل حكي، ولا في إشي تاني على بالك؟", note: "" };
+    }
+
     let need = classifyNeed(question, memory);
     if (need === "followup") need = memory.lastNeed === "legal" ? "understand" : memory.lastNeed || "understand";
     memory.lastNeed = need;
@@ -281,25 +450,7 @@ export function createAnswerer({
 
     let answer;
     if (need === "legal") {
-      const hit = findArticleByNumber(question, ctx.country);
-      const local = answerFromRules(question);
-      if (hit) answer = articleAnswer(hit, ctx.country);
-      else {
-        const remoteAnswer = await online(question, need, ctx);
-        // the offline rules know some cases are dangerous (blackmail): keep the safety-plan button
-        answer = remoteAnswer ? (local?.sos ? { ...remoteAnswer, sos: true } : remoteAnswer) : local;
-      }
-      if (!answer) {
-        answer = {
-          kind: "talk",
-          lead: "ما عندي نص قانوني بيغطي هالسؤال بالزبط، وما بدي أعطيكِ معلومة مش متأكدة منها.",
-          options: [],
-          ask: can.lawyer ? "بتحبي تسألي محامية؟" : "بتحبي تحكيلي شو اللي صاير معك أكتر؟",
-          note: "",
-          general: true,
-        };
-      }
-      answer = withScope(answer, ctx.country);
+      answer = await legalAnswer(question, ctx, can);
     } else {
       answer = await online(question, need, ctx);
       // offline: only when she talks about herself (a feeling, a person, a limit, «اسمعيني»);
@@ -330,6 +481,8 @@ export function createAnswerer({
       const answer = await decide(question, ctx);
       if (ctx.signal?.aborted) return null; // wiped while thinking: write nothing back
       pushTurn(memory, "assistant", [answer?.lead, answer?.ask].filter(Boolean).join(" "));
+      // opt-in only: short labels of what she told, per topic; never after a self-harm reply
+      if (saved?.enabled?.() && memory.dangerKind !== "selfharm" && memory.lastAsk !== "selfharm") saved.remember(memory);
       return answer ? { source: "rules", ...answer } : null;
     },
   };
