@@ -44,8 +44,8 @@
 
 .btn.primary {
   box-shadow: var(--shadow);
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--accent);
+  color: var(--on-accent);
   border-color: transparent;
 }
 
@@ -107,8 +107,12 @@
 
 .tabs button.on {
   font-weight: 600;
-  background: var(--accent);
-  color: #18214a;
+  background: var(--info-soft);
+  color: var(--ink);
+}
+
+.tabs button.on svg {
+  color: var(--info);
 }
 
 .tabs button.sos {
@@ -144,7 +148,7 @@
 
 .dots i.on {
   width: 22px;
-  background: var(--accent);
+  background: var(--info);
 }
 
 .stack {
@@ -170,9 +174,9 @@
   border-radius: 999px;
   padding: 9px 14px;
   min-height: 40px;
-  border: 1.5px solid var(--line);
-  background: var(--surface);
-  border-color: var(--line);
+  border: 1.5px solid var(--pink-line);
+  background: var(--pink-soft);
+  border-color: var(--pink-line);
 }
 
 .chip.fill {
@@ -208,7 +212,7 @@
   font-size: 11.5px;
   border-radius: 999px;
   padding: 1px 10px;
-  background: var(--primary-soft);
+  background: var(--info-soft);
   margin-top: 5px;
   color: var(--ink);
 }
@@ -276,7 +280,7 @@
 }
 
 .qx svg {
-  color: var(--accent);
+  color: var(--pink);
 }
 
 .app[data-cur="chat"] .qx {
@@ -285,7 +289,7 @@
 
 .iconbtn.xbtn {
   background: var(--primary);
-  color: var(--accent);
+  color: var(--pink);
 }
 
 .app[data-cur="welcome"] .qx,
@@ -320,7 +324,7 @@
 }
 
 .tabs button.urgent:not(.on) svg {
-  color: var(--accent);
+  color: var(--accent); /* the emergency entry keeps its gold mark */
 }
 
 /* Two-way switch at the top of the emergency and support screens. */

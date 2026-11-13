@@ -46,10 +46,10 @@
 }
 
 .welcome .btn.primary {
-  box-shadow: 0 14px 26px -12px rgba(67, 56, 202, 0.8);
+  box-shadow: 0 14px 26px -12px rgba(150, 100, 30, 0.55);
   font-weight: 500;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--accent);
+  color: var(--on-accent);
   border-color: transparent;
 }
 
@@ -95,5 +95,5 @@
 }
 
 .welcome .dots i.on {
-  background: var(--accent);
+  background: var(--info);
 }

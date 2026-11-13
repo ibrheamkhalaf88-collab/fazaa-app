@@ -28,8 +28,8 @@
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: var(--accent);
-  color: #18214a;
+  background: var(--mauve-soft);
+  color: var(--ink);
   border: 2px solid var(--ground);
 }
 
@@ -64,15 +64,7 @@
 
 .tip svg {
   margin-top: 4px;
-  color: #b57a1e;
-}
-
-:root:not([data-theme="dark"]) .tip svg {
-  color: #b57a1e;
-}
-
-:root[data-theme="dark"] .tip svg {
-  color: var(--accent);
+  color: var(--info);
 }
 
 .hero2 {
@@ -165,8 +157,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--accent);
-  color: #18214a;
+  background: var(--info-soft);
+  color: var(--ink);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -176,8 +168,8 @@
   width: 42px;
   height: 42px;
   border-radius: 50%;
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--accent);
+  color: var(--on-accent);
   display: grid;
   place-items: center;
   flex-shrink: 0;
@@ -214,7 +206,7 @@
 
 .q.hot .qi {
   background: var(--accent);
-  color: #18214a;
+  color: var(--on-accent);
 }
 
 .sect {
@@ -264,7 +256,7 @@
   width: 48px;
   height: 48px;
   border-radius: 16px;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
   display: grid;
   place-items: center;
   margin-bottom: 8px;
@@ -290,7 +282,7 @@
   width: 54px;
   height: 54px;
   border-radius: 50%;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
   flex-shrink: 0;
 }
 
@@ -313,7 +305,7 @@
   width: 100%;
   border: none;
   text-align: right;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
   border-radius: 24px;
   padding: 14px 16px;
   color: var(--ink);

@@ -28,8 +28,8 @@
   place-items: center;
   flex-shrink: 0;
   border-color: transparent;
-  background: var(--accent);
-  color: #18214a;
+  background: var(--pink-soft);
+  color: var(--ink);
 }
 
 .msgs {
@@ -78,7 +78,7 @@
   margin-top: 10px;
   overflow: hidden;
   border-radius: 16px;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
   border: none;
 }
 
@@ -212,7 +212,7 @@
   height: 8px;
   border-radius: 50%;
   animation: blink 1.6s infinite;
-  background: var(--accent);
+  background: var(--info);
 }
 
 .sys {
@@ -228,7 +228,7 @@
 .lw {
   align-self: flex-end;
   max-width: 94%;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
   padding: 13px 15px;
   border-radius: 22px 22px 22px 6px;
 }
@@ -253,7 +253,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  border: 1.5px dashed var(--accent);
+  border: 1.5px dashed var(--pink-line);
   border-radius: 22px;
   padding: 12px;
   align-self: stretch;
@@ -263,19 +263,19 @@
   width: 46px;
   height: 46px;
   border-radius: 50%;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
   flex-shrink: 0;
 }
 
 .round.send {
-  background: var(--primary);
-  color: var(--on-primary);
+  background: var(--accent);
+  color: var(--on-accent);
   border-color: transparent;
 }
 
 .round.mic {
-  background: var(--accent);
-  color: #18214a;
+  background: var(--info-soft);
+  color: var(--ink);
 }
 
 /* small lines inside an answer bubble */
@@ -306,7 +306,7 @@
   margin-top: 10px;
   padding: 10px 12px;
   border-radius: 14px;
-  background: var(--primary-soft);
+  background: var(--pink-soft);
 }
 .summary-title {
   display: block;

@@ -36,7 +36,7 @@
   width: 0;
   transition: width 0.35s;
   border-radius: 5px;
-  background: var(--accent);
+  background: var(--info);
 }
 
 /* emergency numbers set in the dashboard: one big call button each */
@@ -46,6 +46,9 @@
   gap: 8px;
 }
 .sos-calls .sos-call {
+  /* emergency calls keep their own navy, apart from the gold main buttons */
+  background: var(--primary);
+  color: var(--on-primary);
   text-decoration: none;
   justify-content: center;
 }
@@ -85,13 +88,13 @@
 
 .step.done {
   box-shadow: none;
-  background: var(--primary-soft);
+  background: var(--info-soft);
 }
 
 .step.done .box {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on-primary);
+  background: var(--info);
+  border-color: var(--info);
+  color: var(--surface);
 }
 
 .step.done b {
@@ -112,5 +115,5 @@
   display: flex;
   gap: 10px;
   align-items: center;
-  background: var(--primary-soft);
+  background: var(--pink-soft);
 }

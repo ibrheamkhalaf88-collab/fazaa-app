@@ -7,7 +7,7 @@
   align-items: center;
   color: var(--ink);
   border-radius: 22px;
-  background: var(--primary-soft);
+  background: var(--mauve-soft);
 }
 
 .lhero svg.art {
@@ -140,7 +140,7 @@
   border-radius: 999px;
   padding: 2px 11px;
   align-self: flex-start;
-  background: var(--primary-soft) !important;
+  background: var(--info-soft) !important;
   color: var(--ink) !important;
 }
 
@@ -179,7 +179,7 @@
 
 .path.law .pi {
   background: var(--accent);
-  color: #18214a;
+  color: var(--on-accent);
 }
 
 .sec .muted {

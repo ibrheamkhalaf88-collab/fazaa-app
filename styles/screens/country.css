@@ -38,14 +38,14 @@
 }
 
 .country.sel {
-  border-color: var(--primary);
-  background: var(--primary-soft);
+  border-color: var(--info);
+  background: var(--info-soft);
 }
 
 .country.sel .tick {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: var(--on-primary);
+  background: var(--info);
+  border-color: var(--info);
+  color: var(--surface);
 }
 
 .country:disabled {

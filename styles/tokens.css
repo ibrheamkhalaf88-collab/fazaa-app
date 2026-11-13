@@ -2,7 +2,11 @@
   Design tokens: every colour, font and shadow lives here, nowhere else.
   Components only use var(--token). To restyle the app, change this file.
 
-  Palette: dusty slate-blue ground, navy primary, cream cards, one honey-gold accent.
+  Palette: dusty slate-blue ground, navy primary, cream cards, plus three calm tints:
+  turquoise (--info: information, links, active tabs, focus, progress), mauve (--mauve-soft:
+  headers and secondary surfaces) and soft pink (--pink-soft: the conversation summary,
+  support chips, gentle accents). Honey gold (--accent) is kept for the main actions only
+  (send, the main call-to-action button, the safety-plan shortcut).
   There is deliberately no red: an alarming colour is the wrong signal for someone
   who may already be frightened. Emergency pieces use navy + gold instead.
 
@@ -33,9 +37,18 @@
   --primary: #1c2654; /* main buttons, active states */
   --primary-soft: #c6d0e3; /* tinted backgrounds */
   --on-primary: #f6f1e3; /* text on --primary */
-  --accent: #e2a650; /* gold: SOS button, active tab, highlights */
+  --accent: #e2a650; /* gold: main actions only (send, main CTA) */
+  --on-accent: #18214a; /* text on --accent */
   --emphasis: #1c2654; /* emergency emphasis (navy, never red) */
   --emphasis-soft: #c6d0e3;
+
+  /* calm tints */
+  --info: #1f6b67; /* turquoise: icons, links, active marks; AA on --surface and --info-soft */
+  --info-soft: #cfe6e1; /* turquoise wash: active tab, info badges, selected items */
+  --mauve-soft: #ddd3e6; /* mauve wash: headers, quoted law, secondary surfaces */
+  --pink-soft: #f5e1e6; /* soft pink wash: summary box, support chips */
+  --pink-line: #e8c6cf; /* soft pink border */
+  --pink: #f2b6c6; /* pink icon on --primary (quick exit) */
 
   --shadow: 0 1px 2px rgba(24, 33, 74, 0.08), 0 12px 24px -16px rgba(24, 33, 74, 0.45);
 
@@ -60,8 +73,15 @@
     --primary-soft: #2a3662;
     --on-primary: #121935;
     --accent: #ebb868;
+    --on-accent: #121935;
     --emphasis: #c6d0e3;
     --emphasis-soft: #2a3662;
+    --info: #7fd1c6;
+    --info-soft: #1d4249;
+    --mauve-soft: #342d57;
+    --pink-soft: #3f2c4a;
+    --pink-line: #5d4266;
+    --pink: #9a3f64;
     --shadow: 0 0 0 1px #34406e;
   }
 }
@@ -80,8 +100,15 @@
   --primary-soft: #2a3662;
   --on-primary: #121935;
   --accent: #ebb868;
+  --on-accent: #121935;
   --emphasis: #c6d0e3;
   --emphasis-soft: #2a3662;
+  --info: #7fd1c6;
+  --info-soft: #1d4249;
+  --mauve-soft: #342d57;
+  --pink-soft: #3f2c4a;
+  --pink-line: #5d4266;
+  --pink: #9a3f64;
   --shadow: 0 0 0 1px #34406e;
 }
 
