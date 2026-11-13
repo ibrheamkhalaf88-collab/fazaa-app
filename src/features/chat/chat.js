@@ -400,6 +400,7 @@ export function createChat({
     $("#q").placeholder = next === "lawyer" ? "اكتبي للمحامية..." : "اكتبي هون...";
 
     if (next === "ai") {
+      lawyer.leave?.();
       systemNote("رجعتي لفزعة، المساعدة الرقمية.");
       return;
     }

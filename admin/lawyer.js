@@ -255,7 +255,9 @@ export function lawyerView(ctx) {
       queue.forEach((c) => state.seen.add(c.id));
       if (!state.loaded) state.tab = cases.length ? "mine" : "queue"; // open on what needs her first
       state.loaded = true;
-      ctx.banner();
+      // clear only a connection error of our own; a claim refusal must stay until she reads it
+      if (state.netError) ctx.banner();
+      state.netError = false;
       // redraw only when something changed, so a click never lands on a row being replaced
       const sig = JSON.stringify([queue, cases]);
       if (sig === state.sig) return;
@@ -264,6 +266,7 @@ export function lawyerView(ctx) {
       state.mine = cases;
       renderList();
     } catch (e) {
+      state.netError = true;
       ctx.banner(errorText(e));
     }
   }
@@ -279,8 +282,9 @@ export function lawyerView(ctx) {
       if (c) openCase(c);
     } catch (e) {
       const { error } = (await e.body?.()) || {};
-      ctx.banner(CLAIM_ERRORS[error] || errorText(e));
       await refreshLists();
+      ctx.banner(CLAIM_ERRORS[error] || errorText(e));
+      button.disabled = false; // the list is not redrawn when nothing changed: give the button back
     }
   }
 
@@ -483,7 +487,14 @@ export function conversationsView(ctx) {
               el(
                 "small",
                 null,
-                `${REGION[c.region] || ""} · ${c.lawyer ? `مع ${c.lawyer}` : STATUS[c.status]}`,
+                // a closed case keeps its lawyer's name, but must still read as closed
+                `${REGION[c.region] || ""} · ${
+                  c.status === "closed"
+                    ? `${STATUS.closed}${c.lawyer ? ` · كانت مع ${c.lawyer}` : ""}`
+                    : c.lawyer
+                      ? `مع ${c.lawyer}`
+                      : STATUS[c.status]
+                }`,
               ),
             );
             row.addEventListener("click", () => open(c));

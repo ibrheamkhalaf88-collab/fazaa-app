@@ -33,6 +33,8 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
   let topic = "";
   let form = null;
   let restoring = false; // true while loading an existing case (show her own earlier messages too)
+  /** True while the «محامية الآن» tab is the one she is on: the sign-up form only ever shows there. */
+  let active = false;
   /** Bumped by reset(): any request started before it is ignored when it comes back. */
   let epoch = 0;
   const shown = new Set();
@@ -140,7 +142,7 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     if (mine !== epoch) return; // wiped / signed out meanwhile: never repaint old messages
     if (res.status === 401) {
       stop();
-      if (!account.signedIn()) authCard();
+      if (!account.signedIn() && active) authCard();
       return;
     }
     if (!res.ok) return;
@@ -177,7 +179,7 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     const mine = epoch;
     const me = await account.me();
     if (mine !== epoch) return;
-    if (!me.ok) return me.status === 0 ? systemNote(errorText(me)) : authCard();
+    if (!me.ok) return me.status === 0 ? systemNote(errorText(me)) : active && authCard();
     const open = me.data.cases.find((c) => c.status !== "closed");
     const tools = [
       { label: "تسجيل خروج", action: "logout" },
@@ -208,10 +210,17 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     setName() {},
     /** Switch into lawyer mode. */
     open({ topic: t } = {}) {
+      active = true;
       if (t) topic = t;
       if (!account.signedIn()) return authCard();
       if (caseId) return start();
       resume();
+    },
+    /** She went back to «اسألي فزعة»: an unfinished sign-up form must not stay in the AI chat. */
+    leave() {
+      active = false;
+      form?.remove();
+      form = null;
     },
     /** She wrote something while in lawyer mode. */
     async reply(text) {
@@ -264,6 +273,7 @@ export function createLiveLawyerSession({ account, state, pollMs = POLL_MS }) {
     reset({ signOut = false } = {}) {
       epoch++;
       stop();
+      active = false;
       form = null;
       caseId = null;
       lastId = 0;
