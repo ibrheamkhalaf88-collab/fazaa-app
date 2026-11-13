@@ -126,6 +126,39 @@ test("2: law stated without any text: refused, she gets the honest «could not a
   assert.match(r.lead, /ما قدرت أوصل/);
 });
 
+test("«خلاصة حديثنا»: each right is kept with the article it comes from, and joins the cited texts", async () => {
+  const { say } = stack(() =>
+    reply({
+      reply: "فهمت سؤالك عن الحضانة. حسب النص اللي عندي، الأم إلها الأولوية.",
+      rights: [{ text: "الأم أحق بحضانة ولدها وتربيته", cite: "psl:154" }],
+      steps: ["ما توقّعي على أي تنازل قبل ما تحكي مع محامية"],
+    }),
+  );
+  const r = await say("شو حقي بالحضانة؟");
+  assert.equal(r.source, "ai");
+  assert.deepEqual(r.rights, [{ text: "الأم أحق بحضانة ولدها وتربيته", cite: "psl:154" }]);
+  assert.ok(r.cites.includes("psl:154"));
+  assert.equal(r.steps.length, 1);
+});
+
+test("«خلاصة حديثنا»: a right from a text it was not given, or a number not in ITS article, is refused", async () => {
+  const bad = [
+    reply({ reply: "تمام.", rights: [{ text: "الحضانة إلك", cite: "psl:999" }] }),
+    reply({ reply: "تمام.", rights: [{ text: "الحضانة لحد عمر 15 سنة", cite: "psl:154" }] }),
+  ];
+  for (const r of bad) {
+    const { say } = stack(() => r.clone());
+    assert.equal((await say("شو حقي بالحضانة؟")).source, "none");
+  }
+});
+
+test("venting: no summary box, a human reply only", async () => {
+  const { say } = stack(() => reply({ reply: "صعب لما تحسي إنه ما في حدا بيسمعك. أنا عم بسمعك هلأ.", rights: [], steps: [] }));
+  const r = await say("بدي حدا يسمعني بس");
+  assert.deepEqual(r.rights, []);
+  assert.deepEqual(r.cites, []);
+});
+
 test("present danger and self-harm: the fixed safety reply at once, the model is not called", async () => {
   let calls = 0;
   const { say } = stack(() => (calls++, reply({ reply: "x" })));

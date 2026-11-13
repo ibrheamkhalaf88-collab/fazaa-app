@@ -165,20 +165,28 @@ export function validateChat(raw, { articleIds, articles }) {
     .map((s) => clean(s, LIMITS.step))
     .filter(Boolean)
     .slice(0, LIMITS.options);
-  const cites = [...new Set(Array.isArray(a.cites) ? a.cites.map(String) : [])];
+  // «خلاصة حديثنا»: each right comes with the ONE article it is taken from, and is checked against it
+  const rights = (Array.isArray(a.rights) ? a.rights : [])
+    .filter((r) => r && typeof r === "object")
+    .map((r) => ({ text: clean(r.text, LIMITS.step), cite: String(r.cite || "") }))
+    .filter((r) => r.text)
+    .slice(0, LIMITS.options);
+  for (const r of rights) if (!articleIds.includes(r.cite)) throw new Error(`unknown-article:${r.cite || "none"}`);
+  const cites = [...new Set([...(Array.isArray(a.cites) ? a.cites.map(String) : []), ...rights.map((r) => r.cite)])];
   if (cites.length > LIMITS.cites) throw new Error("too-many-cites");
   const unknown = cites.find((id) => !articleIds.includes(id));
   if (unknown) throw new Error(`unknown-article:${unknown}`);
   if (reply.includes("؟") && ask) ask = ""; // one question per reply
-  const all = [reply, ask, ...steps].join("\n");
+  const all = [reply, ask, ...steps, ...rights.map((r) => r.text)].join("\n");
   const bad = forbidden(all);
   if (bad) throw new Error(`forbidden:${bad}`);
   if (cites.length === 0 && legalLeak(all)) throw new Error("legal-leak");
   if (cites.length && articles) {
     const problems = checkGrounding({ lead: reply, note: "", steps, cites }, articles);
+    for (const r of rights) problems.push(...checkGrounding({ lead: r.text, note: "", steps: [], cites: [r.cite] }, articles));
     if (problems.length) throw new Error(`ungrounded:${problems[0]}`);
   }
-  return { kind: "chat-ai", lead: reply, ask, steps, cites, sos: a.sos === true, source: "ai" };
+  return { kind: "chat-ai", lead: reply, rights, ask, steps, cites, sos: a.sos === true, source: "ai" };
 }
 
 /**

@@ -166,18 +166,42 @@ export function createChat({
     return box;
   }
 
-  /** The AI-first reply: words, small steps, the law texts it used (verbatim, expandable), one question. */
+  /**
+   * The AI-first reply, shaped like a person talking, then (only when the law answers her) a short
+   * «خلاصة حديثنا»: her rights by the text, each with its article, and what she can do; then the original
+   * texts, folded; then at most one question.
+   */
   function renderAiChat(answer) {
     const box = el("div", "a");
     box.appendChild(el("div", null, answer.lead));
-    if (answer.steps?.length) {
+    const articleNo = (id) => id.replace(/^[a-z]+:/, "");
+    const rights = (answer.rights || []).filter((r) => ARTICLES[r.cite]);
+
+    if (rights.length) {
+      const sum = el("div", "summary");
+      sum.setAttribute("role", "group");
+      sum.setAttribute("aria-label", "خلاصة حديثنا");
+      sum.appendChild(el("b", "summary-title", "📋 خلاصة حديثنا"));
+      sum.appendChild(el("div", "summary-sub", "حقوقك حسب النص:"));
+      const list = el("ul", "opts");
+      for (const r of rights) list.appendChild(el("li", null, `${r.text} (المادة ${articleNo(r.cite)})`));
+      sum.appendChild(list);
+      if (answer.steps?.length) {
+        sum.appendChild(el("div", "summary-sub", "شو بتقدري تعملي:"));
+        const steps = el("ul", "opts");
+        for (const s of answer.steps) steps.appendChild(el("li", null, s));
+        sum.appendChild(steps);
+      }
+      box.appendChild(sum);
+    } else if (answer.steps?.length) {
       const list = el("ul", "opts");
       for (const s of answer.steps) list.appendChild(el("li", null, s));
       box.appendChild(list);
     }
+
     const cites = (answer.cites || []).filter((id) => ARTICLES[id]);
     if (cites.length) {
-      box.appendChild(el("div", "sec", "النص القانوني اللي اعتمدت عليه"));
+      box.appendChild(el("div", "sec", "📖 نص القانون الأصلي"));
       cites.forEach((id) => box.appendChild(citationCard(id, false)));
     }
     if (answer.ask) box.appendChild(el("div", "ask", answer.ask));

@@ -37,7 +37,8 @@ async function fakeProvider(_url, init) {
           // no digits: a number not in the cited text is (rightly) rejected by the grounding check
           reply: `(تجربة محلية، ${turns > 1 ? "مكمّلة بنفس المحادثة" : "أول رسالة"}) فهمت عليكِ.${ids.length ? " هاد النص اللي عندي عن موضوعك." : ""}`,
           ask: "شو أكتر إشي بيضغط عليكِ هلأ؟",
-          steps: [],
+          rights: ids.length ? [{ text: "(تجربة) النص بيحكي عن موضوعك", cite: ids[0] }] : [],
+          steps: ids.length ? ["ما توقّعي على أي ورقة قبل ما تحكي مع محامية"] : [],
           cites: ids.slice(0, 1),
         }
       : tool === "give_support"
