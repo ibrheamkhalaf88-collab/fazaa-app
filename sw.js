@@ -79,6 +79,7 @@ const PRECACHE = [
   "src/ai/validate.js",
   "src/data/answers.js",
   "src/data/intents.js",
+  "src/data/procedures.js",
   "src/data/law/index.js",
   "src/data/law/basic-law-2003.js",
   "src/data/law/cyber-crimes-2018.js",

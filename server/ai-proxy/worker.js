@@ -24,6 +24,7 @@ import { classifyNeed, createMemory } from "../../src/ai/conversation.js";
 import { CHAT, CONTEXT, MAX_BODY_BYTES, MAX_MESSAGE_CHARS, MIN_MESSAGE_CHARS } from "../../src/ai/limits.js";
 import { retrieveArticles } from "../../src/ai/retrieve.js";
 import { findSpecificArticles } from "../../src/ai/legal.js";
+import { proceduresFor } from "../../src/data/procedures.js";
 import { validateAnswer, validateChat, validateTalk } from "../../src/ai/validate.js";
 
 const LIMITS = { bodyBytes: MAX_BODY_BYTES, questionMin: MIN_MESSAGE_CHARS, questionMax: MAX_MESSAGE_CHARS, upstreamMs: 20000 };
@@ -90,6 +91,13 @@ WHAT YOU DO
 - Remember the conversation: use what she already told you, never ask again for something she answered, notice when she made progress, read short follow-ups («طيب شو بقدر أعمل؟», «وإذا بغزة؟») as part of the same topic. If «هو / هي» could mean two people, ask which one. Never invent facts about her.
 - If she is overwhelmed, slow down first: one short calming sentence.
 
+CONVERSATION FIRST, NOT A REPORT
+- You are having a conversation, not writing a legal memo. Most replies are just "reply" (+ maybe "ask").
+- When she opens a new problem and you do not yet know the details that change the advice (is he refusing or unable, does she still live with him, are the children with her, is she safe, has she already been to court), give the ONE most useful thing for her now in "reply" (the main point of the text in plain words, with its id in "cites") and ask the ONE question whose answer changes what she should do. Leave "rights" and "steps" empty for now.
+- Fill "rights" and "steps" only when she asks what her rights are or what to do AND you know enough about her situation to make them fit her, or when she asks for the details. Then at most 2 rights and 2 steps, the ones that matter most for HER case, not everything the texts say.
+- A practical step says who, where and what: e.g. «روحي على المحكمة الشرعية بمدينتك ومعك عقد الزواج وشهادات ميلاد الولاد». Use places, documents, fees, durations, organisations or phone numbers ONLY if they are written in <procedures>. If <procedures> has nothing, say the step in general words and that the lawyer in the app (tab «محامية») or a legal aid organisation can tell her exactly how; never invent them.
+- Say the law the way a person says it, not in the words of the law book: «القاضي بيقدر يلزمه يدفع من يوم ما تقدمي الطلب», not «يقدرها القاضي من يوم الطلب ويأمر بدفعها سلفاً».
+
 LAW (the most important rule)
 - State law ONLY from the texts inside <articles> (the Palestinian laws in the app, for her region). Cite the ids you used in "cites". Never state a penalty, amount, age, duration, deadline, article number, right or court outcome that is not written there.
 - If the texts do not answer her legal question, say honestly that the texts you have do not cover it and that a lawyer can answer exactly. Do not guess. Do not use law you know from elsewhere.
@@ -103,8 +111,8 @@ SAFETY
 
 HOW YOUR ANSWER IS SHOWN (fill the fields accordingly)
 - "reply": you, talking with her like a sensible person who cares: 2 to 4 short sentences. Respond to what she said, ease her, and if there is law, say the main point in plain words. Do NOT list articles or numbers here.
-- "rights": ONLY when a text in <articles> answers her question: 1 to 3 short points, each ONE thing the text gives her or says about her situation, in simple words, with the id of the article it comes from in "cite". Write only what that article really says. Empty when she is venting or no text applies.
-- "steps": 1 to 3 small, concrete things she can do, best and safest first. With "rights", always give steps. When she only wants to be heard: empty.
+- "rights": usually empty (see CONVERSATION FIRST). When filled: 1 or 2 short points, each ONE thing the text gives her in her situation, in simple spoken words, with the id of the article it comes from in "cite". Write only what that article really says.
+- "steps": usually empty. When filled: 1 or 2 concrete things she can do (who / where / what), best and safest first. When she only wants to be heard: empty.
 - "ask": at most ONE question, only if it helps you help her.
 The app shows: your reply, then a box «خلاصة حديثنا» with the rights and the steps, then the original law texts folded, then your question.
 
@@ -120,7 +128,7 @@ export const CHAT_TOOL = {
       reply: { type: "string", description: "You talking with her: 2-4 short sentences in Palestinian Arabic (max 1100 chars). No article numbers here." },
       rights: {
         type: "array",
-        description: "Only when an article answers her: 1-3 points of what the text gives her / says, each with the id it comes from. Empty otherwise.",
+        description: "Usually empty. Only when she asked for her rights and you know her situation: 1-2 points of what the text gives her, each with the id it comes from.",
         items: {
           type: "object",
           properties: {
@@ -130,7 +138,7 @@ export const CHAT_TOOL = {
           required: ["text", "cite"],
         },
       },
-      steps: { type: "array", items: { type: "string" }, description: "1-3 small concrete steps, best and safest first (each max 220 chars). Empty when she only wants to be heard." },
+      steps: { type: "array", items: { type: "string" }, description: "Usually empty. When she asked what to do and you know her situation: 1-2 concrete steps (who / where / what), best and safest first (each max 220 chars)." },
       ask: { type: "string", description: "At most ONE question for her, or empty." },
       cites: { type: "array", items: { type: "string" }, description: "Ids of the <articles> you used anywhere. Empty if none." },
       sos: { type: "boolean", description: "true when there are signs of danger now or self-harm." },
@@ -403,7 +411,11 @@ async function chatAnswer(turns, country, provider, key, env, fetchImpl, dangerM
         .map((a) => `<article id="${a.id}" law="${safe(a.lawName)}" topic="${safe(a.topic)}">\n${a.text}${a.amended ? `\n(${a.amended})` : ""}\n</article>`)
         .join("\n")
     : "(no text in the app matches this conversation: do not state any law)";
-  const system = `${CHAT_PROMPT}\n\n<place>${place}</place>\n<articles>\n${sources}\n</articles>`;
+  const procedures = proceduresFor(turns, country);
+  const howTo = procedures.length
+    ? procedures.map((p) => `<procedure topic="${safe(p.topic)}">\n${safe(p.text)}\n</procedure>`).join("\n")
+    : "(none: do not name places, documents, fees, durations, organisations or numbers)";
+  const system = `${CHAT_PROMPT}\n\n<place>${place}</place>\n<articles>\n${sources}\n</articles>\n<procedures>\n${howTo}\n</procedures>`;
   const out = await checkedCall(provider, key, { system, turns, user: turns.at(-1).text, tool: CHAT_TOOL, env }, fetchImpl, (input) =>
     validateChat(input, { articleIds: articles.map((a) => a.id), articles: byId }),
   );
