@@ -2,7 +2,7 @@ import js from "@eslint/js";
 import globals from "globals";
 
 export default [
-  { ignores: ["node_modules/", "archive/", "test-results/", ".wrangler/"] },
+  { ignores: ["node_modules/", "archive/", "test-results/", ".wrangler/", ".deploy-tmp/"] },
   js.configs.recommended,
   {
     languageOptions: { ecmaVersion: 2024, sourceType: "module" },

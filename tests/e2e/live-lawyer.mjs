@@ -97,7 +97,7 @@ try {
   problems.length = 0; // the 400 for the empty form is expected
   const [alias, pin, name, phone] = await card.locator("input").all();
   await alias.fill("sara_g");
-  await pin.fill("123456");
+  await pin.fill("583920");
   await name.fill("سارة محمد");
   await phone.fill("0599123456");
   await card.locator("button.chip.fill").click();

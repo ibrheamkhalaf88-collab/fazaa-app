@@ -244,4 +244,16 @@ for (const [name, make] of Object.entries(impls)) {
       assert.deepEqual(await s.listMessages("closed-old"), []);
     },
   );
+  T("daily counter: stops at the limit and starts again the next day", async (s) => {
+    const took = [];
+    for (let i = 0; i < 4; i++) took.push(await s.takeDaily("ai-usage", "2026-11-14", 3, 10 + i));
+    assert.deepEqual(took, [true, true, true, false]);
+    assert.equal((await s.getSetting("ai-usage")).body, "3");
+    assert.equal(await s.takeDaily("ai-usage", "2026-11-15", 3, 20), true);
+    assert.deepEqual(
+      [(await s.getSetting("ai-usage")).iv, (await s.getSetting("ai-usage")).body],
+      ["2026-11-15", "1"],
+    );
+    assert.equal(await s.takeDaily("other", "2026-11-15", 0, 21), false);
+  });
 }

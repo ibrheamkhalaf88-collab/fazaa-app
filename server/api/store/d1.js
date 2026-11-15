@@ -504,6 +504,21 @@ export function createD1Store(db) {
         by,
       ).run();
     },
+    /**
+     * One more use of a per-day counter kept in settings (iv = day, body = count), in ONE statement so
+     * two requests at the same moment cannot both take the last slot. false when the day is full.
+     */
+    async takeDaily(key, day, limit, now) {
+      if (!(limit > 0)) return false;
+      const r = await q(
+        "INSERT INTO settings (key, iv, body, updated_at, updated_by) VALUES (?, ?, '1', ?, 'system') ON CONFLICT(key) DO UPDATE SET body = CASE WHEN settings.iv = excluded.iv THEN CAST(CAST(settings.body AS INTEGER) + 1 AS TEXT) ELSE '1' END, iv = excluded.iv, updated_at = excluded.updated_at WHERE settings.iv <> excluded.iv OR CAST(settings.body AS INTEGER) < ?",
+        key,
+        day,
+        now,
+        limit,
+      ).run();
+      return r.meta.changes === 1;
+    },
     async deleteSetting(key) {
       await q("DELETE FROM settings WHERE key = ?", key).run();
     },

@@ -67,6 +67,19 @@ const SESSION_MS = 30 * 86_400_000;
 const USERNAME_RE = /^[a-z0-9_\u0621-\u064a]{3,20}$/;
 const PIN_RE = /^\d{6}$/;
 const PHONE_RE = /^\+?\d{7,15}$/;
+/**
+ * PINs an attacker tries first on many aliases at once (one guess per alias stays under the lockout):
+ * one digit repeated, a run up or down, a pair or triple repeated, and the usual favourites.
+ * Checked at sign-up only, so existing accounts keep working.
+ */
+const COMMON_PINS = new Set(["112233", "102030", "121212", "123123", "159753", "147258", "696969", "520520"]);
+export function weakPin(pin) {
+  if (/^(\d)\1{5}$/.test(pin)) return true;
+  const steps = new Set([...pin.slice(1)].map((d, i) => (Number(d) - Number(pin[i]) + 10) % 10));
+  if (steps.size === 1 && (steps.has(1) || steps.has(9))) return true; // 123456, 987654, 890123
+  if (/^(\d\d)\1\1$/.test(pin) || /^(\d{3})\1$/.test(pin)) return true;
+  return COMMON_PINS.has(pin);
+}
 const DAY = 86_400_000;
 const RATE_LIMITED = ["/v1/answer", "/v1/users", "/v1/login", "/v1/staff/login", "/v1/ping", "/v1/cases"];
 /** Cases one account may have open (waiting or with a lawyer) at the same time. */
@@ -231,11 +244,7 @@ async function keepAnswer(store, answer, region, env, now) {
 async function takeAiSlot(store, env, now) {
   const limit = Number(env.AI_DAILY_LIMIT || 3000);
   const day = new Date(now).toISOString().slice(0, 10);
-  const row = await store.getSetting("ai-usage");
-  const used = row && row.iv === day ? Number(row.body) || 0 : 0;
-  if (used >= limit) return false;
-  await store.setSetting({ key: "ai-usage", iv: day, body: String(used + 1), now, by: "system" });
-  return true;
+  return store.takeDaily("ai-usage", day, limit, now);
 }
 
 async function aiUsage(store, env, now) {
@@ -480,6 +489,11 @@ export async function handleRequest(request, env, deps) {
       );
     }
 
+    // A temporary password allows only /me, /logout and /password (above and below) until it is
+    // changed. This check stays ABOVE every other staff route: before 2026-11-14 it sat lower and a
+    // temporary password could still add lawyers and edit profiles.
+    if (mustChange && path !== "/v1/staff/password") return reply(fail(403, "must-change-password"));
+
     /* ---- a lawyer's own profile and availability ---- */
     if (path === "/v1/staff/profile") {
       const denied = need("lawyer");
@@ -593,9 +607,6 @@ export async function handleRequest(request, env, deps) {
       await store.addAudit({ actor: staff.email, action: "password-change", target: "", now });
       return reply(json({ ok: true }, 200, { "set-cookie": await newSession(staff.email) }));
     }
-
-    // A temporary password allows nothing else until it is changed.
-    if (mustChange) return reply(fail(403, "must-change-password"));
 
     /* ---- developer: system health ---- */
     if (path === "/v1/staff/health" && request.method === "GET") {
@@ -1093,6 +1104,7 @@ export async function handleRequest(request, env, deps) {
     const phone = cleanText(value.phone, LIMITS.phone).replace(/[\s-]/g, "");
     if (!USERNAME_RE.test(username)) return reply(fail(400, "bad-username"));
     if (!PIN_RE.test(String(value.pin ?? ""))) return reply(fail(400, "bad-pin"));
+    if (weakPin(String(value.pin))) return reply(fail(400, "weak-pin"));
     if (!name || !PHONE_RE.test(phone) || !REGIONS.includes(value.region))
       return reply(fail(400, "bad-body"));
     const salt = newSalt();

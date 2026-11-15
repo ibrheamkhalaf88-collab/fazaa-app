@@ -189,4 +189,6 @@ createServer(async (req, res) => {
         .replace('AI_ENDPOINT = ""', 'AI_ENDPOINT = "/api/v1/answer"'),
     );
   createReadStream(file).pipe(res);
-}).listen(port, () => console.log(`dev server http://localhost:${port}  (signed in as ${staffEmail})`));
+  // localhost only: this server signs anyone in as staff (x-dev-staff), so it must not be reachable
+  // from other devices on the same Wi-Fi
+}).listen(port, "127.0.0.1", () => console.log(`dev server http://localhost:${port}  (signed in as ${staffEmail})`));

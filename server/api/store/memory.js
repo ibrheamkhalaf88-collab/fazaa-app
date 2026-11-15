@@ -360,6 +360,14 @@ export function createMemoryStore() {
     async setSetting({ key, iv, body, now, by }) {
       settings.set(key, { iv, body, updatedAt: now, updatedBy: by });
     },
+    async takeDaily(key, day, limit, now) {
+      if (!(limit > 0)) return false;
+      const row = settings.get(key);
+      const used = row && row.iv === day ? Number(row.body) || 0 : 0;
+      if (used >= limit) return false;
+      settings.set(key, { iv: day, body: String(used + 1), updatedAt: now, updatedBy: "system" });
+      return true;
+    },
     async deleteSetting(key) {
       settings.delete(key);
     },

@@ -61,6 +61,16 @@ test("temporary password: sign in, nothing allowed until it is changed, then ful
 
   assert.equal((await (await w.call("GET", "/v1/staff/me", { cookie })).json()).mustChange, true);
   assert.equal((await w.call("GET", "/v1/staff/stats", { cookie })).status, 403);
+  // the team routes too (before 2026-11-14 a temporary password could add a lawyer here)
+  const add = await w.call("POST", "/v1/staff/lawyers", {
+    cookie,
+    body: { email: "new@x.org", name: "سلمى" },
+  });
+  assert.equal(add.status, 403);
+  assert.equal((await add.json()).error, "must-change-password");
+  assert.equal(await w.store.getStaff("new@x.org"), null);
+  assert.equal((await w.call("GET", "/v1/staff/lawyers", { cookie })).status, 403);
+  assert.equal((await w.call("GET", "/v1/staff/profile", { cookie })).status, 403);
 
   // wrong current password / weak new password are refused
   let r = await w.call("POST", "/v1/staff/password", {
@@ -203,7 +213,7 @@ test("developer: health report and deleting a user account (never her name or ph
   assert.equal(health.ai.configured, false);
 
   const up = await w.call("POST", "/v1/users", {
-    body: { username: "noor_1", pin: "123456", name: "نور علي", phone: "0599000000", region: "ps-wb" },
+    body: { username: "noor_1", pin: "583920", name: "نور علي", phone: "0599000000", region: "ps-wb" },
   });
   assert.equal(up.status, 201);
   const list = await (await w.call("GET", "/v1/staff/users", { cookie: w.cookie })).json();

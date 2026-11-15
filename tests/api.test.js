@@ -39,7 +39,7 @@ async function openCase(
   { username = `sara_${++seq}`, region = "ps-gaza" } = {},
 ) {
   const up = await w.call("POST", "/v1/users", {
-    body: { username, pin: "123456", name: "سارة محمد", phone: "0599123456", region },
+    body: { username, pin: "583920", name: "سارة محمد", phone: "0599123456", region },
   });
   assert.equal(up.status, 201);
   const { token } = await j(up);
@@ -412,6 +412,11 @@ test("signup validates alias, 6-digit PIN, name, phone and region; alias is uniq
     { pin: "1234" },
     { pin: "abcdef" },
     { name: "" },
+    { pin: "111111" },
+    { pin: "123456" },
+    { pin: "987654" },
+    { pin: "121212" },
+    { pin: "123123" },
     { phone: "12" },
     { region: "x" },
   ])
@@ -486,7 +491,7 @@ test("contact card: only the lawyer who claimed the case, and it is audited", as
 test("developers see accounts and activity but never names or phones", async () => {
   const w = world();
   const { username } = await openCase(w);
-  await w.call("POST", "/v1/login", { body: { username, pin: "123456" } });
+  await w.call("POST", "/v1/login", { body: { username, pin: "583920" } });
   const res = await j(await w.call("GET", "/v1/staff/users", { as: "dev@fazaa.example" }));
   assert.equal(res.total >= 1, true);
   assert.ok(res.users.every((u) => !("name" in u) && !("phone" in u) && !("body" in u)));
@@ -749,4 +754,24 @@ test("staff get stable IDs, can be suspended (cannot sign in), and cannot lock t
   assert.equal(again.code, l.code); // ID never changes
   assert.equal((await put({ email: dev, role: "developer", name: "D", active: false })).status, 400);
   assert.equal((await put({ email: dev, role: "lawyer", name: "D" })).status, 400);
+});
+
+test("weak PINs are refused at sign-up with their own message; ordinary ones pass", async () => {
+  const { weakPin } = await import("../server/api/worker.js");
+  for (const pin of [
+    "000000",
+    "999999",
+    "123456",
+    "654321",
+    "890123",
+    "121212",
+    "123123",
+    "112233",
+    "102030",
+  ])
+    assert.equal(weakPin(pin), true, pin);
+  for (const pin of ["246810", "583920", "305718", "120934"]) assert.equal(weakPin(pin), false, pin);
+  const w = world();
+  const res = await signup(w, { pin: "000000" });
+  assert.deepEqual([res.status, (await res.json()).error], [400, "weak-pin"]);
 });
