@@ -112,10 +112,10 @@ test("happy path: calls Anthropic with the key, the forced tool and only retriev
 });
 
 test("a citation outside the retrieved set is rejected (502), not shown", async () => {
-  const api = anthropic({ ...GOOD, cites: ["15", "52"] }); // 52 was not retrieved for this adult question
+  const api = anthropic({ ...GOOD, cites: ["15", "72"] }); // 72 was not retrieved for this adult question
   const res = await handleRequest(req(Q), ENV, { fetchImpl: api.fetchImpl });
   assert.equal(res.status, 502);
-  assert.match((await res.json()).error, /unknown-article:52/);
+  assert.match((await res.json()).error, /unknown-article:72/);
 });
 
 test("covered=false from the model: no law answer (null when support mode is off)", async () => {

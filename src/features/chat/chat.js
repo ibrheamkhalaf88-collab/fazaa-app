@@ -18,7 +18,7 @@ const SUGGESTIONS = [
 /** Which safety plan a reply opens: the one the danger reply chose, else from what it is about. */
 function planFor(answer) {
   if (answer.sosPlan) return answer.sosPlan;
-  if (answer.cites?.some((id) => ["15", "16", "22", "52"].includes(id))) return "blackmail";
+  if (answer.cites?.some((id) => ["15", "16", "22", "72"].includes(id))) return "blackmail";
   if (answer.topic === "زواج قاصرات") return "forced";
   if (answer.topic === "دعم نفسي") return "selfharm";
   return "violence";

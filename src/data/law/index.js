@@ -34,7 +34,7 @@ export const LAWS = [
     source: "maqam.najah.edu (Al-Najah legislation database), copied 2026",
     scope: [
       "Decree-law issued in Ramallah: whether and how it is applied by courts in Gaza is NOT confirmed.",
-      "Articles 15 and 52 were amended (2020, 2021): confirm the stored text is the text now in force.",
+      "Article 15 is stored as amended by decree-law 28/2020; article 52 became 72 (decree-law 38/2021, renumbering only). Checked 2026-11-15 against the amending decrees; a lawyer still has to confirm nothing later changed them.",
     ],
     review: { status: "pending", by: "", at: "" },
   },
@@ -102,7 +102,7 @@ export const INTENT_TO_ARTICLES = {
   blackmail: ["15"],
   porn: ["16"],
   privacy: ["22"],
-  minor: ["52"],
+  minor: ["72"],
   // personal status: West Bank ids ("psl:") and Gaza ids ("gz:"); retrieval keeps only the user's region
   nafaqa: ["psl:66", "psl:73", "psl:168", "psl:74", "psl:67", "psl:70", "gz:59", "gz:38", "gz:61", "gz:65"],
   divorce: [

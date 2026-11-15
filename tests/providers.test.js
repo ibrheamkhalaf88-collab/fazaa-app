@@ -117,7 +117,7 @@ test("nvidia: accepts JSON in plain text when the model ignores tools", async ()
 test("a provider answer citing an article that was not retrieved is still rejected", async () => {
   const api = fake({
     choices: [
-      { message: { tool_calls: [{ function: { arguments: JSON.stringify({ ...GOOD, cites: ["52"] }) } }] } },
+      { message: { tool_calls: [{ function: { arguments: JSON.stringify({ ...GOOD, cites: ["72"] }) } }] } },
     ],
   });
   const res = await handleRequest(

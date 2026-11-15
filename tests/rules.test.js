@@ -38,9 +38,9 @@ test("blackmail: cites article 15 and offers the safety plan", () => {
   assert.equal(a.source, "rules");
 });
 
-test("a minor being blackmailed cites article 52 (doubled penalty) first", () => {
+test("a minor being blackmailed cites article 72 (doubled penalty, was 52) first", () => {
   const a = answerFromRules("بنتي عمرها ١٥ وحدا عم يبتزها");
-  assert.equal(a.cites[0], "52");
+  assert.equal(a.cites[0], "72");
   assert.ok(a.cites.includes("15"));
 });
 

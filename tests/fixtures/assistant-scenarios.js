@@ -318,7 +318,7 @@ export const LEGAL = [
   { id: "L24 dowry in Gaza uses the Gaza text", say: "شو حقي بالمهر؟", country: "ps-gaza", expect: { cites: ["gz:55"], notCites: ["psl:61"] } },
   { id: "L25 a WB-only specific text asked from Gaza: honest, nothing shown", say: "قديش مدة العدة؟", country: "ps-gaza", expect: { lead: /منطقة غير منطقتك/, notCites: ["psl:135"] } },
   { id: "L26 the same law reply twice is not repeated word for word", turns: ["شو حقي بالنفقة؟", "شو حقي بالنفقة؟"], expect2: (b) => (!/بيضغط كتير/.test(b.lead) ? true : `repeated lead: ${b.lead}`) },
-  { id: "L20 minor and online abuse", say: "بنتي عمرها ١٥ وفي حدا عم يبعتلها صور إباحية", expect: { cites: ["52"] } },
+  { id: "L20 minor and online abuse", say: "بنتي عمرها ١٥ وفي حدا عم يبعتلها صور إباحية", expect: { cites: ["72"] } },
 ];
 
 export const SAFETY = [

@@ -9,10 +9,10 @@ import { ARTICLES } from "../src/data/law/index.js";
  * amendment), re-verify against the source, then update the hash here in the same commit.
  */
 const FINGERPRINTS = {
-  15: "30c4c9e3cacf644f",
+  15: "8c0fff5679f96022", // amended text (decree-law 28/2020), checked 2026-11-15
   16: "567a604cd76d37d1",
   22: "2ffa80cacdf02250",
-  52: "f1ef3d34fbb810d7",
+  72: "c79c48fcdc1c1294", // was 52; renumbered by decree-law 38/2021
   "psl:38": "c8e525be4379349a",
   "psl:61": "dc0e2cca0c1eb18b",
   "psl:66": "3b04a7f609f2229f",
@@ -62,7 +62,11 @@ for (const [id, hash] of Object.entries(FINGERPRINTS)) {
 
 test("every article has a source link and a topic", () => {
   for (const a of Object.values(ARTICLES)) {
-    assert.match(a.url, /^https:\/\/(maqam\.najah\.edu|muslimfamilylawindex\.com)\//, a.id);
+    assert.match(
+      a.url,
+      /^https:\/\/(maqam\.najah\.edu|muslimfamilylawindex\.com|security-legislation\.ps)\//,
+      a.id,
+    );
     assert.ok(a.topic.length > 3, a.id);
   }
   assert.deepEqual(

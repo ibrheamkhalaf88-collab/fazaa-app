@@ -150,8 +150,10 @@ test("asking for an article by number returns THAT article, or says it is not in
 test("a correct article id is not enough: numbers and article numbers must be in the cited text", () => {
   const base = { lead: "x", steps: ["y"], note: "", cites: ["15"] };
   const byId = { 15: ARTICLES["15"] };
-  assert.deepEqual(checkGrounding({ ...base, note: "غرامة من ٢٠٠ لـ ١٠٠٠ دينار" }, byId), []);
-  assert.match(checkGrounding({ ...base, note: "غرامة ٥٠٠٠ دينار" }, byId)[0], /number-not-in-source:5000/);
+  assert.deepEqual(checkGrounding({ ...base, note: "حبس من سنة لسنتين وغرامة من ١٠٠٠ لـ ٣٠٠٠ دينار" }, byId), []);
+  assert.deepEqual(checkGrounding({ ...base, note: "وإذا بتمس الشرف: غرامة من ٥٠٠٠ لـ ١٠٠٠٠ دينار" }, byId), []);
+  // the 2018 amount (before decree-law 28/2020) is no longer in article 15, so an answer stating it is refused
+  assert.match(checkGrounding({ ...base, note: "غرامة ٢٠٠ دينار" }, byId)[0], /number-not-in-source:200/);
   assert.match(checkGrounding({ ...base, note: "حسب المادة 22 كمان" }, byId)[0], /article-not-cited:22/);
   assert.throws(
     () => validateAnswer({ ...base, note: "الحبس ٧ سنين" }, { articleIds: ["15"], articles: byId }),

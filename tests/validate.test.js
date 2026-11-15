@@ -23,7 +23,7 @@ test("rejects a citation to an article that was not provided", () => {
 });
 
 test("rejects a citation to a real article that was not retrieved for this question", () => {
-  assert.throws(() => validateAnswer({ ...good(), cites: ["52"] }, ALLOWED), /unknown-article:52/);
+  assert.throws(() => validateAnswer({ ...good(), cites: ["72"] }, ALLOWED), /unknown-article:72/);
 });
 
 test("rejects missing lead, missing steps, non-objects", () => {
