@@ -73,7 +73,15 @@ test("developer adds a lawyer and makes her manager; the manager manages lawyers
     body: { email: "salma@x.org", name: "سلمى أحمد" },
   });
   assert.equal(tryCreate.status, 403);
-  assert.equal((await w.call("POST", "/v1/staff/lawyers", { as: DEV, body: { email: "salma@x.org", name: "سلمى أحمد" } })).status, 200);
+  assert.equal(
+    (
+      await w.call("POST", "/v1/staff/lawyers", {
+        as: DEV,
+        body: { email: "salma@x.org", name: "سلمى أحمد" },
+      })
+    ).status,
+    200,
+  );
 
   // the manager sets her contact number and availability, but cannot make anyone a manager
   const m = await w.call("PUT", "/v1/staff/lawyers", {
@@ -116,7 +124,10 @@ test("developer adds a lawyer and makes her manager; the manager manages lawyers
     403,
   );
   // a developer still cannot turn a developer into a lawyer
-  assert.equal((await w.call("POST", "/v1/staff/lawyers", { as: DEV, body: { email: DEV, name: "x" } })).status, 409);
+  assert.equal(
+    (await w.call("POST", "/v1/staff/lawyers", { as: DEV, body: { email: DEV, name: "x" } })).status,
+    409,
+  );
   assert.ok((await w.store.listAudit(50)).some((a) => a.action === "lawyer-update"));
 });
 

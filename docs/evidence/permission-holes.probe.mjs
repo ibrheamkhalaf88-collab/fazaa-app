@@ -43,20 +43,34 @@ test("HOLE 1 (exists): a developer can read a case with ?after=1 and the opening
   const { caseId } = await (
     await w.call("POST", "/v1/cases", { token: up.token, body: { topic: "x", message: "أول رسالة" } })
   ).json();
-  await w.call("POST", `/v1/cases/${caseId}/messages`, { token: up.token, body: { text: "رسالة تانية سرية" } });
+  await w.call("POST", `/v1/cases/${caseId}/messages`, {
+    token: up.token,
+    body: { text: "رسالة تانية سرية" },
+  });
 
-  const read = await (await w.call("GET", `/v1/staff/cases/${caseId}/messages?after=1`, { as: "dev@x.org" })).json();
-  assert.ok(read.messages.some((m) => m.text === "رسالة تانية سرية"), "content was read");
+  const read = await (
+    await w.call("GET", `/v1/staff/cases/${caseId}/messages?after=1`, { as: "dev@x.org" })
+  ).json();
+  assert.ok(
+    read.messages.some((m) => m.text === "رسالة تانية سرية"),
+    "content was read",
+  );
   const audit = await (await w.call("GET", "/v1/staff/audit", { as: "dev@x.org" })).json();
   // when fixed: assert.ok(audit.audit.some(...))
-  assert.equal(audit.audit.some((a) => a.action === "dev-read-case"), false, "no audit entry");
+  assert.equal(
+    audit.audit.some((a) => a.action === "dev-read-case"),
+    false,
+    "no audit entry",
+  );
 });
 
 test("HOLE 2 (exists): any developer can reset another developer's password and remove the owner", async () => {
   const w = world();
   await w.store.upsertStaff({ email: "owner@x.org", role: "developer", name: "", now: 1 });
   await w.store.upsertStaff({ email: "dev2@x.org", role: "developer", name: "", now: 1 });
-  const reset = await (await w.call("POST", "/v1/staff/team/reset", { as: "dev2@x.org", body: { email: "owner@x.org" } })).json();
+  const reset = await (
+    await w.call("POST", "/v1/staff/team/reset", { as: "dev2@x.org", body: { email: "owner@x.org" } })
+  ).json();
   // when fixed: only the owner can reset or remove a developer
   assert.equal(typeof reset.tempPassword, "string", "dev2 got a working temporary password for the owner");
   const del = await w.call("DELETE", "/v1/staff/team?email=owner%40x.org", { as: "dev2@x.org" });

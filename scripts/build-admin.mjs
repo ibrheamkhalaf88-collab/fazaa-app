@@ -11,7 +11,8 @@ const out = join(root, "server", "api", "public");
 
 rmSync(out, { recursive: true, force: true });
 // the app (same files as the sw.js precache list) + its security headers, which also cover /admin/*
-for (const f of ["index.html", "sw.js", "manifest.webmanifest", "_headers"]) cpSync(join(root, f), join(out, f));
+for (const f of ["index.html", "sw.js", "manifest.webmanifest", "_headers"])
+  cpSync(join(root, f), join(out, f));
 for (const d of ["src", "styles", "assets"]) cpSync(join(root, d), join(out, d), { recursive: true });
 // the staff dashboard (it uses ../src/core/dom.js and ../styles/fonts.css from the app)
 cpSync(join(root, "admin"), join(out, "admin"), { recursive: true });

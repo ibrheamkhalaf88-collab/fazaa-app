@@ -80,7 +80,10 @@ export function createChat({
 
     const summary = el("summary");
     const label = el("div");
-    label.append(el("b", null, `المادة ${id.replace(/^[a-z]+:/, "")}: ${article.topic}`), el("span", null, `${article.lawName}. النص الأصلي`));
+    label.append(
+      el("b", null, `المادة ${id.replace(/^[a-z]+:/, "")}: ${article.topic}`),
+      el("span", null, `${article.lawName}. النص الأصلي`),
+    );
     summary.append(icon("i-file"), label);
 
     const law = el("div", "law");
@@ -93,7 +96,9 @@ export function createChat({
     link.rel = "noopener noreferrer";
     law.appendChild(link);
     if (meta?.review?.status !== "reviewed")
-      law.appendChild(document.createTextNode("\nلسا ما راجعت محامية هالنص ولا تأكدت إنه النص النافذ اليوم."));
+      law.appendChild(
+        document.createTextNode("\nلسا ما راجعت محامية هالنص ولا تأكدت إنه النص النافذ اليوم."),
+      );
 
     card.append(summary, law);
     return card;
@@ -104,11 +109,21 @@ export function createChat({
     const actions = el("div", "acts");
     if (answer.sos)
       actions.appendChild(
-        chip({ label: "افتحي خطة الأمان", iconId: "i-shield", fill: true, data: { go: "sos", plan: planFor(answer) } }),
+        chip({
+          label: "افتحي خطة الأمان",
+          iconId: "i-shield",
+          fill: true,
+          data: { go: "sos", plan: planFor(answer) },
+        }),
       );
     if (lawyerAvailable() && (answer.general || answer.cites?.length))
       actions.appendChild(
-        chip({ label: "احكي مع محامية", iconId: "i-phone", fill: !answer.sos, data: { chat: "lawyer", topic: answer.topic || "" } }),
+        chip({
+          label: "احكي مع محامية",
+          iconId: "i-phone",
+          fill: !answer.sos,
+          data: { chat: "lawyer", topic: answer.topic || "" },
+        }),
       );
     actions.appendChild(chip({ label: "مين بيساعدني", iconId: "i-hands", data: { go: "support" } }));
     return actions;
@@ -132,7 +147,8 @@ export function createChat({
     box.appendChild(el("div", null, answer.lead));
     if (answer.chips?.length) {
       const acts = el("div", "acts");
-      for (const [label, question] of answer.chips) acts.appendChild(chip({ label, data: { ask: question } }));
+      for (const [label, question] of answer.chips)
+        acts.appendChild(chip({ label, data: { ask: question } }));
       box.appendChild(acts);
     }
     return box;
@@ -247,7 +263,11 @@ export function createChat({
     if (!answer.cites.length && related.length) {
       box.appendChild(el("div", "sec", "نصوص من قانون منطقتك عن الموضوع"));
       box.appendChild(
-        el("div", "note-line general", "هاي النصوص زي ما هي، للقراءة. أنا ما فسّرتها، وشو بتعني لوضعك بيحتاج محامية."),
+        el(
+          "div",
+          "note-line general",
+          "هاي النصوص زي ما هي، للقراءة. أنا ما فسّرتها، وشو بتعني لوضعك بيحتاج محامية.",
+        ),
       );
       related.forEach((id) => box.appendChild(citationCard(id, false)));
     }
@@ -311,7 +331,10 @@ export function createChat({
       const started = Date.now();
       let answer = null;
       try {
-        answer = await answerer.answer(question, { country: state.get("country"), signal: controller.signal });
+        answer = await answerer.answer(question, {
+          country: state.get("country"),
+          signal: controller.signal,
+        });
       } catch (err) {
         if (err?.name !== "AbortError") throw err;
       }

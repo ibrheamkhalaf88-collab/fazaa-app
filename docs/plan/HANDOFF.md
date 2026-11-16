@@ -1,6 +1,6 @@
 # Handoff: continuing Fazaa (formerly Sanad) in a new session
 
-Read this first, then `plan/PLAN.md` and `plan/DATABASE.md`. Reply to the owner in Palestinian-dialect Arabic, short.
+Read this first, then `docs/plan/PLAN.md` and `docs/plan/DATABASE.md`. Reply to the owner in Palestinian-dialect Arabic, short.
 
 ## Name
 

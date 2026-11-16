@@ -2,7 +2,14 @@
  * Entry point: build the pieces, wire them together, open the first screen.
  * No logic lives here; each feature owns its own behaviour (see docs/ARCHITECTURE.md).
  */
-import { AI_BETA_ONLY, AI_ENDPOINT, API_BASE, CONTACTS_ENDPOINT, LAWYERS_ENDPOINT, TELEMETRY_ENDPOINT } from "./config.js";
+import {
+  AI_BETA_ONLY,
+  AI_ENDPOINT,
+  API_BASE,
+  CONTACTS_ENDPOINT,
+  LAWYERS_ENDPOINT,
+  TELEMETRY_ENDPOINT,
+} from "./config.js";
 import { createLawyerCards } from "./features/lawyers/lawyer-cards.js";
 import { createContacts } from "./features/support/contacts.js";
 import { createAssistant } from "./ai/assistant.js";
@@ -41,7 +48,8 @@ function markLawyerService(enabled) {
   for (const node of document.querySelectorAll('[data-mode="lawyer"], .path.law')) {
     node.querySelector(".live")?.remove();
     const small = node.querySelector("small");
-    for (const t of [...node.childNodes]) if (t.nodeType === 3 && t.textContent.includes("محامية الآن")) t.textContent = " محامية ";
+    for (const t of [...node.childNodes])
+      if (t.nodeType === 3 && t.textContent.includes("محامية الآن")) t.textContent = " محامية ";
     if (small) small.textContent = "مش متاحة بهالنسخة بعد";
   }
 }
@@ -89,7 +97,9 @@ async function boot() {
   const answerer = createAssistant({
     emergencyNumbers: contacts.emergencyNumbers,
     available: () => ({ ...contacts.available(), lawyer: account.enabled }),
-    remote: aiAvailable ? createRemoteEngine({ endpoint: AI_ENDPOINT, beta: () => state.get("beta") }) : undefined,
+    remote: aiAvailable
+      ? createRemoteEngine({ endpoint: AI_ENDPOINT, beta: () => state.get("beta") })
+      : undefined,
     // owner's decision (2026-11-13): no notice before sending; what is sent is explained in Settings
     isRemoteEnabled: () => aiAvailable && state.get("aiOnline"),
     onRemoteError: (err) => {

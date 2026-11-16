@@ -34,7 +34,10 @@ let seq = 0;
 async function claimedCase(w, lawyer) {
   await w.call("PUT", "/v1/staff/team", { as: DEV, body: { email: lawyer, role: "lawyer", name: "سلمى" } });
   // (2026-11-13) on duty, so she may take cases
-  await w.call("PUT", "/v1/staff/lawyers", { as: DEV, body: { email: lawyer, available: true, regions: ["ps-wb"] } });
+  await w.call("PUT", "/v1/staff/lawyers", {
+    as: DEV,
+    body: { email: lawyer, available: true, regions: ["ps-wb"] },
+  });
   const up = await w.call("POST", "/v1/users", {
     body: { username: `rel_${++seq}`, pin: "583920", name: "سارة", phone: "0599123456", region: "ps-wb" },
   });

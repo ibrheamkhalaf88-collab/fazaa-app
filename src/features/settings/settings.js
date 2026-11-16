@@ -60,7 +60,8 @@ export function createSettings({ state, router, theme, chat, sos, aiAvailable, s
     $$(".country[data-country]").forEach((c) =>
       c.classList.toggle("sel", c.getAttribute("data-country") === country),
     );
-    const where = aiAvailable && state.get("aiOnline") ? "أجوبة عبر الإنترنت" : "أجوبة من جهازك بس";
+    // since the AI-first assistant (2026-11-13) there are no answers from the device, only safety replies
+    const where = aiAvailable && state.get("aiOnline") ? "عبر الإنترنت" : "المساعدة مطفية";
     $("#chat-sub").textContent = `${where} · ${COUNTRY_NAMES[country].replace("فلسطين: ", "")}`;
     $("#set-country").textContent = COUNTRY_NAMES[country];
 

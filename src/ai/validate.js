@@ -14,7 +14,19 @@ import { tokenize } from "./normalize.js";
  *    secrecy / safety / outcomes, no emotional dependence, and at most one question.
  */
 
-const LIMITS = { chat: 1100, lead: 500, talk: 600, step: 260, note: 800, steps: 5, cites: 4, topic: 40, closing: 240, ask: 220, options: 3 };
+const LIMITS = {
+  chat: 1100,
+  lead: 500,
+  talk: 600,
+  step: 260,
+  note: 800,
+  steps: 5,
+  cites: 4,
+  topic: 40,
+  closing: 240,
+  ask: 220,
+  options: 3,
+};
 
 const clean = (v, max) =>
   typeof v === "string"
@@ -78,8 +90,15 @@ const FORBIDDEN = [
 ].map(norm);
 
 /** Pet names: removed from the reply (not a reason to throw it away), never said to her. */
-const PET_NAMES = /(?:^|[\s،,.!؟])(?:يا\s+)(?:حبيبتي|حبيبه|قلبي|عمري|روحي|حياتي|عسل|غاليه|غالية|حبيبة\s+قلبي)(?=[\s،,.!؟]|$)/g;
-const dropPetNames = (s) => s.replace(PET_NAMES, " ").replace(/\s+([،,.!؟])/g, "$1").replace(/\s{2,}/g, " ").replace(/^[\s،,]+/, "").trim();
+const PET_NAMES =
+  /(?:^|[\s،,.!؟])(?:يا\s+)(?:حبيبتي|حبيبه|قلبي|عمري|روحي|حياتي|عسل|غاليه|غالية|حبيبة\s+قلبي)(?=[\s،,.!؟]|$)/g;
+const dropPetNames = (s) =>
+  s
+    .replace(PET_NAMES, " ")
+    .replace(/\s+([،,.!؟])/g, "$1")
+    .replace(/\s{2,}/g, " ")
+    .replace(/^[\s،,]+/, "")
+    .trim();
 // matched at a word start, with the usual prefixes («بسريه تامه», «وما رح اتركك»)
 const FORBIDDEN_RE = FORBIDDEN.map((p) => ({ p, re: new RegExp(`(?:^| )(?:و|ف|ب|بال|ل)?${p}(?= |$)`) }));
 const forbidden = (text) => {
@@ -171,8 +190,11 @@ export function validateChat(raw, { articleIds, articles }) {
     .map((r) => ({ text: clean(r.text, LIMITS.step), cite: String(r.cite || "") }))
     .filter((r) => r.text)
     .slice(0, LIMITS.options);
-  for (const r of rights) if (!articleIds.includes(r.cite)) throw new Error(`unknown-article:${r.cite || "none"}`);
-  const cites = [...new Set([...(Array.isArray(a.cites) ? a.cites.map(String) : []), ...rights.map((r) => r.cite)])];
+  for (const r of rights)
+    if (!articleIds.includes(r.cite)) throw new Error(`unknown-article:${r.cite || "none"}`);
+  const cites = [
+    ...new Set([...(Array.isArray(a.cites) ? a.cites.map(String) : []), ...rights.map((r) => r.cite)]),
+  ];
   if (cites.length > LIMITS.cites) throw new Error("too-many-cites");
   const unknown = cites.find((id) => !articleIds.includes(id));
   if (unknown) throw new Error(`unknown-article:${unknown}`);
@@ -183,7 +205,8 @@ export function validateChat(raw, { articleIds, articles }) {
   if (cites.length === 0 && legalLeak(all)) throw new Error("legal-leak");
   if (cites.length && articles) {
     const problems = checkGrounding({ lead: reply, note: "", steps, cites }, articles);
-    for (const r of rights) problems.push(...checkGrounding({ lead: r.text, note: "", steps: [], cites: [r.cite] }, articles));
+    for (const r of rights)
+      problems.push(...checkGrounding({ lead: r.text, note: "", steps: [], cites: [r.cite] }, articles));
     if (problems.length) throw new Error(`ungrounded:${problems[0]}`);
   }
   return { kind: "chat-ai", lead: reply, rights, ask, steps, cites, sos: a.sos === true, source: "ai" };
@@ -205,7 +228,15 @@ export function validateTalk(raw, { need } = {}) {
     .filter(Boolean)
     .slice(0, LIMITS.options);
   if (need === "listen") options = []; // «بس اسمعيني»: no advice
-  const answer = { kind: "talk", lead: oneQuestion(lead), ask, options, note: "", sos: a.sos === true, source: "ai" };
+  const answer = {
+    kind: "talk",
+    lead: oneQuestion(lead),
+    ask,
+    options,
+    note: "",
+    sos: a.sos === true,
+    source: "ai",
+  };
   const all = [answer.lead, answer.ask, ...answer.options].join(" ");
   const bad = forbidden(all);
   if (bad) throw new Error(`forbidden:${bad}`);

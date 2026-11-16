@@ -36,8 +36,10 @@ export function detectIntents(question) {
   }
   // A threat is blackmail only when it is about images / posting / online / money. «جوزي هددني»
   // and «بيهددني ياخد الولاد» are threats, not cyber blackmail, and must not get article 15.
-  if (hits.threat && (hits.privacy || hits.porn || CYBER_CUE.test(text))) hits.blackmail = (hits.blackmail || 0) + hits.threat;
+  if (hits.threat && (hits.privacy || hits.porn || CYBER_CUE.test(text)))
+    hits.blackmail = (hits.blackmail || 0) + hits.threat;
   return hits;
 }
 
-const CYBER_CUE = / (?:اونلاين|انترنت|النت|فيسبوك|فيس|انستا|انستغرام|واتس|واتساب|سناب|تيك ?توك|تلغرام|حساب|رسايل|رسائل|فيديو|فيديوهات|مصاري|فلوس|شيكل|دينار|يفضح|بفضح|ينشر|بنشر|بينشر)[^ ]* /;
+const CYBER_CUE =
+  / (?:اونلاين|انترنت|النت|فيسبوك|فيس|انستا|انستغرام|واتس|واتساب|سناب|تيك ?توك|تلغرام|حساب|رسايل|رسائل|فيديو|فيديوهات|مصاري|فلوس|شيكل|دينار|يفضح|بفضح|ينشر|بنشر|بينشر)[^ ]* /;

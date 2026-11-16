@@ -50,7 +50,8 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
     }
   }
 
-  function card(c) {
+  /** @param {object} c @param {{allUnverified?: boolean}} [opts]  all unverified: one note above the list */
+  function card(c, { allUnverified = false } = {}) {
     const box = el("div", "org");
     box.setAttribute("data-cat", c.cat);
     const badge = el("span", "oi");
@@ -63,7 +64,7 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
     // a promise ("free", "confidential") is shown only once the owner verified it with the organisation
     if (c.badge && (c.verified || !PROMISE_BADGE.test(c.badge))) info.append(el("span", "badge", c.badge));
     if (c.verified && (c.phone || c.whatsapp)) info.append(el("span", "badge", "رقم مؤكد ✓"));
-    else info.append(el("small", "muted", "لسا ما تأكدنا من الرقم مع الجهة نفسها"));
+    else if (!allUnverified) info.append(el("small", "muted", "لسا ما تأكدنا من الرقم مع الجهة نفسها"));
     const acts = el("div", "acts");
     if (c.phone) {
       const call = el("a", "chip fill");
@@ -103,7 +104,10 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
       ...urgent.map((c) => {
         const a = el("a", "btn primary sos-call");
         a.href = `tel:${c.phone.replace(/[\s-]/g, "")}`;
-        a.append(icon("i-phone"), document.createTextNode(`${c.name} ${c.phone}`));
+        // name over number: «الدفاع المدني 102» used to break mid-label in a narrow column
+        const label = el("span", "sos-call-label");
+        label.append(el("span", null, c.name), el("b", null, c.phone));
+        a.append(icon("i-phone"), label);
         return a;
       }),
     );
@@ -117,8 +121,23 @@ export function createContacts({ store, state, endpoint, fetchImpl = globalThis.
     const root = $("#support-list");
     if (!root) return;
     const cats = Object.keys(CONTACT_CATS).filter((cat) => mine.some((c) => c.cat === cat));
-    root.replaceChildren(...cats.flatMap((cat) => mine.filter((c) => c.cat === cat).map(card)));
+    // the same warning under every card is noise: when no number is verified yet, say it once, on top
+    const allUnverified = mine.length > 1 && mine.every((c) => !(c.verified && (c.phone || c.whatsapp)));
+    root.replaceChildren(
+      ...(allUnverified
+        ? [
+            el(
+              "p",
+              "note unverified",
+              "لسا ما تأكدنا من هالأرقام مع الجهات نفسها. إذا ما زبط رقم، جرّبي غيره.",
+            ),
+          ]
+        : []),
+      ...cats.flatMap((cat) => mine.filter((c) => c.cat === cat).map((c) => card(c, { allUnverified }))),
+    );
     const tabs = $("#stabs");
+    // filter tabs only when there is something to filter: one category alone made «الكل / طوارئ» look broken
+    if (tabs) tabs.hidden = cats.length < 2;
     if (tabs) {
       const tab = (cat, label, on = false) => {
         const b = el("button", on ? "stab on" : "stab", label);

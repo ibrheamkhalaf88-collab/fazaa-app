@@ -27,7 +27,12 @@ import { findSpecificArticles } from "../../src/ai/legal.js";
 import { proceduresFor } from "../../src/data/procedures.js";
 import { validateAnswer, validateChat, validateTalk } from "../../src/ai/validate.js";
 
-const LIMITS = { bodyBytes: MAX_BODY_BYTES, questionMin: MIN_MESSAGE_CHARS, questionMax: MAX_MESSAGE_CHARS, upstreamMs: 20000 };
+const LIMITS = {
+  bodyBytes: MAX_BODY_BYTES,
+  questionMin: MIN_MESSAGE_CHARS,
+  questionMax: MAX_MESSAGE_CHARS,
+  upstreamMs: 20000,
+};
 const COUNTRIES = ["ps-wb", "ps-gaza"];
 const NEEDS = ["listen", "understand", "steps", "legal"];
 
@@ -125,22 +130,39 @@ export const CHAT_TOOL = {
   input_schema: {
     type: "object",
     properties: {
-      reply: { type: "string", description: "You talking with her: 2-4 short sentences in Palestinian Arabic (max 1100 chars). No article numbers here." },
+      reply: {
+        type: "string",
+        description:
+          "You talking with her: 2-4 short sentences in Palestinian Arabic (max 1100 chars). No article numbers here.",
+      },
       rights: {
         type: "array",
-        description: "Usually empty. Only when she asked for her rights and you know her situation: 1-2 points of what the text gives her, each with the id it comes from.",
+        description:
+          "Usually empty. Only when she asked for her rights and you know her situation: 1-2 points of what the text gives her, each with the id it comes from.",
         items: {
           type: "object",
           properties: {
-            text: { type: "string", description: "One right or rule, simple words, only what the article says (max 220 chars)" },
+            text: {
+              type: "string",
+              description: "One right or rule, simple words, only what the article says (max 220 chars)",
+            },
             cite: { type: "string", description: "The id of the article in <articles> it comes from" },
           },
           required: ["text", "cite"],
         },
       },
-      steps: { type: "array", items: { type: "string" }, description: "Usually empty. When she asked what to do and you know her situation: 1-2 concrete steps (who / where / what), best and safest first (each max 220 chars)." },
+      steps: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Usually empty. When she asked what to do and you know her situation: 1-2 concrete steps (who / where / what), best and safest first (each max 220 chars).",
+      },
       ask: { type: "string", description: "At most ONE question for her, or empty." },
-      cites: { type: "array", items: { type: "string" }, description: "Ids of the <articles> you used anywhere. Empty if none." },
+      cites: {
+        type: "array",
+        items: { type: "string" },
+        description: "Ids of the <articles> you used anywhere. Empty if none.",
+      },
       sos: { type: "boolean", description: "true when there are signs of danger now or self-harm." },
     },
     required: ["reply"],
@@ -156,7 +178,10 @@ export const SUPPORT_TOOL = {
   input_schema: {
     type: "object",
     properties: {
-      lead: { type: "string", description: "The reply: 1-3 short sentences that respond to what she wrote (max 500 chars)" },
+      lead: {
+        type: "string",
+        description: "The reply: 1-3 short sentences that respond to what she wrote (max 500 chars)",
+      },
       ask: { type: "string", description: "At most ONE question, or empty" },
       options: {
         type: "array",
@@ -176,15 +201,26 @@ export const ANSWER_TOOL = {
   input_schema: {
     type: "object",
     properties: {
-      covered: { type: "boolean", description: "false if the provided articles do not clearly cover the question" },
+      covered: {
+        type: "boolean",
+        description: "false if the provided articles do not clearly cover the question",
+      },
       lead: { type: "string", description: "1-2 sentences that respond to her question (max 400 chars)" },
-      steps: { type: "array", items: { type: "string" }, description: "2-3 small, safe options (each max 220 chars)" },
+      steps: {
+        type: "array",
+        items: { type: "string" },
+        description: "2-3 small, safe options (each max 220 chars)",
+      },
       note: {
         type: "string",
         description:
           "What the cited articles say, in plain Palestinian Arabic, 2-3 sentences. Only what is written in them (max 650 chars)",
       },
-      cites: { type: "array", items: { type: "string" }, description: "Article ids actually used, from <articles>" },
+      cites: {
+        type: "array",
+        items: { type: "string" },
+        description: "Article ids actually used, from <articles>",
+      },
       sos: { type: "boolean", description: "true if danger is immediate" },
     },
     required: ["covered"],
@@ -197,7 +233,13 @@ const safe = (s) => String(s || "").replace(/[<>]/g, " ");
 export function cleanContext(raw) {
   if (!raw || typeof raw !== "object") return null;
   const str = (v, max) => (typeof v === "string" ? safe(v).trim().slice(0, max) : "");
-  const list = (v, n, max) => (Array.isArray(v) ? v.map((x) => str(x, max)).filter(Boolean).slice(0, n) : []);
+  const list = (v, n, max) =>
+    Array.isArray(v)
+      ? v
+          .map((x) => str(x, max))
+          .filter(Boolean)
+          .slice(0, n)
+      : [];
   const turns = (Array.isArray(raw.turns) ? raw.turns : [])
     .filter((t) => t && (t.role === "user" || t.role === "assistant"))
     .map((t) => ({ role: t.role, text: str(t.text, CONTEXT.turnChars) }))
@@ -226,7 +268,8 @@ function contextBlock(ctx) {
   if (ctx.goal) lines.push(`What she wants: ${ctx.goal}`);
   if (ctx.progress?.length) lines.push(`Her progress: ${ctx.progress.join("؛ ")}`);
   if (ctx.asked?.length) lines.push(`Already asked (do not ask again): ${ctx.asked.join(", ")}`);
-  if (ctx.constraints.length) lines.push(`She said (do not suggest against it): ${ctx.constraints.join("؛ ")}`);
+  if (ctx.constraints.length)
+    lines.push(`She said (do not suggest against it): ${ctx.constraints.join("؛ ")}`);
   if (ctx.rejected.length) lines.push(`Ideas she refused (never suggest again): ${ctx.rejected.join(", ")}`);
   for (const t of ctx.turns) lines.push(`${t.role === "user" ? "She" : "You"}: ${t.text}`);
   return lines.length ? `<context>\n${lines.join("\n")}\n</context>\n` : "";
@@ -235,7 +278,10 @@ function contextBlock(ctx) {
 /** Build the user message: the retrieved articles, the context, then the (sanitised) question. */
 export function buildUserMessage(question, articles, country, context = null) {
   const sources = articles
-    .map((a) => `<article id="${a.id}" topic="${safe(a.topic)}">\n${a.text}${a.amended ? `\n(${a.amended})` : ""}\n</article>`)
+    .map(
+      (a) =>
+        `<article id="${a.id}" topic="${safe(a.topic)}">\n${a.text}${a.amended ? `\n(${a.amended})` : ""}\n</article>`,
+    )
     .join("\n");
   const place = country === "ps-gaza" ? "Gaza Strip" : "West Bank";
   return `<articles>\n${sources}\n</articles>\n<place>${place}</place>\n${contextBlock(context)}<question>\n${safe(question)}\n</question>`;
@@ -272,11 +318,17 @@ export function parseAnswerRequest(body) {
   if (Array.isArray(body?.messages)) {
     const turns = body.messages
       .filter((t) => t && (t.role === "user" || t.role === "assistant") && typeof t.text === "string")
-      .map((t) => ({ role: t.role, text: safe(t.text).trim().slice(0, t.role === "user" ? LIMITS.questionMax : CHAT.assistantChars) }))
+      .map((t) => ({
+        role: t.role,
+        text: safe(t.text)
+          .trim()
+          .slice(0, t.role === "user" ? LIMITS.questionMax : CHAT.assistantChars),
+      }))
       .filter((t) => t.text)
       .slice(-CHAT.turns);
     const last = turns.at(-1);
-    if (!last || last.role !== "user" || last.text.length < LIMITS.questionMin) return { error: "bad-question" };
+    if (!last || last.role !== "user" || last.text.length < LIMITS.questionMin)
+      return { error: "bad-question" };
     return {
       question: last.text,
       country: COUNTRIES.includes(body.country) ? body.country : "ps-wb",
@@ -287,7 +339,8 @@ export function parseAnswerRequest(body) {
     };
   }
   const question = typeof body?.question === "string" ? body.question.trim() : "";
-  if (question.length < LIMITS.questionMin || question.length > LIMITS.questionMax) return { error: "bad-question" };
+  if (question.length < LIMITS.questionMin || question.length > LIMITS.questionMax)
+    return { error: "bad-question" };
   return {
     question,
     country: COUNTRIES.includes(body.country) ? body.country : "ps-wb",
@@ -313,7 +366,8 @@ export async function handleRequest(request, env, { fetchImpl = fetch } = {}) {
   const cors = corsHeaders(request, env);
   if (!cors) return json({ error: "forbidden-origin" }, 403);
   if (request.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
-  if (url.pathname !== "/v1/answer" || request.method !== "POST") return json({ error: "not-found" }, 404, cors);
+  if (url.pathname !== "/v1/answer" || request.method !== "POST")
+    return json({ error: "not-found" }, 404, cors);
 
   if (env.RATE_LIMITER) {
     const key = request.headers.get("cf-connecting-ip") || "anonymous";
@@ -364,19 +418,33 @@ export async function answerQuestion(question, country, env, fetchImpl = fetch, 
     // already named (only present when she agreed to share context)
     // a specific question («قديش مدة العدة؟») gets the article that answers it, not the whole topic list
     const specific = findSpecificArticles(question, country);
-    let articles = specific?.found.length ? specific.found : retrieveArticles(question, articlesFor(country), 3);
-    if (articles.length === 0 && context?.topic) articles = retrieveArticles(`${question} ${context.topic}`, articlesFor(country), 3);
+    let articles = specific?.found.length
+      ? specific.found
+      : retrieveArticles(question, articlesFor(country), 3);
+    if (articles.length === 0 && context?.topic)
+      articles = retrieveArticles(`${question} ${context.topic}`, articlesFor(country), 3);
     if (articles.length === 0) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
     const byId = Object.fromEntries(articles.map((a) => [a.id, a]));
     const out = await checkedCall(
       provider,
       key,
-      { system: SYSTEM_PROMPT, user: buildUserMessage(question, articles, country, context), tool: ANSWER_TOOL, env },
+      {
+        system: SYSTEM_PROMPT,
+        user: buildUserMessage(question, articles, country, context),
+        tool: ANSWER_TOOL,
+        env,
+      },
       fetchImpl,
-      (input) => (input.covered === false ? NOT_COVERED : validateAnswer(input, { articleIds: articles.map((a) => a.id), articles: byId })),
+      (input) =>
+        input.covered === false
+          ? NOT_COVERED
+          : validateAnswer(input, { articleIds: articles.map((a) => a.id), articles: byId }),
     );
-    if (out.answer === NOT_COVERED) return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
-    return out.error ? { status: 502, body: { error: out.error } } : { status: 200, body: { answer: out.answer } };
+    if (out.answer === NOT_COVERED)
+      return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
+    return out.error
+      ? { status: 502, body: { error: out.error } }
+      : { status: 200, body: { answer: out.answer } };
   }
   return talkAnswer(question, talkNeed, context, provider, key, env, fetchImpl);
 }
@@ -395,7 +463,10 @@ export function articlesForChat(turns, country) {
   if (specific?.found.length) return specific.found;
   const found = retrieveArticles(last, inRegion, 4);
   if (found.length < 2) {
-    const hers = turns.filter((t) => t.role === "user").map((t) => t.text).join(" ");
+    const hers = turns
+      .filter((t) => t.role === "user")
+      .map((t) => t.text)
+      .join(" ");
     for (const a of retrieveArticles(hers, inRegion, 4)) if (!found.some((x) => x.id === a.id)) found.push(a);
   }
   return found.slice(0, 4);
@@ -408,7 +479,10 @@ async function chatAnswer(turns, country, provider, key, env, fetchImpl, dangerM
   const place = country === "ps-gaza" ? "Gaza Strip" : "West Bank";
   const sources = articles.length
     ? articles
-        .map((a) => `<article id="${a.id}" law="${safe(a.lawName)}" topic="${safe(a.topic)}">\n${a.text}${a.amended ? `\n(${a.amended})` : ""}\n</article>`)
+        .map(
+          (a) =>
+            `<article id="${a.id}" law="${safe(a.lawName)}" topic="${safe(a.topic)}">\n${a.text}${a.amended ? `\n(${a.amended})` : ""}\n</article>`,
+        )
         .join("\n")
     : "(no text in the app matches this conversation: do not state any law)";
   const procedures = proceduresFor(turns, country);
@@ -416,8 +490,12 @@ async function chatAnswer(turns, country, provider, key, env, fetchImpl, dangerM
     ? procedures.map((p) => `<procedure topic="${safe(p.topic)}">\n${safe(p.text)}\n</procedure>`).join("\n")
     : "(none: do not name places, documents, fees, durations, organisations or numbers)";
   const system = `${CHAT_PROMPT}\n\n<place>${place}</place>\n<articles>\n${sources}\n</articles>\n<procedures>\n${howTo}\n</procedures>`;
-  const out = await checkedCall(provider, key, { system, turns, user: turns.at(-1).text, tool: CHAT_TOOL, env }, fetchImpl, (input) =>
-    validateChat(input, { articleIds: articles.map((a) => a.id), articles: byId }),
+  const out = await checkedCall(
+    provider,
+    key,
+    { system, turns, user: turns.at(-1).text, tool: CHAT_TOOL, env },
+    fetchImpl,
+    (input) => validateChat(input, { articleIds: articles.map((a) => a.id), articles: byId }),
   );
   if (out.error) return { status: 502, body: { error: out.error } };
   // violence was mentioned: the safety-plan button is always there, whatever the model decided
@@ -440,7 +518,13 @@ async function checkedCall(provider, key, args, fetchImpl, check) {
     const feedback = `\n<feedback>Your previous reply was rejected by the app for breaking a rule: ${REWRITE_HINT(err.message)} Write it again, following every rule.</feedback>`;
     // the feedback goes after her last message (chat: appended to the last turn; single call: to the message)
     const retry = args.turns
-      ? { ...args, turns: [...args.turns.slice(0, -1), { ...args.turns.at(-1), text: args.turns.at(-1).text + feedback }] }
+      ? {
+          ...args,
+          turns: [
+            ...args.turns.slice(0, -1),
+            { ...args.turns.at(-1), text: args.turns.at(-1).text + feedback },
+          ],
+        }
       : { ...args, user: args.user + feedback };
     const again = await callModel(provider, key, retry, fetchImpl);
     if (again.error) return { error: `invalid-output:${err.message}` };
@@ -454,9 +538,12 @@ async function checkedCall(provider, key, args, fetchImpl, check) {
 
 /** What to fix, in words the model understands (from the validator's short reason). */
 function REWRITE_HINT(reason) {
-  if (reason.startsWith("forbidden")) return "it promised safety, an outcome or that you will always be there, or used a forbidden phrase.";
-  if (reason.startsWith("legal-leak")) return "a support reply may not state any law, penalty, article or court outcome.";
-  if (reason.startsWith("ungrounded")) return `it stated something not written in the given articles (${reason.slice(11, 60)}).`;
+  if (reason.startsWith("forbidden"))
+    return "it promised safety, an outcome or that you will always be there, or used a forbidden phrase.";
+  if (reason.startsWith("legal-leak"))
+    return "a support reply may not state any law, penalty, article or court outcome.";
+  if (reason.startsWith("ungrounded"))
+    return `it stated something not written in the given articles (${reason.slice(11, 60)}).`;
   if (reason.startsWith("unknown-article")) return "it cited an article id that was not given.";
   return `the reply was malformed (${reason.slice(0, 40)}).`;
 }
@@ -465,8 +552,12 @@ function REWRITE_HINT(reason) {
 async function talkAnswer(question, need, context, provider, key, env, fetchImpl) {
   if (env.SUPPORT_MODE === "off") return { status: 200, body: { answer: null } };
   const user = `<need>${need}</need>\n${contextBlock(context)}<question>\n${safe(question)}\n</question>`;
-  const out = await checkedCall(provider, key, { system: TALK_PROMPT, user, tool: TALK_TOOL, env }, fetchImpl, (input) =>
-    validateTalk(input, { need }),
+  const out = await checkedCall(
+    provider,
+    key,
+    { system: TALK_PROMPT, user, tool: TALK_TOOL, env },
+    fetchImpl,
+    (input) => validateTalk(input, { need }),
   );
   if (out.error) return { status: 502, body: { error: out.error } };
   return { status: 200, body: { answer: { ...out.answer, general: true, topic: "دعم" } } };
@@ -526,7 +617,8 @@ async function callModel(provider, key, args, fetchImpl) {
  */
 function roomForAnswer(body, env) {
   const n = Number(env.MAX_OUTPUT_TOKENS) || 2048;
-  if (body.generationConfig) body.generationConfig.maxOutputTokens = Math.max(body.generationConfig.maxOutputTokens || 0, n);
+  if (body.generationConfig)
+    body.generationConfig.maxOutputTokens = Math.max(body.generationConfig.maxOutputTokens || 0, n);
   if ("max_tokens" in body) body.max_tokens = Math.max(body.max_tokens || 0, n);
 }
 
@@ -547,7 +639,9 @@ async function callUpstream(provider, key, args, fetchImpl, providerId) {
   roomForAnswer(call.body, args.env);
   // per provider: UPSTREAM_MS_GEMINI etc., then UPSTREAM_MS, then the default
   const timeoutMs =
-    Number(args.env[`UPSTREAM_MS_${providerId.toUpperCase()}`]) || Number(args.env.UPSTREAM_MS) || LIMITS.upstreamMs;
+    Number(args.env[`UPSTREAM_MS_${providerId.toUpperCase()}`]) ||
+    Number(args.env.UPSTREAM_MS) ||
+    LIMITS.upstreamMs;
   let upstream;
   try {
     upstream = await fetchImpl(call.url, {

@@ -145,9 +145,20 @@ try {
   failed = true;
   // print first: a failing screenshot (e.g. "/tmp" missing on Windows) used to hide the error entirely
   console.log(`FAIL live lawyer chat\n     ${err.message.split("\n")[0]}`);
-  console.log((await page.locator("#msgs").innerText().catch(() => "")).slice(0, 600), problems);
+  console.log(
+    (
+      await page
+        .locator("#msgs")
+        .innerText()
+        .catch(() => "")
+    ).slice(0, 600),
+    problems,
+  );
   const shot = join(tmpdir(), "fazaa-live-fail.png");
-  await page.screenshot({ path: shot }).then(() => console.log(`screenshot: ${shot}`)).catch(() => {});
+  await page
+    .screenshot({ path: shot })
+    .then(() => console.log(`screenshot: ${shot}`))
+    .catch(() => {});
 } finally {
   await browser.close();
   server.close();

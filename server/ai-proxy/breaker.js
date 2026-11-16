@@ -31,7 +31,9 @@ export function createBreaker({ threshold = 3, coolMs = 60_000, now = () => Date
     },
     /** For the dashboard / tests: which models are paused, and until when. */
     snapshot() {
-      return [...states.entries()].filter(([, s]) => s.openUntil > now()).map(([key, s]) => ({ key, until: s.openUntil }));
+      return [...states.entries()]
+        .filter(([, s]) => s.openUntil > now())
+        .map(([key, s]) => ({ key, until: s.openUntil }));
     },
   };
 }

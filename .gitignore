@@ -8,3 +8,10 @@ server/api/public/
 docs/evidence/live-eval-dry-run-*
 # an accidental nested clone kept on disk (see commit 2402a95); never part of this repo or its tests
 server/api/sanad-app/
+
+# local working folders (deploy staging, npm cache, audit zips)
+.deploy-tmp/
+.npm-cache-d/
+.tmp-d/
+audit-package/
+android-twa/

@@ -5,13 +5,13 @@ with the article number**, a step-by-step safety plan against online blackmail, 
 
 Built for people who may be in danger, so three things come before features:
 
-| Principle              | What it means in the code                                                                                                                                                                                                 |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Never invent law**   | Every answer cites an article from `src/data/law/`. If nothing covers the question, the app says so (`renderNotCovered`). AI output is rejected if it cites anything else (`src/ai/validate.js`).                         |
-| **Private by default** | Questions are answered on the device. Online AI is **opt-in**. Anonymous counters (no ids, no text) are **opt-out** and off until configured. An account exists only when she asks for a lawyer. No third-party requests. |
-| **Fast, quiet escape** | One tap or `Esc` swaps the app for a weather/calculator/notes screen and wipes the chat. The calculator really works; a secret code returns to the app.                                                                   |
+| Principle              | What it means in the code                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Never invent law**   | Every answer cites an article from `src/data/law/`. If nothing covers the question, the app says so (`renderNotCovered`). AI output is rejected if it cites anything else (`src/ai/validate.js`).                                                                                                                                                                                                                                                             |
+| **Private by default** | Chat replies are written by the online AI (on by default since 2026-11-12, she can switch it off in Settings). Her messages go to our own `/api/v1/answer` with no id, and the server keeps nothing between requests; replies to present danger or self-harm stay on the device. Anonymous counters (no ids, no text) are **opt-out** and off until configured. An account exists only when she asks for a lawyer. The browser makes no third-party requests. |
+| **Fast, quiet escape** | One tap or `Esc` swaps the app for a weather/calculator/notes screen and wipes the chat. The calculator really works; a secret code returns to the app.                                                                                                                                                                                                                                                                                                       |
 
-Status: **prototype**. The app works fully offline with the rule engine. The real lawyer chat, staff dashboards and analytics are built and tested but switched off until the API is deployed (`API_BASE`, `TELEMETRY_ENDPOINT` in `src/config.js`). Until then the lawyer tab is a labelled demo; phone numbers and the Google button are placeholders. See `docs/ROADMAP.md`.
+Status: **prototype**. The app shell, the safety plan, the support numbers and the disguise work offline; chat answers need the online AI (without it the chat says so honestly and offers the safety plan and support). The real lawyer chat, staff dashboards and analytics are built and tested but switched off until the API is deployed (`API_BASE`, `TELEMETRY_ENDPOINT` in `src/config.js`). Until then the lawyer tab says plainly that the service is not available and that nothing was sent (there is no pretend lawyer). The Google sign-in button stays hidden until it really works, and the support numbers must be verified by the owner in the dashboard before launch. Every quoted law article is still marked as not reviewed by a lawyer (`docs/LEGAL-REVIEW.md`). See `docs/ROADMAP.md`.
 
 ## Run it
 
@@ -19,7 +19,7 @@ No build step. It is plain HTML, CSS and ES modules.
 
 ```bash
 npm start            # serves on http://localhost:8080  (or: python -m http.server 8080)
-npm test             # 150 unit tests, no dependencies, ~1 s
+npm test             # 400+ unit tests (node:test), no dependencies, ~15 s
 npm run test:e2e     # real-browser tests (needs: npm install  -> installs Playwright)
 npm run lint         # ESLint (also forbids innerHTML)
 npm run check        # format + lint + unit tests: run this before every commit
@@ -47,11 +47,20 @@ src/
   ai/                      how an answer is produced (see docs/AI.md)
   data/                    the law text, keywords, and the rule-based answers  <- content lives here
 server/api/                API (Worker + D1): women's accounts, cases, lawyer/developer roles, analytics, retention
+  worker.js                entry point: CORS, rate limit, then hands the request to a route file
+  routes/                  public.js (no account) · women.js (alias + PIN) · staff.js (lawyers, developers)
+  shared.js                limits, validation and AI-settings helpers the routes share
+  auth.js · crypto.js      staff sign-in; encryption and PIN/password hashing
+  store/                   memory.js (tests, local dev) and d1.js (production): same behaviour
 admin/                     staff dashboard (lawyers and developers), see docs/ADMIN.md
 server/ai-proxy/           optional Cloudflare Worker for online AI (keeps the API key off the device)
 tests/                     unit tests (node:test) + e2e/ (Playwright)
-plan/                      PLAN, DATABASE (the roadmap and the database)
-docs/                      ARCHITECTURE, AI, ADMIN, DEPLOYMENT, TRANSFER, CONTENT, ROADMAP
+scripts/                   dev server, AI evals, law verification, icons, staff passwords, deploy
+ai-data/                   AI evaluation questions and exported-answer samples
+docs/                      all documentation: start at docs/README.md (an index of every file)
+  plan/                    the work plan: phases, AI roadmap, database, handoff
+  reports/                 dated audits and reviews (snapshots, not kept up to date)
+  evidence/                transcripts and probe scripts the reports cite
 assets/                    fonts, icon sprite, app icons
 archive/                   old landing page (reference only)
 ```
@@ -65,7 +74,8 @@ archive/                   old landing page (reference only)
 | add a law                         | `src/data/law/` (see `docs/CONTENT.md`)                                                       |
 | change a screen's layout          | its markup in `index.html` + `styles/screens/<name>.css`                                      |
 | how the AI improves; scope check  | `docs/AI-DEVELOPMENT.md`, `ai-data/`, `npm run ai:eval`                                       |
-| security status                   | `docs/SECURITY.md`                                                                            |
+| security status                   | `docs/SECURITY.md` (past audits: `docs/reports/`)                                             |
+| what is stored and erased         | `docs/PRIVACY.md`                                                                             |
 | turn on online AI                 | `docs/AI.md` (deploy the worker, set `AI_ENDPOINT` in `src/config.js`)                        |
 | ship a new version                | bump `CACHE_VERSION` in `sw.js` (the tests tell you if a file is missing from the cache list) |
 

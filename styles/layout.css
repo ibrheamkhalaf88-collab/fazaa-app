@@ -85,7 +85,7 @@
 }
 
 .screen > .body {
-  padding-bottom: 150px; /* room to scroll content above the floating quick-exit button + tab bar */
+  padding-bottom: 150px; /* room to scroll content above the tab bar */
 }
 
 /* chat has no floating quick-exit button (it lives in the header there) */

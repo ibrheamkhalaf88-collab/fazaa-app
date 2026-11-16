@@ -31,7 +31,8 @@ export function createRemoteEngine({
       const last = turns.at(-1)?.text || "";
       if (last.length > MAX_MESSAGE_CHARS) throw new Error("message-too-long");
       const timeout = AbortSignal.timeout(timeoutMs);
-      const signal = ctx.signal && AbortSignal.any ? AbortSignal.any([ctx.signal, timeout]) : ctx.signal || timeout;
+      const signal =
+        ctx.signal && AbortSignal.any ? AbortSignal.any([ctx.signal, timeout]) : ctx.signal || timeout;
       const res = await fetchImpl(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -60,7 +61,8 @@ export function createRemoteEngine({
     async answer(message, ctx) {
       if (message.length > MAX_MESSAGE_CHARS) throw new Error("message-too-long");
       const timeout = AbortSignal.timeout(timeoutMs);
-      const signal = ctx.signal && AbortSignal.any ? AbortSignal.any([ctx.signal, timeout]) : ctx.signal || timeout;
+      const signal =
+        ctx.signal && AbortSignal.any ? AbortSignal.any([ctx.signal, timeout]) : ctx.signal || timeout;
       const res = await fetchImpl(endpoint, {
         method: "POST",
         headers: { "content-type": "application/json" },

@@ -10,14 +10,22 @@ import { createRemoteEngine } from "../src/ai/remote-engine.js";
 
 const ENV = { PROVIDER: "gemini", GEMINI_API_KEY: "k", RETRY_PAUSE_MS: "0" };
 const talk = (args) =>
-  new Response(JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { name: "give_support", args } }] } }] }), {
-    status: 200,
-  });
+  new Response(
+    JSON.stringify({
+      candidates: [{ content: { parts: [{ functionCall: { name: "give_support", args } }] } }],
+    }),
+    {
+      status: 200,
+    },
+  );
 beforeEach(() => setBreaker(createBreaker()));
 
 test("a reply that promises safety gets ONE rewrite, told which rule it broke; the rewrite is used", async () => {
   const sent = [];
-  const replies = [talk({ lead: "إنتِ بمكان آمن هلا، ما تخافي من حدا." }), talk({ lead: "سامعتك. شو اللي صار؟" })];
+  const replies = [
+    talk({ lead: "إنتِ بمكان آمن هلا، ما تخافي من حدا." }),
+    talk({ lead: "سامعتك. شو اللي صار؟" }),
+  ];
   const { status, body } = await answerQuestion("مش عارفة مع مين أحكي", "ps-wb", ENV, async (_u, init) => {
     sent.push(JSON.parse(init.body).contents[0].parts[0].text);
     return replies.shift();
@@ -30,7 +38,12 @@ test("a reply that promises safety gets ONE rewrite, told which rule it broke; t
 
 test("still breaking the rule after the rewrite: 502 (the app answers offline), never a third call", async () => {
   let calls = 0;
-  const { status, body } = await answerQuestion("مش عارفة مع مين أحكي", "ps-wb", ENV, async () => (calls++, talk({ lead: "أنا هون دايماً وما أتركك." })));
+  const { status, body } = await answerQuestion(
+    "مش عارفة مع مين أحكي",
+    "ps-wb",
+    ENV,
+    async () => (calls++, talk({ lead: "أنا هون دايماً وما أتركك." })),
+  );
   assert.equal(status, 502);
   assert.match(body.error, /forbidden/);
   assert.equal(calls, 2);
@@ -38,7 +51,12 @@ test("still breaking the rule after the rewrite: 502 (the app answers offline), 
 
 test("REWRITE=off: one call only", async () => {
   let calls = 0;
-  await answerQuestion("مش عارفة مع مين أحكي", "ps-wb", { ...ENV, REWRITE: "off" }, async () => (calls++, talk({ lead: "أنا هون دايماً" })));
+  await answerQuestion(
+    "مش عارفة مع مين أحكي",
+    "ps-wb",
+    { ...ENV, REWRITE: "off" },
+    async () => (calls++, talk({ lead: "أنا هون دايماً" })),
+  );
   assert.equal(calls, 1);
 });
 
@@ -61,14 +79,19 @@ test("closed beta: without the tester code the model is never called and the app
   const wrong = await (await post({ question: "بدي حدا يسمعني", country: "ps-wb", beta: "guess" })).json();
   assert.equal(wrong.answer, null);
   assert.equal(calls, 0);
-  const tester = await (await post({ question: "بدي حدا يسمعني", country: "ps-wb", beta: "tester-7" })).json();
+  const tester = await (
+    await post({ question: "بدي حدا يسمعني", country: "ps-wb", beta: "tester-7" })
+  ).json();
   assert.equal(tester.answer.lead, "سامعتك");
   assert.equal(calls, 1);
 });
 
 test("the app sends the tester code only when it has one", async () => {
   const bodies = [];
-  const fetchImpl = async (_u, init) => (bodies.push(JSON.parse(init.body)), new Response(JSON.stringify({ answer: null }), { status: 200 }));
+  const fetchImpl = async (_u, init) => (
+    bodies.push(JSON.parse(init.body)),
+    new Response(JSON.stringify({ answer: null }), { status: 200 })
+  );
   let code = "";
   const remote = createRemoteEngine({ endpoint: "x", fetchImpl, beta: () => code });
   await remote.answer("سؤال", { country: "ps-wb" });

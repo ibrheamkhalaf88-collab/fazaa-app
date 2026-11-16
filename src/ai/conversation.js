@@ -1,7 +1,15 @@
 import { tokenize } from "./normalize.js";
 import { detectIntents } from "./detect.js";
 import { CONTEXT } from "./limits.js";
-import { createSituation, currentTopic, LEGAL_TOPICS, observe, reflectEvents, summarize, TOPIC_LABELS } from "./situation.js";
+import {
+  createSituation,
+  currentTopic,
+  LEGAL_TOPICS,
+  observe,
+  reflectEvents,
+  summarize,
+  TOPIC_LABELS,
+} from "./situation.js";
 
 /**
  * Conversation understanding + a SESSION memory (in RAM only: never written to storage, wiped with the
@@ -36,11 +44,64 @@ const LISTEN = [
   "بس بدي احكي",
   "خليني احكي",
 ];
-const STEPS = ["شو كمان", "غير هيك", "شو اعمل", "شو بعمل", "شو لازم اعمل", "شو بتنصحيني", "شو الحل", "بدي حل", "كيف بتصرف", "شو خياراتي", "شو بقدر اعمل", "ساعديني احل", "كيف اطلع من", "شو الخطوه"];
-const LEGAL = ["القانون", "قانونيا", "قانوني", "حقي", "حقوقي", "بيحقلي", "عقوبه", "العقوبه", "عقوبته", "ماده", "الماده", "المحكمه", "محكمه", "شكوى", "اشتكي", "قضيه", "مسموح", "ممنوع قانونيا", "سن الزواج", "بيعاقب", "شو بيقول"];
+const STEPS = [
+  "شو كمان",
+  "غير هيك",
+  "شو اعمل",
+  "شو بعمل",
+  "شو لازم اعمل",
+  "شو بتنصحيني",
+  "شو الحل",
+  "بدي حل",
+  "كيف بتصرف",
+  "شو خياراتي",
+  "شو بقدر اعمل",
+  "ساعديني احل",
+  "كيف اطلع من",
+  "شو الخطوه",
+];
+const LEGAL = [
+  "القانون",
+  "قانونيا",
+  "قانوني",
+  "حقي",
+  "حقوقي",
+  "بيحقلي",
+  "عقوبه",
+  "العقوبه",
+  "عقوبته",
+  "ماده",
+  "الماده",
+  "المحكمه",
+  "محكمه",
+  "شكوى",
+  "اشتكي",
+  "قضيه",
+  "مسموح",
+  "ممنوع قانونيا",
+  "سن الزواج",
+  "بيعاقب",
+  "شو بيقول",
+];
 const UNDERSTAND = ["ليش", "مش فاهمه", "طبيعي", "انا غلطانه", "غلطي", "هل هاد", "شو يعني"];
 // (2026-11-13) «اكم نفقه لكل ولد» from a real test: amounts are asked with اكم / قديش / كم
-const QUESTION_WORDS = ["شو", "كيف", "هل", "بقدر", "بيصير", "اذا", "متى", "وين", "اكم", "قديش", "قداش", "كم", "بكم", "شقد", "بدي اعرف"];
+const QUESTION_WORDS = [
+  "شو",
+  "كيف",
+  "هل",
+  "بقدر",
+  "بيصير",
+  "اذا",
+  "متى",
+  "وين",
+  "اكم",
+  "قديش",
+  "قداش",
+  "كم",
+  "بكم",
+  "شقد",
+  "بدي اعرف",
+];
 const FAMILY_INTENTS = ["nafaqa", "divorce", "custody", "inherit"];
 const CYBER_INTENTS = ["blackmail", "privacy", "porn"];
 
@@ -48,7 +109,8 @@ const CYBER_INTENTS = ["blackmail", "privacy", "porn"];
 const LOST = /(?:^| )(?:و)?(?:مش عارفه|مش عارف|ما بعرف|ما عدت عارفه)(?: (?:شو|مع مين|لمين|كيف))/;
 const LOST_FULL = /(?:مش عارفه|مش عارف|ما بعرف|ما عدت عارفه) (?:شو (?:اعمل|بعمل|لازم اعمل)|كيف بتصرف)/g;
 /** She asks how to help someone else («كيف بساعدها؟»). */
-export const HELP_OTHER = /(?:^| )(?:كيف|شو) (?:بساعدها|اساعدها|بقدر اساعدها|بعملها|اعملها|بساعدهم|اساعدهم)(?= |$)/;
+export const HELP_OTHER =
+  /(?:^| )(?:كيف|شو) (?:بساعدها|اساعدها|بقدر اساعدها|بعملها|اعملها|بساعدهم|اساعدهم)(?= |$)/;
 const YES = /^(?:اه|ايوه|ايوا|اي|نعم|اكيد|صح|بالزبط|طبعا|يعني اه|ماشي|تمام)(?: |$)/;
 const NO = /^(?:لا|لأ|لاء|مش|ما|ابدا)(?: |$)/;
 
@@ -56,11 +118,32 @@ const NO = /^(?:لا|لأ|لاء|مش|ما|ابدا)(?: |$)/;
 const CONSTRAINTS = {
   noMoney: ["ما معي مصاري", "ما عندي مصاري", "ما بقدر ادفع", "ما معي ولا شيكل", "ما عندي دخل"],
   noPhone: ["ما عندي تلفون", "تلفوني مش الي", "ما عندي جوال", "التلفون مش الي"],
-  monitored: ["بيفتش تلفوني", "بيفتشوا تلفوني", "بيراقب تلفوني", "بيراقبوا تلفوني", "بيقرأ رسايلي", "بيشوف تلفوني", "بيفتحوا تلفوني"],
+  monitored: [
+    "بيفتش تلفوني",
+    "بيفتشوا تلفوني",
+    "بيراقب تلفوني",
+    "بيراقبوا تلفوني",
+    "بيقرأ رسايلي",
+    "بيشوف تلفوني",
+    "بيفتحوا تلفوني",
+  ],
   noTrusted: ["ما عندي حدا", "ما الي حدا", "ما في حدا اوثق فيه", "ما بثق بحدا", "ما في حدا"],
-  familyUnsafe: ["اهلي هم المشكله", "ما بقدر احكي لاهلي", "خايفه من اهلي", "اهلي ضدي", "اهلي بيقتلوني", "اذا عرفوا اهلي"],
+  familyUnsafe: [
+    "اهلي هم المشكله",
+    "ما بقدر احكي لاهلي",
+    "خايفه من اهلي",
+    "اهلي ضدي",
+    "اهلي بيقتلوني",
+    "اذا عرفوا اهلي",
+  ],
   noFamilyTell: ["ما بدي احكي لاهلي", "مش بدي اهلي يعرفوا", "ما بدي اهلي يعرفوا", "ما بدي حدا من اهلي يعرف"],
-  cannotLeave: ["ما بقدر اطلع", "ما عندي مواصلات", "ما بقدر اروح", "ما الي مكان اروح عليه", "ما بقدر اترك البيت"],
+  cannotLeave: [
+    "ما بقدر اطلع",
+    "ما عندي مواصلات",
+    "ما بقدر اروح",
+    "ما الي مكان اروح عليه",
+    "ما بقدر اترك البيت",
+  ],
 };
 export const CONSTRAINT_LABELS = {
   noMoney: "ما عندها مصاري",
@@ -145,7 +228,8 @@ export function remember(memory, text) {
   memory.newConstraints = [];
   const rejectedBefore = memory.rejected.size;
   for (const [id, phrases] of Object.entries(CONSTRAINTS))
-    if (has(t, phrases) && !memory.constraints.has(id)) memory.constraints.add(id), memory.newConstraints.push(id);
+    if (has(t, phrases) && !memory.constraints.has(id))
+      (memory.constraints.add(id), memory.newConstraints.push(id));
   // an explicit correction replaces the earlier fact («لا، قصدي أختي»)
   const correction = /(?:^| )قصدي (?:انا )?([^ ]+)/.exec(t);
   const words = t.split(" ");
@@ -162,12 +246,18 @@ export function remember(memory, text) {
   if (has(t, LISTEN)) memory.mode = "listen";
   if ((has(t, STEPS) && !LOST.test(t)) || has(t, LEGAL)) memory.mode = "";
   // she refused one of the ideas we just gave: never suggest it again this session
-  if (memory.lastOptionIds?.length && /(?:^| )(?:ما بقدر|مش امن|مستحيل|ما بنفع|ما بزبط|ما في)(?: |$)/.test(t)) {
+  if (
+    memory.lastOptionIds?.length &&
+    /(?:^| )(?:ما بقدر|مش امن|مستحيل|ما بنفع|ما بزبط|ما في)(?: |$)/.test(t)
+  ) {
     for (const [id, cue] of Object.entries(REFUSAL_CUES))
       if (memory.lastOptionIds.includes(id) && cue.test(t)) memory.rejected.add(id);
   }
   // a constraint that rules out an idea we just gave counts as refusing it («ما بقدر أحكي لحدا»)
-  if (memory.lastOptionIds?.includes("trusted") && (memory.newConstraints.includes("noTrusted") || memory.newConstraints.includes("familyUnsafe")))
+  if (
+    memory.lastOptionIds?.includes("trusted") &&
+    (memory.newConstraints.includes("noTrusted") || memory.newConstraints.includes("familyUnsafe"))
+  )
     memory.rejected.add("trusted");
   memory.justRejected = memory.rejected.size > rejectedBefore;
   const goalBefore = memory.situation.goal;
@@ -244,12 +334,28 @@ function opener(memory) {
 
 /** Ideas for "steps", each tagged so a constraint or a refusal removes it. */
 const OPTIONS = [
-  { id: "write", text: "تكتبي لحالك متى صار الإشي وشو انقال، بمكان ما حدا بيوصله.", needs: [], not: ["monitored"] },
-  { id: "trusted", text: "تختاري شخص واحد بتثقي فيه وتحكيله شوي من اللي صاير.", needs: [], not: ["noTrusted", "familyUnsafe"] },
+  {
+    id: "write",
+    text: "تكتبي لحالك متى صار الإشي وشو انقال، بمكان ما حدا بيوصله.",
+    needs: [],
+    not: ["monitored"],
+  },
+  {
+    id: "trusted",
+    text: "تختاري شخص واحد بتثقي فيه وتحكيله شوي من اللي صاير.",
+    needs: [],
+    not: ["noTrusted", "familyUnsafe"],
+  },
   { id: "lawyer", text: "تحكي مع محامية تشرحلك خياراتك قبل ما تاخدي أي قرار.", needs: ["lawyer"], not: [] },
   { id: "support", text: "تشوفي جهات الدعم بصفحة «مين بيساعدني».", needs: ["contacts"], not: [] },
   { id: "pause", text: "تاخدي وقت قبل أي قرار كبير، ما في إشي لازم ينحسم اليوم.", needs: [], not: [] },
-  { id: "quickexit", text: "إذا حدا بيشوف تلفونك، زر «خروج سريع» بيخبّي التطبيق بلحظة.", needs: [], not: [], only: ["monitored"] },
+  {
+    id: "quickexit",
+    text: "إذا حدا بيشوف تلفونك، زر «خروج سريع» بيخبّي التطبيق بلحظة.",
+    needs: [],
+    not: [],
+    only: ["monitored"],
+  },
 ];
 
 /**
@@ -266,7 +372,8 @@ export function localTalk(need, memory, available = {}) {
   const lead = [];
 
   // 1) what changed: a correction, her own progress, what happened (said back in her terms)
-  if (fresh.correction) lead.push(`تمام، صححتيلي: الموضوع مع ${fresh.correction.to} مش مع ${fresh.correction.from}.`);
+  if (fresh.correction)
+    lead.push(`تمام، صححتيلي: الموضوع مع ${fresh.correction.to} مش مع ${fresh.correction.from}.`);
   const progress = fresh.progress[0]?.type;
   if (progress) lead.push(PROGRESS_ACK[progress]);
   const events = fresh.events.filter((e) => e.type !== "talked-to" || e.with);
@@ -285,7 +392,8 @@ export function localTalk(need, memory, available = {}) {
     if (!memory.situation.asked.has("calm")) {
       memory.situation.asked.add("calm");
       lead.push("خلينا نبطّئ شوي: خدي نفس ببطء من أنفك، وطلّعيه أبطأ. مش لازم تحلي إشي هلأ.");
-      if (/(?:^| )(?:اتنفس|بتنفس|نفسي مقطوع)(?= |$)/.test(t)) lead.push("وإذا ضيق النفس ما خفّ، أو في وجع بصدرك، اطلبي إسعاف.");
+      if (/(?:^| )(?:اتنفس|بتنفس|نفسي مقطوع)(?= |$)/.test(t))
+        lead.push("وإذا ضيق النفس ما خفّ، أو في وجع بصدرك، اطلبي إسعاف.");
     } else lead.push("واضح إنه كتير عليكِ هلأ.");
   }
   // (listen has its own short invitation; steps its own intro: no extra «سامعتك.» in front)
@@ -294,12 +402,20 @@ export function localTalk(need, memory, available = {}) {
     if (open) lead.push(open);
   }
   if (WHO_TO_TALK.test(t))
-    lead.push("منيح إنك كتبتي. أنا مساعدة رقمية، بس بقدر أسمعك وأساعدك ترتبي أفكارك، وبنقدر نفكر سوا مين ممكن يكون آمن تحكي معه.");
+    lead.push(
+      "منيح إنك كتبتي. أنا مساعدة رقمية، بس بقدر أسمعك وأساعدك ترتبي أفكارك، وبنقدر نفكر سوا مين ممكن يكون آمن تحكي معه.",
+    );
 
   if (need === "listen") {
     // heard, not advised: no options; a short, varied invitation instead of the same sentence each time
     const invite = pick(memory, LISTEN_INVITES);
-    return { kind: "talk", lead: [...lead, invite].filter(Boolean).join(" ") || "كمّلي، عم بسمعك.", options: [], ask: "", note: "" };
+    return {
+      kind: "talk",
+      lead: [...lead, invite].filter(Boolean).join(" ") || "كمّلي، عم بسمعك.",
+      options: [],
+      ask: "",
+      note: "",
+    };
   }
 
   if (need === "steps") return stepsReply(memory, available, lead, topic, t);
@@ -310,7 +426,7 @@ export function localTalk(need, memory, available = {}) {
   memory.quietTurns = q.ask ? 0 : memory.quietTurns + 1;
   if (!q.ask && memory.quietTurns >= 3) {
     const ask = pick(memory, CHECK_INS);
-    if (ask) (q = { slot: "help", ask }), (memory.quietTurns = 0), (memory.lastAsk = "help");
+    if (ask) ((q = { slot: "help", ask }), (memory.quietTurns = 0), (memory.lastAsk = "help"));
   }
   if (lead.length === 0) lead.push(pick(memory, ACKS) || (q.ask ? "" : "كمّلي، عم بسمعك."));
   return { kind: "talk", lead: lead.filter(Boolean).join(" "), options: [], ask: q.ask, note: "" };
@@ -344,9 +460,10 @@ const CONSTRAINT_ACK = {
 /* ---------- pieces of the local reply ---------- */
 
 /** «مش قادرة أتنفس», «كل اشي فوق راسي», «منهارة». */
-const OVERWHELMED = /(?:^| )(?:و)?(?:(?:مش|ما) (?:قادره|بقدر) (?:اتنفس|اتحمل|اكمل)|فوق راسي|منهاره|انهرت|راسي رح ينفجر|نفسي مقطوع|مش ملحقه)(?= |$)/;
+const OVERWHELMED =
+  /(?:^| )(?:و)?(?:(?:مش|ما) (?:قادره|بقدر) (?:اتنفس|اتحمل|اكمل)|فوق راسي|منهاره|انهرت|راسي رح ينفجر|نفسي مقطوع|مش ملحقه)(?= |$)/;
 
-const WHO_TO_TALK =/(?:^| )(?:مع مين|لمين) (?:احكي|بدي احكي)(?= |$)|(?:^| )ما في حدا احكي معه(?= |$)/;
+const WHO_TO_TALK = /(?:^| )(?:مع مين|لمين) (?:احكي|بدي احكي)(?= |$)|(?:^| )ما في حدا احكي معه(?= |$)/;
 
 const PROGRESS_ACK = {
   lawyer: "منيح إنك قدرتِ تحكي مع المحامية.",
@@ -355,7 +472,12 @@ const PROGRESS_ACK = {
   "support-org": "منيح إنك تواصلتي مع جهة دعم.",
 };
 
-const LISTEN_INVITES = ["أنا سامعتك، كمّلي إذا بدك.", "خدي وقتك، عم بسمعك.", "احكي اللي بدك ياه، بدون ترتيب.", "كمّلي، أنا معك بالحكي."];
+const LISTEN_INVITES = [
+  "أنا سامعتك، كمّلي إذا بدك.",
+  "خدي وقتك، عم بسمعك.",
+  "احكي اللي بدك ياه، بدون ترتيب.",
+  "كمّلي، أنا معك بالحكي.",
+];
 
 function pick(memory, list) {
   const fresh = list.find((o) => o && !memory.usedOpeners.has(o));
@@ -404,8 +526,14 @@ function empathyFor(events, memory) {
 /** The questions worth asking per topic, in order. Each is asked at most once per session. */
 const SLOTS = {
   custody: [
-    ["repeat", (s) => (s.events.some((e) => e.type === "threat-kids") ? "حكى هيك قبل، ولا هاي أول مرة؟" : "")],
-    ["what", (s) => (s.events.some((e) => e.topic === "custody") ? "" : "شو اللي صاير بموضوع الولاد بالزبط؟")],
+    [
+      "repeat",
+      (s) => (s.events.some((e) => e.type === "threat-kids") ? "حكى هيك قبل، ولا هاي أول مرة؟" : ""),
+    ],
+    [
+      "what",
+      (s) => (s.events.some((e) => e.topic === "custody") ? "" : "شو اللي صاير بموضوع الولاد بالزبط؟"),
+    ],
     ["goal", () => "شو أكتر إشي بيقلقك هلأ بموضوع الولاد؟"],
   ],
   violence: [
@@ -439,7 +567,13 @@ const SLOTS = {
 const GENERIC_SLOTS = [
   ["what", (s) => (s.events.length || s.people.length ? "" : "شو اللي صاير معك؟")],
   // only right after she told the event, never three turns later
-  ["after", (s) => (["yesterday", "today"].includes(s.events.at(-1)?.when) && s.events.at(-1).turn === s.turn ? "وشو صار بعدها؟" : "")],
+  [
+    "after",
+    (s) =>
+      ["yesterday", "today"].includes(s.events.at(-1)?.when) && s.events.at(-1).turn === s.turn
+        ? "وشو صار بعدها؟"
+        : "",
+  ],
   ["since", (s) => (s.events.length ? "من إيمتى صاير هاد؟" : "")],
   ["help", () => "بدك نفكر سوا بخطوة صغيرة، ولا بدك تحكي أكتر؟"],
 ];
@@ -452,18 +586,25 @@ function nextQuestion(memory, topic, fresh, progress, t) {
     memory.lastAsk = slot;
     return { slot, ask };
   };
-  if (fresh.ambiguous) return choose("clarify", `قصدك ${fresh.ambiguous.options[0]} ولا ${fresh.ambiguous.options[1]}؟`);
+  if (fresh.ambiguous)
+    return choose("clarify", `قصدك ${fresh.ambiguous.options[0]} ولا ${fresh.ambiguous.options[1]}؟`);
   if (fresh.unknownRef) {
     const about = fresh.unknownRef.about;
     const verb = { m: "حكى", f: "حكت", pl: "حكوا" }[s.people.find((p) => p.label === about)?.g] || "";
     const pronoun = { m: "هو", f: "هي", pl: "هم" }[fresh.unknownRef.g];
-    return choose("clarify", about && verb ? `مع مين ${verb} ${about}؟` : pronoun ? `مين قصدك بـ«${pronoun}»؟` : "مين قصدك؟");
+    return choose(
+      "clarify",
+      about && verb ? `مع مين ${verb} ${about}؟` : pronoun ? `مين قصدك بـ«${pronoun}»؟` : "مين قصدك؟",
+    );
   }
-  if (progress === "lawyer") return choose("progress", "إذا بتحبي، احكيلي شو وضّحتلك، وبنشوف سوا شو الخطوة اللي بعدها.");
+  if (progress === "lawyer")
+    return choose("progress", "إذا بتحبي، احكيلي شو وضّحتلك، وبنشوف سوا شو الخطوة اللي بعدها.");
   if (progress) return choose("progress", "كيف حسّيتي بعدها؟");
   if (WHO_TO_TALK.test(t)) return choose("help", "بتحبي تبلّشي تحكيلي شو اللي شاغل بالك؟");
-  if (LOST.test(t) && !s.asked.has("help")) return choose("help", "بتحبي تحكيلي شو اللي صاير، ولا نفكر سوا بخطوة صغيرة؟");
-  if (memory.feeling === "خوف" && !fresh.events.length && !s.asked.has("fear")) return choose("fear", "خايفة من شو بالزبط؟");
+  if (LOST.test(t) && !s.asked.has("help"))
+    return choose("help", "بتحبي تحكيلي شو اللي صاير، ولا نفكر سوا بخطوة صغيرة؟");
+  if (memory.feeling === "خوف" && !fresh.events.length && !s.asked.has("fear"))
+    return choose("fear", "خايفة من شو بالزبط؟");
   for (const [slot, make] of [...(SLOTS[topic] || []), ...GENERIC_SLOTS]) {
     if (s.asked.has(slot) || s.answered.has(slot)) continue;
     const ask = make(s);
@@ -479,7 +620,12 @@ const TOPIC_OPTIONS = {
   custody: [
     { id: "no-sign", text: "ما توقّعي على أي ورقة أو تنازل عن الولاد قبل ما تفهمي وضعك من محامية." },
     { id: "kids-docs", text: "إذا بتقدري بأمان، خلي أوراق الولاد (شهادات الميلاد والهويات) بمكان بتوصليله." },
-    { id: "write", text: "إذا آمن إلك، اكتبي متى صار التهديد وشو انقال بالزبط، بمكان ما حدا بيوصله.", not: ["monitored"], when: "threat-kids" },
+    {
+      id: "write",
+      text: "إذا آمن إلك، اكتبي متى صار التهديد وشو انقال بالزبط، بمكان ما حدا بيوصله.",
+      not: ["monitored"],
+      when: "threat-kids",
+    },
   ],
   nafaqa: [
     { id: "write-money", text: "اكتبي من إيمتى وقف الصرف وقديش كان بيعطي، إذا آمن إلك.", not: ["monitored"] },
@@ -487,7 +633,11 @@ const TOPIC_OPTIONS = {
   ],
   divorce: [
     { id: "no-sign", text: "ما توقّعي على أي ورقة أو تنازل قبل ما تفهمي حقوقك." },
-    { id: "safe-night", text: "إذا انطردتي من البيت، فكّري وين بتقدري تكوني الليلة بأمان.", when: "kicked-out" },
+    {
+      id: "safe-night",
+      text: "إذا انطردتي من البيت، فكّري وين بتقدري تكوني الليلة بأمان.",
+      when: "kicked-out",
+    },
   ],
   violence: [
     { id: "safe-place", text: "فكّري من هلأ بمكان أو شخص بتقدري تروحيله إذا الوضع زاد." },
@@ -501,7 +651,11 @@ const TOPIC_OPTIONS = {
   ],
   polygamy: [
     { id: "no-sign", text: "ما توقّعي على أي ورقة أو تنازل قبل ما تفهمي حقوقك." },
-    { id: "rights-first", text: "قبل أي قرار، افهمي من محامية حقوقك: المهر، النفقة، والسكن.", needs: ["lawyer"] },
+    {
+      id: "rights-first",
+      text: "قبل أي قرار، افهمي من محامية حقوقك: المهر، النفقة، والسكن.",
+      needs: ["lawyer"],
+    },
   ],
 };
 const OTHER_OPTIONS = [
@@ -544,8 +698,10 @@ function stepsReply(memory, available, lead, topic, t) {
     ? "إنك بدك تساعديها إشي مهم. في كم إشي ممكن يفرق معها:"
     : nothingNew
       ? "بصراحة، ما عندي أفكار صغيرة جديدة غير اللي حكيناها. إذا بتحكيلي شو أصعب إشي فيهم، بفكر معك بشكل أدق:"
-      : pick(memory, ["خلينا نفكر بأصغر خطوة آمنة، بدون ما تخسري إشي مهم:", "في كم إشي صغير ممكن يساعد، اختاري اللي بيناسبك:"]) ||
-        "هاي كم فكرة، اختاري اللي بيناسبك:";
+      : pick(memory, [
+          "خلينا نفكر بأصغر خطوة آمنة، بدون ما تخسري إشي مهم:",
+          "في كم إشي صغير ممكن يساعد، اختاري اللي بيناسبك:",
+        ]) || "هاي كم فكرة، اختاري اللي بيناسبك:";
   let ask = "";
   if (forOther) ask = "شو بتحسي إنها محتاجة أكتر هلأ؟";
   else if (LEGAL_TOPICS.includes(topic) && !s.asked.has(`offer-law:${topic}`)) {
@@ -559,7 +715,13 @@ function stepsReply(memory, available, lead, topic, t) {
     s.pending = { slot: "goal" };
     memory.lastAsk = "goal";
   }
-  return { kind: "talk", lead: [...lead, intro].join(" "), options: options.map((o) => o.text), ask, note: "" };
+  return {
+    kind: "talk",
+    lead: [...lead, intro].join(" "),
+    options: options.map((o) => o.text),
+    ask,
+    note: "",
+  };
 }
 
 /**
@@ -590,7 +752,13 @@ export function recallReply(memory) {
 export function newsReply(memory) {
   const topic = TOPIC_LABELS[currentTopic(memory.situation)];
   memory.lastAsk = "news";
-  return { kind: "talk", lead: topic ? `أكيد، بموضوع ${topic}؟` : "أكيد.", options: [], ask: "احكيلي شو اللي صار.", note: "" };
+  return {
+    kind: "talk",
+    lead: topic ? `أكيد، بموضوع ${topic}؟` : "أكيد.",
+    options: [],
+    ask: "احكيلي شو اللي صار.",
+    note: "",
+  };
 }
 
 /**

@@ -262,8 +262,10 @@
 
 .qx {
   position: absolute;
+  /* in the header row, like the chat's exit button: a floating button at the bottom covered the cards
+     scrolling under it */
   left: 14px;
-  bottom: calc(100px + env(safe-area-inset-bottom, 0px));
+  top: calc(14px + env(safe-area-inset-top, 0px));
   z-index: 15;
   display: inline-flex;
   align-items: center;
@@ -285,6 +287,18 @@
 
 .app[data-cur="chat"] .qx {
   display: none;
+}
+
+/* keeps a centred header title clear of the quick-exit button in the corner */
+.qx-room {
+  flex-shrink: 0;
+  width: 104px;
+}
+
+/* the intro's "skip" sits in the header corner, and the intro has no tab bar: the button goes below */
+.app[data-cur="intro"] .qx {
+  top: auto;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
 }
 
 .iconbtn.xbtn {

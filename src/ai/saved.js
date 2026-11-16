@@ -55,7 +55,11 @@ export function createSavedTopics({ store, state, now = () => Date.now() }) {
 
   function write(list) {
     // the title is derived from the topic on read: never stored
-    if (list.length) store.set(SAVED_KEY, list.map(({ id, topic, facts, goal, updatedAt }) => ({ id, topic, facts, goal, updatedAt })));
+    if (list.length)
+      store.set(
+        SAVED_KEY,
+        list.map(({ id, topic, facts, goal, updatedAt }) => ({ id, topic, facts, goal, updatedAt })),
+      );
     else store.remove(SAVED_KEY);
   }
 
@@ -76,7 +80,14 @@ export function createSavedTopics({ store, state, now = () => Date.now() }) {
       const list = read();
       const old = list.find((x) => x.topic === topic);
       const facts = [...new Set([...(old?.facts || []), ...notes])].slice(-MAX_FACTS);
-      const thread = { id: topic, topic, title: TOPIC_LABELS[topic], facts, goal: s.goal || old?.goal || "", updatedAt: now() };
+      const thread = {
+        id: topic,
+        topic,
+        title: TOPIC_LABELS[topic],
+        facts,
+        goal: s.goal || old?.goal || "",
+        updatedAt: now(),
+      };
       write([thread, ...list.filter((x) => x.topic !== topic)]);
     },
 

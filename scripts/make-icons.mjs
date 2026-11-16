@@ -8,7 +8,8 @@ import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
 
-const logo = "data:image/png;base64," + readFileSync(new URL("./icon-src/logo.png", import.meta.url)).toString("base64");
+const logo =
+  "data:image/png;base64," + readFileSync(new URL("./icon-src/logo.png", import.meta.url)).toString("base64");
 const out = (name) => fileURLToPath(new URL(`../assets/icons/${name}`, import.meta.url));
 
 // rounded: corner radius as a share of the size; pad: empty margin around the logo as a share of the size
@@ -35,7 +36,9 @@ const JOBS = [
 const browser = await chromium.launch();
 for (const [source, file, size] of JOBS) {
   const page = await browser.newPage({ viewport: { width: size, height: size } });
-  await page.setContent(`<body style="margin:0;background:transparent">${source.replace("<svg ", `<svg width="${size}" height="${size}" `)}</body>`);
+  await page.setContent(
+    `<body style="margin:0;background:transparent">${source.replace("<svg ", `<svg width="${size}" height="${size}" `)}</body>`,
+  );
   await page.waitForFunction(() => document.querySelector("image") !== null);
   await page.screenshot({ path: out(file), omitBackground: true });
   await page.close();

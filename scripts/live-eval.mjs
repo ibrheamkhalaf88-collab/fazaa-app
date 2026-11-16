@@ -35,7 +35,8 @@ export const PRICES = {
 const DEFAULT_PRICE = { in: 0.75, out: 3.75 }; // unknown model: assume the dearer Flash price
 
 /** Words from other dialects (the prompt asks for Palestinian Arabic). */
-const OTHER_DIALECT = /(?:^|[^\p{L}])(?:هلق|شلون|ايش|إيش|دلوقتي|دلوقت|كده|كدا|بتاعي|بتاعك|وايد|شنو|اكو|ماكو|ازيك|إزيك)(?=[^\p{L}]|$)/u;
+const OTHER_DIALECT =
+  /(?:^|[^\p{L}])(?:هلق|شلون|ايش|إيش|دلوقتي|دلوقت|كده|كدا|بتاعي|بتاعك|وايد|شنو|اكو|ماكو|ازيك|إزيك)(?=[^\p{L}]|$)/u;
 
 /** Structural expectations only: the model words things differently from the offline replies. */
 const STRUCTURAL = (exp = {}) => {
@@ -48,8 +49,19 @@ const STRUCTURAL = (exp = {}) => {
 export function scenarioList(only = []) {
   const list = [
     ...CONVERSATIONS.map((c) => ({ id: c.id, turns: c.turns })),
-    ...LEGAL.map((l) => ({ id: l.id, turns: (l.turns || [l.say]).map((say) => ({ say, country: l.country, expect: l.turns ? {} : l.expect })) })),
-    ...SAFETY.map((s) => ({ id: s.id, numbers: s.numbers, turns: s.turns.map((say, i) => ({ say, expect: s.expect[i] || {} })) })),
+    ...LEGAL.map((l) => ({
+      id: l.id,
+      turns: (l.turns || [l.say]).map((say) => ({
+        say,
+        country: l.country,
+        expect: l.turns ? {} : l.expect,
+      })),
+    })),
+    ...SAFETY.map((s) => ({
+      id: s.id,
+      numbers: s.numbers,
+      turns: s.turns.map((say, i) => ({ say, expect: s.expect[i] || {} })),
+    })),
   ];
   return only.length ? list.filter((c) => only.some((p) => c.id.startsWith(p))) : list;
 }
@@ -60,7 +72,10 @@ const quantile = (xs, q) => {
   const s = [...xs].sort((a, b) => a - b);
   return s[Math.min(s.length - 1, Math.floor(q * s.length))];
 };
-const sentences = (text) => String(text || "").split(/(?<=[.؟!])\s+/).filter((x) => x.trim().length > 2).length;
+const sentences = (text) =>
+  String(text || "")
+    .split(/(?<=[.؟!])\s+/)
+    .filter((x) => x.trim().length > 2).length;
 
 /**
  * @param {{
@@ -68,7 +83,16 @@ const sentences = (text) => String(text || "").split(/(?<=[.؟!])\s+/).filter((x
  *   modes?: string[], capUsd?: number, prices?: {in:number,out:number}, delayMs?: number, log?: (s: string) => void,
  * }} o
  */
-export async function runLiveEval({ fetchImpl, env, scenarios, modes = ["message", "context"], capUsd = 5, prices = DEFAULT_PRICE, delayMs = 0, log = () => {} }) {
+export async function runLiveEval({
+  fetchImpl,
+  env,
+  scenarios,
+  modes = ["message", "context"],
+  capUsd = 5,
+  prices = DEFAULT_PRICE,
+  delayMs = 0,
+  log = () => {},
+}) {
   setBreaker(createBreaker()); // a fresh circuit for the run
   const cost = { inTok: 0, outTok: 0, usd: 0, calls: 0, blockedByCap: 0 };
   const providerErrors = {};
@@ -119,7 +143,11 @@ export async function runLiveEval({ fetchImpl, env, scenarios, modes = ["message
       const a = createAnswerer({
         emergencyNumbers: () => sc.numbers || { police: "100", ambulance: "101" },
         available: () => ({ lawyer: true, contacts: true }),
-        remote: createRemoteEngine({ endpoint: "live-eval://answer", fetchImpl: serverBridge, timeoutMs: 60000 }),
+        remote: createRemoteEngine({
+          endpoint: "live-eval://answer",
+          fetchImpl: serverBridge,
+          timeoutMs: 60000,
+        }),
         isRemoteEnabled: () => true,
         shareContext: () => mode === "context",
         onRemoteError: (e) => clientErrors.push(e.message),
@@ -131,7 +159,11 @@ export async function runLiveEval({ fetchImpl, env, scenarios, modes = ["message
         const t0 = performance.now();
         const r = await a.answer(turn.say, { country: turn.country || "ps-wb" });
         const ms = performance.now() - t0;
-        const text = r ? [r.lead, r.ask, r.safetyAsk, ...(r.options || []), ...(r.steps || []), r.note].filter(Boolean).join(" ") : "";
+        const text = r
+          ? [r.lead, r.ask, r.safetyAsk, ...(r.options || []), ...(r.steps || []), r.note]
+              .filter(Boolean)
+              .join(" ")
+          : "";
         const problems = checkAnswer(r, STRUCTURAL(turn.expect));
         const reasked = Boolean(r?.ask && asks.includes(r.ask));
         if (r?.ask) asks.push(r.ask);
@@ -150,9 +182,14 @@ export async function runLiveEval({ fetchImpl, env, scenarios, modes = ["message
         };
         rows.push(row);
         lines.push(`SHE: ${turn.say}`);
-        lines.push(r ? `   [${r.source}${r.sos ? " sos" : ""}${r.cites?.length ? ` cites:${r.cites}` : ""}] ${r.lead}${r.ask ? `\n   ? ${r.ask}` : ""}` : "   [no reply]");
+        lines.push(
+          r
+            ? `   [${r.source}${r.sos ? " sos" : ""}${r.cites?.length ? ` cites:${r.cites}` : ""}] ${r.lead}${r.ask ? `\n   ? ${r.ask}` : ""}`
+            : "   [no reply]",
+        );
         for (const o of r?.options || r?.steps || []) lines.push(`   • ${o}`);
-        if (row.serverError || row.clientError) lines.push(`   (fell back: ${row.serverError || row.clientError})`);
+        if (row.serverError || row.clientError)
+          lines.push(`   (fell back: ${row.serverError || row.clientError})`);
         if (problems.length) lines.push(`   !! ${problems.join("; ")}`);
         log(`${mode} ${sc.id.slice(0, 4)} ${row.source} ${row.ms}ms $${cost.usd.toFixed(4)}`);
       }
@@ -168,20 +205,39 @@ export async function runLiveEval({ fetchImpl, env, scenarios, modes = ["message
     aiRate: pct(ai.length, attempted.length),
     fellBack: attempted.length - ai.length,
     providerErrors,
-    validationRejections: rows.filter((r) => /invalid-output|legal-leak|forbidden|ungrounded/.test(r.serverError + r.clientError)).length,
+    validationRejections: rows.filter((r) =>
+      /invalid-output|legal-leak|forbidden|ungrounded/.test(r.serverError + r.clientError),
+    ).length,
     structuralFailures: rows.filter((r) => r.problems.length).length,
     otherDialect: ai.filter((r) => r.dialect).length,
     tooLong: ai.filter((r) => r.long).length,
     questionRepeated: rows.filter((r) => r.reasked).length,
-    latencyMs: { p50: quantile(ai.map((r) => r.ms), 0.5), p95: quantile(ai.map((r) => r.ms), 0.95) },
-    cost: { calls: cost.calls, inputTokens: cost.inTok, outputTokens: cost.outTok, usd: Number(cost.usd.toFixed(4)), blockedByCap: cost.blockedByCap },
+    latencyMs: {
+      p50: quantile(
+        ai.map((r) => r.ms),
+        0.5,
+      ),
+      p95: quantile(
+        ai.map((r) => r.ms),
+        0.95,
+      ),
+    },
+    cost: {
+      calls: cost.calls,
+      inputTokens: cost.inTok,
+      outputTokens: cost.outTok,
+      usd: Number(cost.usd.toFixed(4)),
+      blockedByCap: cost.blockedByCap,
+    },
   };
   return { summary, rows, transcript: lines.join("\n") };
 }
 
 /** Which models this key can use (a free metadata call: no tokens). */
 export async function listModels(fetchImpl, key) {
-  const res = await fetchImpl("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": key } });
+  const res = await fetchImpl("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", {
+    headers: { "x-goog-api-key": key },
+  });
   if (!res.ok) throw new Error(`models-${res.status}`);
   return ((await res.json()).models || []).map((m) => String(m.name).replace(/^models\//, ""));
 }
@@ -191,14 +247,21 @@ export function fakeGemini({ failEvery = 0 } = {}) {
   let n = 0;
   return async (_url, init) => {
     n++;
-    if (failEvery && n % failEvery === 0) return new Response(JSON.stringify({ error: { status: "UNAVAILABLE" } }), { status: 503 });
+    if (failEvery && n % failEvery === 0)
+      return new Response(JSON.stringify({ error: { status: "UNAVAILABLE" } }), { status: 503 });
     const body = JSON.parse(init.body);
     const tool = body.tools?.[0]?.functionDeclarations?.[0]?.name || "give_support";
     const user = body.contents?.[0]?.parts?.[0]?.text || "";
     const ids = [...user.matchAll(/<article id="([^"]+)"/g)].map((m) => m[1]);
     const args =
       tool === "give_answer"
-        ? { covered: ids.length > 0, lead: "فهمت سؤالك.", note: "النص بيحكي عن هالموضوع بشكل عام.", steps: ["اسألي محامية عن وضعك بالزبط"], cites: ids.slice(0, 1) }
+        ? {
+            covered: ids.length > 0,
+            lead: "فهمت سؤالك.",
+            note: "النص بيحكي عن هالموضوع بشكل عام.",
+            steps: ["اسألي محامية عن وضعك بالزبط"],
+            cites: ids.slice(0, 1),
+          }
         : { lead: "سامعتك، واللي بتحكيه مهم.", ask: "بتحبي تحكيلي أكتر؟" };
     return new Response(
       JSON.stringify({
@@ -215,7 +278,9 @@ export function fakeGemini({ failEvery = 0 } = {}) {
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const arg = (name, fallback = "") => {
     const i = process.argv.indexOf(`--${name}`);
-    return i > 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith("--") ? process.argv[i + 1] : fallback;
+    return i > 0 && process.argv[i + 1] && !process.argv[i + 1].startsWith("--")
+      ? process.argv[i + 1]
+      : fallback;
   };
   const live = process.argv.includes("--live");
   const model = arg("model", process.env.MODEL || "gemini-3.5-flash-lite");
@@ -228,7 +293,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const prices = PRICES[model] || DEFAULT_PRICE;
 
   let fetchImpl;
-  const env = { PROVIDER: "gemini", MODEL: model, ...(fallbackModel ? { FALLBACK_MODEL: fallbackModel } : {}) };
+  const env = {
+    PROVIDER: "gemini",
+    MODEL: model,
+    ...(fallbackModel ? { FALLBACK_MODEL: fallbackModel } : {}),
+  };
   if (live) {
     const key = process.env.GEMINI_API_KEY;
     if (!key) {
@@ -241,10 +310,15 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     const missing = [model, fallbackModel || "gemini-3.5-flash"].filter((m) => !models.includes(m));
     console.log(`models available to this key: ${models.length}`);
     if (missing.includes(model)) {
-      console.error(`model ${model} is not available to this key. Pick one of: ${models.filter((m) => /flash/.test(m)).join(", ")}`);
+      console.error(
+        `model ${model} is not available to this key. Pick one of: ${models.filter((m) => /flash/.test(m)).join(", ")}`,
+      );
       process.exit(3);
     }
-    if (missing.length) console.log(`warning: backup model ${missing.join(", ")} is not available: busy retries will fail (set --fallback-model)`);
+    if (missing.length)
+      console.log(
+        `warning: backup model ${missing.join(", ")} is not available: busy retries will fail (set --fallback-model)`,
+      );
   } else {
     env.GEMINI_API_KEY = "dry-run-not-a-key";
     env.RETRY_PAUSE_MS = "0";
@@ -253,8 +327,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
 
   const turns = scenarios.reduce((n, s) => n + s.turns.length, 0) * modes.length;
   const worst = ((turns * 3 * (3500 * prices.in + 2048 * prices.out)) / 1e6).toFixed(2);
-  console.log(`${live ? "LIVE" : "DRY RUN (fake provider, no network, no cost)"}: ${scenarios.length} scenarios x ${modes.join("+")} = ${turns} turns, model ${model}`);
-  console.log(`price $${prices.in}/$${prices.out} per 1M in/out; worst case (3 tries, full output every turn) ≈ $${worst}; cap $${capUsd}`);
+  console.log(
+    `${live ? "LIVE" : "DRY RUN (fake provider, no network, no cost)"}: ${scenarios.length} scenarios x ${modes.join("+")} = ${turns} turns, model ${model}`,
+  );
+  console.log(
+    `price $${prices.in}/$${prices.out} per 1M in/out; worst case (3 tries, full output every turn) ≈ $${worst}; cap $${capUsd}`,
+  );
 
   const { summary, transcript } = await runLiveEval({
     fetchImpl,
@@ -273,7 +351,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   // never the key: it is not in env dumps, transcripts or the summary
   const header = `# ${live ? "LIVE" : "DRY RUN"} ${tag} ${stamp} (synthetic scenarios; scripts/live-eval.mjs)\n`;
   writeFileSync(`${out}-${tag}-${stamp}.txt`, `${header}${transcript}\n`, "utf8");
-  writeFileSync(`${out}-${tag}-${stamp}.json`, JSON.stringify({ model: tag, date: stamp, modes, summary }, null, 2), "utf8");
+  writeFileSync(
+    `${out}-${tag}-${stamp}.json`,
+    JSON.stringify({ model: tag, date: stamp, modes, summary }, null, 2),
+    "utf8",
+  );
   console.log(JSON.stringify(summary, null, 2));
   console.log(`written: ${out}-${tag}-${stamp}.txt / .json`);
 }

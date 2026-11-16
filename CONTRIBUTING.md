@@ -19,7 +19,7 @@ send the header `x-dev-staff: salma@local.test` to act as a lawyer. It is **loca
 ## Before every commit
 
 ```bash
-npm run check        # prettier + eslint + all unit tests (about 3 seconds)
+npm run check        # prettier + eslint + all unit tests (about 15 seconds)
 npm run test:e2e     # real browser, when you touched UI or the API (needs Chromium from Playwright)
 ```
 
@@ -35,7 +35,7 @@ npm run test:e2e     # real browser, when you touched UI or the API (needs Chrom
 | the chat and lawyer chat        | `src/features/chat/` (`lawyer-live.js` real, `lawyer-session.js` demo)    |
 | how an answer is found          | `src/ai/` (rules first, then optional AI, citations are validated)        |
 | law text and rule-based answers | `src/data/law/`, `src/data/answers.js`, `src/data/intents.js`             |
-| the server API                  | `server/api/worker.js` (routes), `server/api/store/` (data)               |
+| the server API                  | `server/api/routes/` (public, women, staff), `server/api/store/` (data)   |
 | the staff dashboards            | `admin/` (one file per section; `charts.js` has the shared widgets)       |
 | settings an operator edits      | `src/config.js`                                                           |
 

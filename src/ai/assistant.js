@@ -38,7 +38,13 @@ export function createAssistant({
   const remember = (role, text) => {
     const clean = String(text || "").trim();
     if (!clean) return;
-    turns.push({ role, text: role === "assistant" && clean.length > CHAT.assistantChars ? `${clean.slice(0, CHAT.assistantChars - 1)}…` : clean });
+    turns.push({
+      role,
+      text:
+        role === "assistant" && clean.length > CHAT.assistantChars
+          ? `${clean.slice(0, CHAT.assistantChars - 1)}…`
+          : clean,
+    });
     if (turns.length > CHAT.turns * 2) turns = turns.slice(-CHAT.turns * 2);
   };
 
@@ -48,7 +54,16 @@ export function createAssistant({
       reason === "off"
         ? "المساعدة بتشتغل بالذكاء الاصطناعي عبر الإنترنت، وهي مطفية هلأ. بتقدري تشغّليها من الإعدادات، أو تفتحي «مين بيساعدني»."
         : "ما قدرت أوصل لخدمة الذكاء هلأ. جرّبي تبعتي رسالتك كمان شوي.";
-    return { kind: "talk", lead, options: [], ask: "", note: "", general: true, sos: Boolean(sos), source: "none" };
+    return {
+      kind: "talk",
+      lead,
+      options: [],
+      ask: "",
+      note: "",
+      general: true,
+      sos: Boolean(sos),
+      source: "none",
+    };
   }
 
   return {
@@ -74,7 +89,11 @@ export function createAssistant({
       if (danger?.level === "immediate" || danger?.level === "selfharm") {
         remember("user", question);
         remember("assistant", [danger.answer.lead, danger.answer.ask].filter(Boolean).join(" "));
-        return { ...danger.answer, sosPlan: danger.level === "selfharm" ? "selfharm" : "violence", source: "rules" };
+        return {
+          ...danger.answer,
+          sosPlan: danger.level === "selfharm" ? "selfharm" : "violence",
+          source: "rules",
+        };
       }
 
       if (!remote || !isRemoteEnabled()) return unavailable("off", Boolean(danger));

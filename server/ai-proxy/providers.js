@@ -32,7 +32,8 @@ export function extractJson(text) {
  * replies, oldest first, the last one hers); older single-message calls pass only `user`.
  * @returns {{role: "user"|"assistant", text: string}[]}
  */
-export const turnsOf = ({ turns, user }) => (Array.isArray(turns) && turns.length ? turns : [{ role: "user", text: user }]);
+export const turnsOf = ({ turns, user }) =>
+  Array.isArray(turns) && turns.length ? turns : [{ role: "user", text: user }];
 
 /** @type {Provider} */
 const anthropic = {
@@ -74,7 +75,10 @@ const gemini = {
       body: {
         systemInstruction: { parts: [{ text: system }] },
         // Gemini calls the assistant role "model"
-        contents: turnsOf({ turns, user }).map((t) => ({ role: t.role === "assistant" ? "model" : "user", parts: [{ text: t.text }] })),
+        contents: turnsOf({ turns, user }).map((t) => ({
+          role: t.role === "assistant" ? "model" : "user",
+          parts: [{ text: t.text }],
+        })),
         tools: [
           {
             functionDeclarations: [
@@ -113,7 +117,10 @@ const nvidia = {
         model: env.MODEL || nvidia.defaultModel,
         max_tokens: MAX_TOKENS,
         temperature: 0.2,
-        messages: [{ role: "system", content: system }, ...turnsOf({ turns, user }).map((t) => ({ role: t.role, content: t.text }))],
+        messages: [
+          { role: "system", content: system },
+          ...turnsOf({ turns, user }).map((t) => ({ role: t.role, content: t.text })),
+        ],
         tools: [
           {
             type: "function",
@@ -158,7 +165,10 @@ function openAiCompatible({
           model: env.MODEL || defaultModel,
           max_tokens: MAX_TOKENS,
           temperature: 0.2,
-          messages: [{ role: "system", content: system }, ...turnsOf({ turns, user }).map((t) => ({ role: t.role, content: t.text }))],
+          messages: [
+            { role: "system", content: system },
+            ...turnsOf({ turns, user }).map((t) => ({ role: t.role, content: t.text })),
+          ],
           tools: [
             {
               type: "function",
@@ -215,15 +225,22 @@ export function configuredProviders(env) {
     .split(",")
     .map((id) => id.trim())
     .filter(Boolean);
-  return [...new Set([primary, ...fallback])]
-    .slice(0, 3)
-    .flatMap((id) => {
-      const provider = PROVIDERS[id];
-      if (!provider || !env[provider.keyName]) return [];
-      if (id === "gemini" && env.GEMINI_PAID_PROJECT !== "true") return [];
-      const model = env[`MODEL_${id.toUpperCase()}`] || (id === primary ? env.MODEL : "") || provider.defaultModel;
-      return [{ id, label: provider.label, model, privacyUrl: provider.privacyUrl, privacySummary: provider.privacySummary }];
-    });
+  return [...new Set([primary, ...fallback])].slice(0, 3).flatMap((id) => {
+    const provider = PROVIDERS[id];
+    if (!provider || !env[provider.keyName]) return [];
+    if (id === "gemini" && env.GEMINI_PAID_PROJECT !== "true") return [];
+    const model =
+      env[`MODEL_${id.toUpperCase()}`] || (id === primary ? env.MODEL : "") || provider.defaultModel;
+    return [
+      {
+        id,
+        label: provider.label,
+        model,
+        privacyUrl: provider.privacyUrl,
+        privacySummary: provider.privacySummary,
+      },
+    ];
+  });
 }
 
 /** Stable consent binding: changing provider, model, policy, or order requires fresh consent. */

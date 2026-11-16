@@ -36,7 +36,8 @@ for (const c of CONVERSATIONS) {
     for (const [i, turn] of c.turns.entries()) {
       const r = await a.answer(turn.say, { country: turn.country || "ps-wb" });
       answers.push(r);
-      for (const p of checkAnswer(r, turn.expect, a.memory)) problems.push(`turn ${i + 1} «${turn.say}»: ${p}`);
+      for (const p of checkAnswer(r, turn.expect, a.memory))
+        problems.push(`turn ${i + 1} «${turn.say}»: ${p}`);
     }
     if (c.noRepeat) {
       const all = answers.flatMap(sentences);
@@ -89,7 +90,10 @@ test("L21 every text the app may show for a topic exists, applies in that region
 
 for (const s of SAFETY) {
   test(s.id, async () => {
-    const a = createAnswerer({ emergencyNumbers: () => s.numbers || NUMBERS, available: () => ({ lawyer: true, contacts: true }) });
+    const a = createAnswerer({
+      emergencyNumbers: () => s.numbers || NUMBERS,
+      available: () => ({ lawyer: true, contacts: true }),
+    });
     const problems = [];
     for (const [i, say] of s.turns.entries()) {
       const r = await a.answer(say, { country: "ps-wb" });
@@ -101,7 +105,10 @@ for (const s of SAFETY) {
 
 test("S13 danger is answered offline even when the AI is on: the provider is never called", async () => {
   let called = 0;
-  const a = make({ remote: { answer: async () => (called++, { kind: "talk", lead: "x" }) }, isRemoteEnabled: () => true });
+  const a = make({
+    remote: { answer: async () => (called++, { kind: "talk", lead: "x" }) },
+    isRemoteEnabled: () => true,
+  });
   const r = await a.answer("جوزي هلأ عم يكسر الباب", { country: "ps-wb" });
   assert.equal(r.sos, true);
   assert.equal(called, 0);
@@ -115,17 +122,25 @@ test("S14 prompt injection in the question is fenced and stripped of tags", () =
 
 test("S15 the model may not promise to never leave her, or secrecy", async () => {
   const fetchImpl = async () =>
-    new Response(JSON.stringify({ answer: { kind: "talk", lead: "ما رح اتركك أبداً، كل إشي بسرية تامة" } }), { status: 200 });
+    new Response(JSON.stringify({ answer: { kind: "talk", lead: "ما رح اتركك أبداً، كل إشي بسرية تامة" } }), {
+      status: 200,
+    });
   const errors = [];
-  const a = make({ remote: createRemoteEngine({ endpoint: "x", fetchImpl }), isRemoteEnabled: () => true, onRemoteError: (e) => errors.push(e.message) });
+  const a = make({
+    remote: createRemoteEngine({ endpoint: "x", fetchImpl }),
+    isRemoteEnabled: () => true,
+    onRemoteError: (e) => errors.push(e.message),
+  });
   const r = await a.answer("تعبانة من جوزي", { country: "ps-wb" });
   assert.match(errors[0], /forbidden/);
   assert.equal(r.source, "rules");
 });
 
 test("S16 lines Gemini really wrote: dependence, false safety and promised outcomes are blocked; pet names removed", () => {
-  for (const line of REAL_MODEL_LINES.blocked) assert.throws(() => validateTalk({ lead: line }), /forbidden/, line);
-  for (const [line, after] of REAL_MODEL_LINES.cleaned) assert.match(validateTalk({ lead: line }).lead, after, line);
+  for (const line of REAL_MODEL_LINES.blocked)
+    assert.throws(() => validateTalk({ lead: line }), /forbidden/, line);
+  for (const [line, after] of REAL_MODEL_LINES.cleaned)
+    assert.match(validateTalk({ lead: line }).lead, after, line);
   for (const line of REAL_MODEL_LINES.allowed) assert.doesNotThrow(() => validateTalk({ lead: line }), line);
 });
 
@@ -229,7 +244,11 @@ test("P10 AI context only with consent; the summary is her report and carries no
     return new Response(JSON.stringify({ answer: { kind: "talk", lead: "سامعتك" } }), { status: 200 });
   };
   let share = false;
-  const a = make({ remote: createRemoteEngine({ endpoint: "x", fetchImpl }), isRemoteEnabled: () => true, shareContext: () => share });
+  const a = make({
+    remote: createRemoteEngine({ endpoint: "x", fetchImpl }),
+    isRemoteEnabled: () => true,
+    shareContext: () => share,
+  });
   await a.answer("جوزي هددني ياخد الولاد", { country: "ps-wb" });
   assert.equal(body.context, undefined);
   share = true;
@@ -248,7 +267,11 @@ const busy = (status) => ({ ok: false, status, json: async () => ({ error: { sta
 const okTalk = () => ({
   ok: true,
   status: 200,
-  json: async () => ({ candidates: [{ content: { parts: [{ functionCall: { name: "give_support", args: { lead: "سامعتك" } } }] } }] }),
+  json: async () => ({
+    candidates: [
+      { content: { parts: [{ functionCall: { name: "give_support", args: { lead: "سامعتك" } } }] } },
+    ],
+  }),
 });
 let clock = 0;
 beforeEach(() => {
@@ -260,10 +283,18 @@ test("R01 circuit opens after 3 transient failures: the primary model is skipped
   await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => busy(503)); // 2 primary + 1 backup failures
   await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => busy(503)); // primary reaches 3: open
   const urls = [];
-  const { status } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async (url) => (urls.push(url), okTalk()));
+  const { status } = await answerQuestion(
+    "بدي حدا يسمعني",
+    "ps-wb",
+    ENV,
+    async (url) => (urls.push(url), okTalk()),
+  );
   assert.equal(status, 200);
   assert.equal(urls.length, 1, "one call, on the backup model");
-  assert.ok(!urls[0].includes(`/models/${PROVIDER_TABLE.gemini.defaultModel}:`), "primary skipped while its circuit is open");
+  assert.ok(
+    !urls[0].includes(`/models/${PROVIDER_TABLE.gemini.defaultModel}:`),
+    "primary skipped while its circuit is open",
+  );
 });
 
 test("R02 circuit closes after the cool-down", async () => {
@@ -277,31 +308,56 @@ test("R02 circuit closes after the cool-down", async () => {
 test("R03 a bad key does not open the circuit and is not retried", async () => {
   let calls = 0;
   for (let i = 0; i < 4; i++)
-    await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => (calls++, { ok: false, status: 401, json: async () => ({}) }));
+    await answerQuestion(
+      "بدي حدا يسمعني",
+      "ps-wb",
+      ENV,
+      async () => (calls++, { ok: false, status: 401, json: async () => ({}) }),
+    );
   assert.equal(calls, 4, "one call per question, every time");
 });
 
 test("R04 provider unreachable: 502, and the app answers offline", async () => {
-  const { status, body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", { ...ENV, RETRY: "off" }, async () => {
-    throw new TypeError("network");
-  });
+  const { status, body } = await answerQuestion(
+    "بدي حدا يسمعني",
+    "ps-wb",
+    { ...ENV, RETRY: "off" },
+    async () => {
+      throw new TypeError("network");
+    },
+  );
   assert.equal(status, 502);
   assert.equal(body.error, "upstream-unreachable");
 });
 
 test("R05 malformed provider body", async () => {
-  const { body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => ({ ok: true, status: 200, json: async () => { throw new Error("x"); } }));
+  const { body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => ({
+    ok: true,
+    status: 200,
+    json: async () => {
+      throw new Error("x");
+    },
+  }));
   assert.equal(body.error, "upstream-bad-body");
 });
 
 test("R06 no tool call in the reply", async () => {
-  const { body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => ({ ok: true, status: 200, json: async () => ({ candidates: [] }) }));
+  const { body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({ candidates: [] }),
+  }));
   assert.equal(body.error, "no-tool-output");
 });
 
 test("R07 not configured: 503 and no call", async () => {
   let called = false;
-  const { status } = await answerQuestion("بدي حدا يسمعني", "ps-wb", { PROVIDER: "gemini" }, async () => ((called = true), okTalk()));
+  const { status } = await answerQuestion(
+    "بدي حدا يسمعني",
+    "ps-wb",
+    { PROVIDER: "gemini" },
+    async () => ((called = true), okTalk()),
+  );
   assert.equal(status, 503);
   assert.equal(called, false);
 });
@@ -309,20 +365,30 @@ test("R07 not configured: 503 and no call", async () => {
 test("R08 client: proxy error -> offline answer; the error reason never carries her message", async () => {
   const errors = [];
   const fetchImpl = async () => new Response("{}", { status: 502 });
-  const a = make({ remote: createRemoteEngine({ endpoint: "x", fetchImpl }), isRemoteEnabled: () => true, onRemoteError: (e) => errors.push(e.message) });
+  const a = make({
+    remote: createRemoteEngine({ endpoint: "x", fetchImpl }),
+    isRemoteEnabled: () => true,
+    onRemoteError: (e) => errors.push(e.message),
+  });
   const r = await a.answer("جوزي بيصرخ علي كل يوم", { country: "ps-wb" });
   assert.equal(r.source, "rules");
   assert.equal(errors[0], "proxy-status-502");
 });
 
 test("R09 client: AI talk that states law -> offline answer", async () => {
-  const fetchImpl = async () => new Response(JSON.stringify({ answer: { kind: "talk", lead: "حسب القانون بتربحي القضية" } }), { status: 200 });
+  const fetchImpl = async () =>
+    new Response(JSON.stringify({ answer: { kind: "talk", lead: "حسب القانون بتربحي القضية" } }), {
+      status: 200,
+    });
   const a = make({ remote: createRemoteEngine({ endpoint: "x", fetchImpl }), isRemoteEnabled: () => true });
   assert.equal((await a.answer("تعبانة من جوزي", { country: "ps-wb" })).source, "rules");
 });
 
 test("R10 Gemini down (scenario H): the fixed reply is never labelled as AI", async () => {
-  const a = make({ remote: { answer: async () => Promise.reject(new TypeError("Failed to fetch")) }, isRemoteEnabled: () => true });
+  const a = make({
+    remote: { answer: async () => Promise.reject(new TypeError("Failed to fetch")) },
+    isRemoteEnabled: () => true,
+  });
   for (const q of ["شو حقي بالحضانة؟", "بدي حدا يسمعني", "جوزي ما بيصرف علي"]) {
     const r = await a.answer(q, { country: "ps-wb" });
     assert.notEqual(r.source, "ai", q);

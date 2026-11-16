@@ -123,14 +123,17 @@ const FORCED_MARRIAGE = compile([
 // «ما بعرف ليش بيضربني» is NOT read as a denial
 // «كل ما» means "whenever", not "not": «كل ما بحكي بيضربني» is NOT a denial (2026-11-13)
 const NEGATION = /(?:^|(?<!كل) )(?:ما|مش|مو|ولا|لا|عمره ما|عمرو ما|بطل|ابدا)(?: [^ ]+)?$/;
-const PAST = /(?:^| )(?:قبل (?:سنه|سنتين|سنين|شهر|شهرين|شهور|فتره|مده|زمان)|من زمان|زمان|بالماضي|لما كنت|كان (?:بي|ي)?[^ ]+|من سنين)(?: |$)/;
-const PRESENT = /(?:^| )(?:هلا|هلق|هسا|هسه|الحين|اليوم|الليله|هالليله|لسا|عم يضربني|عم يهددني|كل يوم|كل ليله|رح يرجع)(?: |$)/;
+const PAST =
+  /(?:^| )(?:قبل (?:سنه|سنتين|سنين|شهر|شهرين|شهور|فتره|مده|زمان)|من زمان|زمان|بالماضي|لما كنت|كان (?:بي|ي)?[^ ]+|من سنين)(?: |$)/;
+const PRESENT =
+  /(?:^| )(?:هلا|هلق|هسا|هسه|الحين|اليوم|الليله|هالليله|لسا|عم يضربني|عم يهددني|كل يوم|كل ليله|رح يرجع)(?: |$)/;
 const LEGAL_QUESTION =
   /(?:^| )(?:عقوبه|عقوبته|العقوبه|بيعاقب|القانون|قانونيا|شكوى|اشتكي|اشتكى|ارفع قضيه|حقي|حقوقي|شو بيصير|شو حكم|بيتحاسب|بيتسجن)(?: |$)/;
 const OTHER_PERSON =
   /(?:^| )(?:صاحبتي|صديقتي|اختي|جارتي|قريبتي|بنت عمي|بنت خالي|امي|وحده بعرفها|بنت بعرفها|زميلتي)(?: |$)/;
 const MINOR = /(?:^| )(?:1[0-7]|١[٠-٧]|قاصر|قاصره|بالمدرسه|بالصف)(?: |$)/;
-const ARRANGED = /(?:^| )(?:جايبين عريس|جابولي عريس|عريس|خطبوني|بدهم يخطبوني|كتب الكتاب|بدهم يزوجوني|بدهم يجوزوني)(?: |$)/;
+const ARRANGED =
+  /(?:^| )(?:جايبين عريس|جابولي عريس|عريس|خطبوني|بدهم يخطبوني|كتب الكتاب|بدهم يزوجوني|بدهم يجوزوني)(?: |$)/;
 export const FORCED_QUESTION = "في حدا عم يضغط عليكِ تتجوزي وإنتِ مش بدك؟";
 /** She says she does not want it («وأنا مش بدي», «غصب عني»). */
 const UNWILLING = /(?:^| )(?:مش بدي|ما بدي|مش حابه|رافضه|غصب عني|بالغصب|مجبوره)(?: |$)/;
@@ -243,7 +246,8 @@ export function assessDanger(question, numbers = {}, opts = {}) {
 
   if (firstMatch(text, SELF_HARM) >= 0)
     return { level: "selfharm", answer: selfHarmReply(numbers, { mindLine: opts.mindLine }) };
-  if (firstMatch(text, SELF_HARM_INDIRECT) >= 0) return { level: "selfharm-check", answer: { ...SELF_HARM_CHECK } };
+  if (firstMatch(text, SELF_HARM_INDIRECT) >= 0)
+    return { level: "selfharm-check", answer: { ...SELF_HARM_CHECK } };
 
   if (firstMatch(text, FORCED_MARRIAGE) >= 0 && !legal)
     return { level: "forced-marriage", answer: forcedMarriageReply(numbers) };
@@ -252,11 +256,13 @@ export function assessDanger(question, numbers = {}, opts = {}) {
   if (minor && ARRANGED.test(text) && UNWILLING.test(text) && !legal)
     return { level: "forced-marriage", answer: forcedMarriageReply(numbers) };
   // a minor whose marriage is being arranged: not an emergency script, not ignored either
-  if (minor && ARRANGED.test(text) && !legal) return { level: "check", ask: FORCED_QUESTION, about: "forced" };
+  if (minor && ARRANGED.test(text) && !legal)
+    return { level: "check", ask: FORCED_QUESTION, about: "forced" };
 
   // a threat to kill her from her family (often "honour"): never brushed off
   if (firstMatch(text, FAMILY_THREAT) >= 0 && !legal && !otherPerson) {
-    if (PRESENT.test(text) && !CONDITIONAL.test(text)) return { level: "immediate", answer: immediateReply(numbers) };
+    if (PRESENT.test(text) && !CONDITIONAL.test(text))
+      return { level: "immediate", answer: immediateReply(numbers) };
     return { level: "check", ask: FAMILY_QUESTION, about: "family" };
   }
 

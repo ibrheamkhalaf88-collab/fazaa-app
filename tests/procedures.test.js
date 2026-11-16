@@ -15,13 +15,19 @@ const entry = (over = {}) => ({
 const turns = [{ role: "user", text: "جوزي ما بيصرف علينا" }];
 
 test("only reviewed procedures for her region reach the model", () => {
-  assert.deepEqual(proceduresFor(turns, "ps-wb", [entry()]).map((p) => p.id), ["x"]);
+  assert.deepEqual(
+    proceduresFor(turns, "ps-wb", [entry()]).map((p) => p.id),
+    ["x"],
+  );
   assert.equal(proceduresFor(turns, "ps-wb", [entry({ reviewed: false })]).length, 0);
   assert.equal(proceduresFor(turns, "ps-gaza", [entry()]).length, 0);
 });
 
 test("matching uses her messages only, not the app's replies", () => {
-  const t = [{ role: "assistant", text: "النفقة حقك" }, { role: "user", text: "مرحبا" }];
+  const t = [
+    { role: "assistant", text: "النفقة حقك" },
+    { role: "user", text: "مرحبا" },
+  ];
   assert.equal(proceduresFor(t, "ps-wb", [entry()]).length, 0);
 });
 

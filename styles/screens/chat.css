@@ -18,6 +18,17 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex: 1;
+  min-width: 0; /* lets the subtitle shrink instead of wrapping to a second line */
+}
+.chat-head > div {
+  min-width: 0;
+}
+#chat-sub {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .logo-mark {

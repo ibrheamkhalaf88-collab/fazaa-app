@@ -18,7 +18,7 @@ Not independently audited. Designed defensively, tested in CI, but get a profess
 ## Still open (do before launch)
 
 - Turn on the per-IP **rate limit** bindings (`RATE_LIMITER`) for both Workers; signup and login are public.
-- See docs/AUDIT-2026-11-12.md for the closed-beta audit, open items and what still needs human review.
+- See docs/reports/AUDIT-2026-11-12.md for the closed-beta audit, open items and what still needs human review.
 - 6-digit PINs have no recovery and are guessable if an attacker can try many accounts: keep the rate limit on.
 - A penetration test and a data-protection/legal review (consent text, retention, who may read what).
 - Rotate any API key that was ever pasted in chat.

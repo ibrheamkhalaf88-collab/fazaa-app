@@ -3,7 +3,8 @@ import { barRows, barsChart, kpi, legend } from "./charts.js";
 import { ACTION, ago, dateTime, duration, el, every, pill, REGION, ROLE } from "./util.js";
 
 const REFRESH_MS = 30_000;
-const OWNER_ONLY = "إدارة حسابات المطوّرين للمالكة بس (أول مطوّرة بالفريق)، حتى ما يقدر حساب مسروق يتحكم بالباقي.";
+const OWNER_ONLY =
+  "إدارة حسابات المطوّرين للمالكة بس (أول مطوّرة بالفريق)، حتى ما يقدر حساب مسروق يتحكم بالباقي.";
 /** A clear reason when the server refuses (owner-only actions), otherwise the usual message. */
 const teamError = async (e) => ((await e.body?.())?.error === "owner-only" ? OWNER_ONLY : errorText(e));
 const STATUS = { open: "بانتظار محامية", claimed: "قيد المتابعة", closed: "منتهية" };

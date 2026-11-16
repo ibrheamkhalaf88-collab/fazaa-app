@@ -22,7 +22,12 @@ const LAW_HINTS = {
   "family-gaza-1954": ["حقوق العائله", "العائله", "غزه"],
   "basic-law-2003": ["الاساسي", "القانون الاساسي"],
 };
-const PREFIX = { "cyber-2018": "", "psl-wb-1976": "psl:", "family-gaza-1954": "gz:", "basic-law-2003": "bl:" };
+const PREFIX = {
+  "cyber-2018": "",
+  "psl-wb-1976": "psl:",
+  "family-gaza-1954": "gz:",
+  "basic-law-2003": "bl:",
+};
 
 /**
  * @param {string} question
@@ -52,17 +57,53 @@ export function findArticleByNumber(question, region) {
  * Each entry: all regexes must match the normalised question.
  */
 const SPECIFIC = [
-  { label: "الاعتداد ببيت الزوجية", all: [/عده|عدتي|اعتد/, /بيت|البيت|اضل|بضل|مسكن|اطلع/], ids: ["psl:146", "psl:135"] },
+  {
+    label: "الاعتداد ببيت الزوجية",
+    all: [/عده|عدتي|اعتد/, /بيت|البيت|اضل|بضل|مسكن|اطلع/],
+    ids: ["psl:146", "psl:135"],
+  },
   { label: "نفقة العدة", all: [/عده|عدتي|اعتد/, /نفقه|مصروف|مصاري/], ids: ["psl:79", "psl:135"] },
-  { label: "مدة العدة", all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:عده|عدتي)(?= |$)|اعتد/], ids: ["psl:135", "psl:146"] },
-  { label: "المهر", all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:مهر|مهري|مؤخر|مقدم)(?= |$)/], ids: ["psl:61", "gz:55", "gz:38"] },
+  {
+    label: "مدة العدة",
+    all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:عده|عدتي)(?= |$)|اعتد/],
+    ids: ["psl:135", "psl:146"],
+  },
+  {
+    label: "المهر",
+    all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:مهر|مهري|مؤخر|مقدم)(?= |$)/],
+    ids: ["psl:61", "gz:55", "gz:38"],
+  },
   { label: "الخلع", all: [/(?:^| )(?:و|ب|بال|ال|لل)?(?:خلع|مخالعه|اخلعه)(?= |$)/], ids: ["psl:102"] },
-  { label: "رؤية الولاد", all: [/(?:اشوف|بشوف|رؤيه|مشاهده|زياره|يشوف)/, /(?:الولاد|ولادي|الصغير|البنات|ابني|بنتي)/], ids: ["psl:163"] },
-  { label: "شروط الحاضنة", all: [/(?:شروط|تسقط|بتسقط|بسقط|سقوط) (?:ال)?(?:حضانه|حضانتي|الحاضنه)/], ids: ["psl:155", "psl:157"] },
+  {
+    label: "رؤية الولاد",
+    all: [/(?:اشوف|بشوف|رؤيه|مشاهده|زياره|يشوف)/, /(?:الولاد|ولادي|الصغير|البنات|ابني|بنتي)/],
+    ids: ["psl:163"],
+  },
+  {
+    label: "شروط الحاضنة",
+    all: [/(?:شروط|تسقط|بتسقط|بسقط|سقوط) (?:ال)?(?:حضانه|حضانتي|الحاضنه)/],
+    ids: ["psl:155", "psl:157"],
+  },
   { label: "التعويض عن الطلاق", all: [/(?:تعويض|تعسفي)/], ids: ["psl:134"] },
-  { label: "التفريق للشقاق", all: [/(?:شقاق|نزاع|تفريق للضرر|بدي افسخ)/], ids: ["psl:132", "psl:123", "gz:94"] },
-  { label: "المسكن المستقل", all: [/(?:مسكن|بيت|اسكن|ساكنه|ساكنين|عايشه|عايشين)/, /(?:لحالي|مستقل|حماتي|اهله|اهل جوزي|سلفي|معنا)/, /(?:حقي|بيحقلي|القانون|مسموح|بقدر اطلب)/], ids: ["psl:38"] },
-  { label: "نفقة الولاد", all: [/(?:نفقه|مصروف)(?: (?:لكل|ل|كل|عن|على))? (?:ال)?(?:ولد|ولاد|اولاد|ولادي|الصغير|طفل|ابن|بنت)/], ids: ["psl:168", "gz:59"] },
+  {
+    label: "التفريق للشقاق",
+    all: [/(?:شقاق|نزاع|تفريق للضرر|بدي افسخ)/],
+    ids: ["psl:132", "psl:123", "gz:94"],
+  },
+  {
+    label: "المسكن المستقل",
+    all: [
+      /(?:مسكن|بيت|اسكن|ساكنه|ساكنين|عايشه|عايشين)/,
+      /(?:لحالي|مستقل|حماتي|اهله|اهل جوزي|سلفي|معنا)/,
+      /(?:حقي|بيحقلي|القانون|مسموح|بقدر اطلب)/,
+    ],
+    ids: ["psl:38"],
+  },
+  {
+    label: "نفقة الولاد",
+    all: [/(?:نفقه|مصروف)(?: (?:لكل|ل|كل|عن|على))? (?:ال)?(?:ولد|ولاد|اولاد|ولادي|الصغير|طفل|ابن|بنت)/],
+    ids: ["psl:168", "gz:59"],
+  },
 ];
 
 /**
@@ -75,7 +116,11 @@ export function findSpecificArticles(question, region) {
   const hit = SPECIFIC.find((s) => s.all.every((re) => re.test(t)));
   if (!hit) return null;
   const all = hit.ids.map((id) => ARTICLES[id]).filter(Boolean);
-  return { label: hit.label, found: all.filter((a) => a.regions.includes(region)), outOfRegion: all.filter((a) => !a.regions.includes(region)) };
+  return {
+    label: hit.label,
+    found: all.filter((a) => a.regions.includes(region)),
+    outOfRegion: all.filter((a) => !a.regions.includes(region)),
+  };
 }
 
 /** Numbers written as digits or as Arabic number words, normalised for comparison. */
@@ -133,7 +178,9 @@ export function checkGrounding(answer, articles) {
     if (words.some((w) => sourceText.includes(norm(w)))) sourceNumbers.add(n);
   const citedNumbers = new Set(answer.cites.map((id) => id.replace(/^[a-z]+:/, "")));
 
-  const named = [...toLatin(norm(prose)).matchAll(/(?:^| )(?:ال)?ماده(?: رقم)? ([0-9]{1,3})/g)].map((x) => x[1]);
+  const named = [...toLatin(norm(prose)).matchAll(/(?:^| )(?:ال)?ماده(?: رقم)? ([0-9]{1,3})/g)].map(
+    (x) => x[1],
+  );
   for (const n of named) if (!citedNumbers.has(String(Number(n)))) problems.push(`article-not-cited:${n}`);
 
   for (const n of numbersIn(prose)) {

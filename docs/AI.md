@@ -102,7 +102,7 @@ When the AI answers through the staff API, the **answer** is stored (lead, steps
 
 | PROVIDER           | Key secret                          | Default model                 | Notes                                      |
 | ------------------ | ----------------------------------- | ----------------------------- | ------------------------------------------ |
-| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-flash-lite-latest`       | free tier; good Arabic                     |
+| `gemini` (default) | `GEMINI_API_KEY` (Google AI Studio) | `gemini-flash-lite-latest`    | free tier; good Arabic                     |
 | `nvidia`           | `NVIDIA_API_KEY` (build.nvidia.com) | `meta/llama-3.3-70b-instruct` | free trial credits; Arabic weaker, test it |
 | `anthropic`        | `ANTHROPIC_API_KEY`                 | `claude-sonnet-5-5`           | paid                                       |
 

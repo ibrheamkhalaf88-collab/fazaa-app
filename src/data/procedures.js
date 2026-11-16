@@ -46,7 +46,10 @@ const stem = (w) => (w.startsWith("ال") && w.length > 4 ? w.slice(2) : w);
  * @returns {Procedure[]}
  */
 export function proceduresFor(turns, country, list = PROCEDURES, limit = 2) {
-  const hers = turns.filter((t) => t.role === "user").map((t) => t.text).join(" ");
+  const hers = turns
+    .filter((t) => t.role === "user")
+    .map((t) => t.text)
+    .join(" ");
   const words = new Set(tokenize(hers).map(stem));
   return list
     .filter((p) => p.reviewed === true && p.regions.includes(/** @type {any} */ (country)))

@@ -31,7 +31,7 @@ const NEWS = /(?:^| )صار (?:معي )?(?:اشي|شي) جديد(?= |$)|(?:^| )�
 const RESUME = /(?:^| )(?:بدي |خلينا )?نكمل(?: (?:موضوع|بموضوع|حكي|حديث|من وين وقفنا|اللي حكينا))?(?= |$)/;
 /** «وإذا بغزة؟», «طب بالضفة؟». */
 const OTHER_REGION = /(?:^| )(?:ب|في |ف)?((?:ال)?غزه|(?:ال)?ضفه|بالضفه|بغزه)(?= |$)/;
-const SHOW_ME =/(?:^| )(?:وريني|فرجيني|ورجيني|بدي اعرف|احكيلي)(?= |$)/;
+const SHOW_ME = /(?:^| )(?:وريني|فرجيني|ورجيني|بدي اعرف|احكيلي)(?= |$)/;
 const TOPIC_WORDS = {
   custody: /حضان|الولاد|ولادي/,
   nafaqa: /نفق|مصروف/,
@@ -109,10 +109,15 @@ export function createAnswerer({
   function jurisdiction(ids, topic, country) {
     const lines = [];
     const region = country === "ps-gaza" ? "قطاع غزة" : "الضفة الغربية";
-    const laws = [...new Set(ids.map((id) => ARTICLES[id]?.lawKey))].map((k) => LAWS.find((l) => l.key === k)).filter(Boolean);
-    if (laws.length) lines.push(`النصوص من ${laws.map((l) => `«${l.name}»`).join(" و")}، حسب منطقتك (${region}).`);
+    const laws = [...new Set(ids.map((id) => ARTICLES[id]?.lawKey))]
+      .map((k) => LAWS.find((l) => l.key === k))
+      .filter(Boolean);
+    if (laws.length)
+      lines.push(`النصوص من ${laws.map((l) => `«${l.name}»`).join(" و")}، حسب منطقتك (${region}).`);
     if (topic === "custody" && country === "ps-gaza")
-      lines.push("ما عندي نص الحضانة المعمول فيه بغزة، فما بقدر أقلك شو بيقول القانون هناك عن الحضانة. محامية بتقدر.");
+      lines.push(
+        "ما عندي نص الحضانة المعمول فيه بغزة، فما بقدر أقلك شو بيقول القانون هناك عن الحضانة. محامية بتقدر.",
+      );
     return lines;
   }
 
@@ -134,7 +139,9 @@ export function createAnswerer({
     if (!thread) {
       return {
         kind: "talk",
-        lead: threads.length ? "عندي أكتر من موضوع محفوظ. أي واحد بدك نكمل؟" : "ما في موضوع محفوظ بهالاسم. احكيلي باختصار وين وصل الموضوع.",
+        lead: threads.length
+          ? "عندي أكتر من موضوع محفوظ. أي واحد بدك نكمل؟"
+          : "ما في موضوع محفوظ بهالاسم. احكيلي باختصار وين وصل الموضوع.",
         options: threads.map((x) => x.title),
         ask: "",
         note: "",
@@ -205,7 +212,8 @@ export function createAnswerer({
     }
     // violence / forced marriage: we asked if she can talk safely.
     // A denial first: «مش آمنة» contains «آمنة» and must never read as "safe".
-    if (answeredNo(question) || /(?:^| )(?:مش|ما|مو) ?(?:امنه|بامان)(?: |$)/.test(t)) return stillUnsafe(numbers, plan);
+    if (answeredNo(question) || /(?:^| )(?:مش|ما|مو) ?(?:امنه|بامان)(?: |$)/.test(t))
+      return stillUnsafe(numbers, plan);
     if (answeredYes(question) || SAFE_NOW.test(t)) {
       memory.lastAsk = "";
       return {
@@ -360,7 +368,8 @@ export function createAnswerer({
     const hit = findArticleByNumber(question, ctx.country);
     const topic = topicHint || currentTopic(memory.situation);
     // context-aware: «شو حقي إذا ما صرف؟» inside a conversation about maintenance is about maintenance
-    const local = answerFromRules(question) || (TOPIC_QUESTION[topic] ? answerFromRules(TOPIC_QUESTION[topic]) : null);
+    const local =
+      answerFromRules(question) || (TOPIC_QUESTION[topic] ? answerFromRules(TOPIC_QUESTION[topic]) : null);
     const specific = hit ? null : findSpecificArticles(question, ctx.country);
     let answer;
     if (hit) answer = articleAnswer(hit, ctx.country);
@@ -384,12 +393,17 @@ export function createAnswerer({
     if (answer.kind === "article") {
       if (!specific) return answer;
       answer.cites.forEach((id) => memory.situation.shownArticles.add(id));
-      return { ...answer, scope: [...(answer.scope || []), ...jurisdiction(answer.cites, topic, ctx.country)] };
+      return {
+        ...answer,
+        scope: [...(answer.scope || []), ...jurisdiction(answer.cites, topic, ctx.country)],
+      };
     }
 
     let ids = answer.cites || [];
     if (!ids.length && answer.kind !== "talk" && LEGAL_TOPICS.includes(topic)) {
-      const related = relatedArticles(topic, ctx.country).filter((id) => !memory.situation.shownArticles.has(id));
+      const related = relatedArticles(topic, ctx.country).filter(
+        (id) => !memory.situation.shownArticles.has(id),
+      );
       if (related.length) answer = { ...answer, related };
       ids = related;
     }
@@ -412,9 +426,12 @@ export function createAnswerer({
     const can = available();
 
     // answers to our own last question come first
-    if (memory.lastAsk === "safety" && answeredNo(question)) return rememberDanger(assessDanger("مش بامان", numbers));
+    if (memory.lastAsk === "safety" && answeredNo(question))
+      return rememberDanger(assessDanger("مش بامان", numbers));
     // «آه بأمان» to our safety question: said back, then the conversation goes on
-    const safeNow = memory.lastAsk === "safety" && (answeredYes(question) || /(?:^| )(?:بامان|امنه)(?= |$)/.test(norm(question)));
+    const safeNow =
+      memory.lastAsk === "safety" &&
+      (answeredYes(question) || /(?:^| )(?:بامان|امنه)(?= |$)/.test(norm(question)));
     // After a danger reply we asked ONE safety question. Her answer is about her safety: never drift to
     // "since when?" while she may still be in danger.
     if (memory.dangerKind && ["safe-place", "alone"].includes(memory.lastAsk)) {
@@ -450,7 +467,13 @@ export function createAnswerer({
       }
       if (answeredNo(question)) {
         memory.lastAsk = "";
-        return { kind: "talk", lead: "منيح إنك حكيتيلي.", options: [], ask: "شو أكتر إشي تاعبك هلأ؟", note: "" };
+        return {
+          kind: "talk",
+          lead: "منيح إنك حكيتيلي.",
+          options: [],
+          ask: "شو أكتر إشي تاعبك هلأ؟",
+          note: "",
+        };
       }
     }
 
@@ -484,7 +507,13 @@ export function createAnswerer({
       }
       // a short «لا» only: «ما بقدر أطلع من البيت» is something she tells, not a refusal of the offer
       if (answeredNo(question) && t.split(" ").length <= 3)
-        return { kind: "talk", lead: "تمام، مش لازم هلأ.", options: [], ask: "بدك نكمل حكي، ولا في إشي تاني على بالك؟", note: "" };
+        return {
+          kind: "talk",
+          lead: "تمام، مش لازم هلأ.",
+          options: [],
+          ask: "بدك نكمل حكي، ولا في إشي تاني على بالك؟",
+          note: "",
+        };
     }
 
     // «وإذا بغزة؟» right after a legal answer: the same topic under the OTHER region's law (her region stays)
@@ -494,13 +523,31 @@ export function createAnswerer({
       const country = /غزه/.test(other[1]) ? "ps-gaza" : "ps-wb";
       const name = country === "ps-gaza" ? "غزة" : "الضفة";
       memory.lastNeed = "legal";
-      if (country === ctx.country) return { kind: "talk", lead: `منطقتك هلأ هي ${name}، فاللي حكيتلك ياه هو عن ${name}.`, options: [], ask: "", note: "" };
+      if (country === ctx.country)
+        return {
+          kind: "talk",
+          lead: `منطقتك هلأ هي ${name}، فاللي حكيتلك ياه هو عن ${name}.`,
+          options: [],
+          ask: "",
+          note: "",
+        };
       const a = await legalAnswer(TOPIC_QUESTION[legalTopic], { ...ctx, country }, can, legalTopic);
-      return { ...a, lead: a.related?.length || a.cites?.length ? `ب${name} في قانون تاني، وهاي النصوص اللي عندي منه:` : `ب${name} في قانون تاني. ${a.lead}`, scope: [...(a.scope || []), `منطقتك بالتطبيق لسا ${ctx.country === "ps-gaza" ? "غزة" : "الضفة"}؛ هاد بس للمعلومة.`] };
+      return {
+        ...a,
+        lead:
+          a.related?.length || a.cites?.length
+            ? `ب${name} في قانون تاني، وهاي النصوص اللي عندي منه:`
+            : `ب${name} في قانون تاني. ${a.lead}`,
+        scope: [
+          ...(a.scope || []),
+          `منطقتك بالتطبيق لسا ${ctx.country === "ps-gaza" ? "غزة" : "الضفة"}؛ هاد بس للمعلومة.`,
+        ],
+      };
     }
 
     let need = classifyNeed(question, memory);
-    if (need === "followup") need = memory.lastNeed === "legal" ? "understand" : memory.lastNeed || "understand";
+    if (need === "followup")
+      need = memory.lastNeed === "legal" ? "understand" : memory.lastNeed || "understand";
     memory.lastNeed = need;
     if (need !== "understand") memory.lastAsk = "";
 
@@ -512,7 +559,8 @@ export function createAnswerer({
       // offline: only when she talks about herself (a feeling, a person, a limit, «اسمعيني»);
       // an off-topic question («كيف بطبخ مقلوبة») gets the honest "not covered" screen instead
       // a short follow-up («شو بقدر أعمل طيب؟») belongs to the conversation already going on
-      const ongoing = Boolean(memory.person || memory.feeling || memory.constraints.size) ||
+      const ongoing =
+        Boolean(memory.person || memory.feeling || memory.constraints.size) ||
         memory.turns.filter((t) => t.role === "user").length > 1;
       if (!answer && (onTopic(question) || ongoing || memory.mode === "listen" || danger?.ask))
         answer = { ...localTalk(need, memory, can), general: true };
@@ -540,12 +588,19 @@ export function createAnswerer({
       // never the same opening sentence twice in a session (a law reply repeated word for word)
       if (answer?.lead && answer.kind !== "chat" && !answer.sos) {
         if (memory.usedLeads.has(answer.lead))
-          answer = { ...answer, lead: answer.cites?.length || answer.related?.length ? "هاي النصوص اللي عندي عن سؤالك:" : "متل ما حكيتلك، هاد بيعتمد على تفاصيل وضعك، والمحامية بتقدر تقلك بالزبط." };
+          answer = {
+            ...answer,
+            lead:
+              answer.cites?.length || answer.related?.length
+                ? "هاي النصوص اللي عندي عن سؤالك:"
+                : "متل ما حكيتلك، هاد بيعتمد على تفاصيل وضعك، والمحامية بتقدر تقلك بالزبط.",
+          };
         memory.usedLeads.add(answer.lead);
       }
       pushTurn(memory, "assistant", [answer?.lead, answer?.ask].filter(Boolean).join(" "));
       // opt-in only: short labels of what she told, per topic; never after a self-harm reply
-      if (saved?.enabled?.() && memory.dangerKind !== "selfharm" && memory.lastAsk !== "selfharm") saved.remember(memory);
+      if (saved?.enabled?.() && memory.dangerKind !== "selfharm" && memory.lastAsk !== "selfharm")
+        saved.remember(memory);
       return answer ? { source: "rules", ...answer } : null;
     },
   };

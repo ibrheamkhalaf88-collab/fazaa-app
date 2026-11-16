@@ -9,14 +9,24 @@ import assert from "node:assert/strict";
 import { beforeEach, test } from "node:test";
 import { createAssistant } from "../src/ai/assistant.js";
 import { createRemoteEngine } from "../src/ai/remote-engine.js";
-import { articlesForChat, answerQuestion, parseAnswerRequest, setBreaker } from "../server/ai-proxy/worker.js";
+import {
+  articlesForChat,
+  answerQuestion,
+  parseAnswerRequest,
+  setBreaker,
+} from "../server/ai-proxy/worker.js";
 import { createBreaker } from "../server/ai-proxy/breaker.js";
 
 const ENV = { PROVIDER: "gemini", GEMINI_API_KEY: "k", RETRY_PAUSE_MS: "0" };
 beforeEach(() => setBreaker(createBreaker()));
 
 const reply = (args) =>
-  new Response(JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { name: "give_reply", args } }] } }] }), { status: 200 });
+  new Response(
+    JSON.stringify({
+      candidates: [{ content: { parts: [{ functionCall: { name: "give_reply", args } }] } }],
+    }),
+    { status: 200 },
+  );
 
 /** A whole stack in one process: app assistant -> remote engine -> server chat -> fake provider. */
 function stack(provider, extra = {}) {
@@ -48,7 +58,10 @@ test("3: a real conversation: the model receives the earlier turns, with their r
   await say("حكى رح ياخد الولاد");
   await say("طيب شو بقدر أعمل؟");
   const last = seen.at(-1);
-  assert.deepEqual(last.contents.map((c) => c.role), ["user", "model", "user", "model", "user"]);
+  assert.deepEqual(
+    last.contents.map((c) => c.role),
+    ["user", "model", "user", "model", "user"],
+  );
   assert.match(last.contents[0].parts[0].text, /هددني مبارح/);
   assert.match(lastUserText(last), /شو بقدر أعمل/);
 });
@@ -153,7 +166,9 @@ test("«خلاصة حديثنا»: a right from a text it was not given, or a nu
 });
 
 test("venting: no summary box, a human reply only", async () => {
-  const { say } = stack(() => reply({ reply: "صعب لما تحسي إنه ما في حدا بيسمعك. أنا عم بسمعك هلأ.", rights: [], steps: [] }));
+  const { say } = stack(() =>
+    reply({ reply: "صعب لما تحسي إنه ما في حدا بيسمعك. أنا عم بسمعك هلأ.", rights: [], steps: [] }),
+  );
   const r = await say("بدي حدا يسمعني بس");
   assert.deepEqual(r.rights, []);
   assert.deepEqual(r.cites, []);
@@ -179,7 +194,9 @@ test("violence mentioned (not now): the AI answers, and the safety-plan button i
 
 test("the AI is down: one honest sentence, never a fake answer; she can send it again", async () => {
   const errors = [];
-  const { a, say } = stack(() => new Response("{}", { status: 503 }), { onRemoteError: (e) => errors.push(e.message) });
+  const { a, say } = stack(() => new Response("{}", { status: 503 }), {
+    onRemoteError: (e) => errors.push(e.message),
+  });
   const r = await say("شو حقي بالحضانة؟");
   assert.equal(r.source, "none");
   assert.match(r.lead, /ما قدرت أوصل/);
@@ -196,7 +213,10 @@ test("she did not agree to send: the assistant says it is off, nothing is sent",
 });
 
 test("the model's pet names are removed and its forbidden promises never reach her", async () => {
-  const replies = [reply({ reply: "يا حبيبتي، إنتِ بمكان آمن هلا." }), reply({ reply: "يا قلبي، احكيلي شو صار." })];
+  const replies = [
+    reply({ reply: "يا حبيبتي، إنتِ بمكان آمن هلا." }),
+    reply({ reply: "يا قلبي، احكيلي شو صار." }),
+  ];
   const { say } = stack(() => replies.shift());
   const r = await say("مش عارفة مع مين أحكي");
   assert.equal(r.lead, "احكيلي شو صار.");

@@ -48,8 +48,11 @@ const SECURITY_HEADERS = Object.fromEntries(
  */
 async function fakeApi(path, res) {
   const json = (status, body) =>
-    res.writeHead(status, { "content-type": "application/json", "cache-control": "no-store" }).end(JSON.stringify(body));
-  if (path === "/api/v1/contacts") return json(200, { contacts: publicContacts(DEFAULT_CONTACTS), updatedAt: null });
+    res
+      .writeHead(status, { "content-type": "application/json", "cache-control": "no-store" })
+      .end(JSON.stringify(body));
+  if (path === "/api/v1/contacts")
+    return json(200, { contacts: publicContacts(DEFAULT_CONTACTS), updatedAt: null });
   if (path === "/api/v1/lawyers") return json(200, { lawyers: [] });
   if (path === "/api/v1/answer") return json(503, { error: "not-configured" });
   return json(404, { error: "not-found" });
@@ -58,10 +61,7 @@ async function fakeApi(path, res) {
 const server = createServer(async (req, res) => {
   const urlPath = new URL(req.url, "http://x").pathname;
   if (urlPath.startsWith("/api/")) return fakeApi(urlPath, res);
-  const path = normalize(decodeURIComponent(urlPath)).replace(
-    /^(\.\.[/\\])+/,
-    "",
-  );
+  const path = normalize(decodeURIComponent(urlPath)).replace(/^(\.\.[/\\])+/, "");
   try {
     const rel = path.endsWith("/") ? `${path}index.html` : path;
     const file = await readFile(join(ROOT, rel));
@@ -173,27 +173,54 @@ await test("chat has a way back to home (not only the whole app)", async (page) 
   assert.equal(await current(page), "home");
 });
 
+/**
+ * Since the AI-first assistant (commit 9680d1a, 2026-11-13) every reply comes from /api/v1/answer; there is
+ * no rule-based answer on the device any more. These tests stand in for the AI with a fixed reply, so they
+ * check what the app does with it: validation, the summary, the original text and the safety button.
+ */
+const BLACKMAIL_REPLY = {
+  reply: "اللي عم يصير معك مش ذنبك، والتهديد أو الابتزاز عبر الإنترنت جريمة حسب النص.",
+  rights: [{ text: "التهديد أو الابتزاز عبر الشبكة الإلكترونية جريمة يعاقب عليها القانون", cite: "15" }],
+  steps: ["احتفظي بصور للرسائل والتهديدات", "لا تبعتي مصاري ولا صور زيادة"],
+  ask: "",
+};
+const fakeAi = (page, answer) =>
+  page.route("**/api/v1/answer", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ answer }) }),
+  );
+
 await test("asking about blackmail returns a cited answer with the safety-plan button", async (page) => {
-  await open(page, "chat");
+  await open(page, "chat", { ai: true });
+  await fakeAi(page, BLACKMAIL_REPLY);
   await page.fill("#q", "حدا بيهددني بصوري");
   await page.press("#q", "Enter");
-  const answer = page.locator("#msgs .a:has(ol)");
-  await answer.waitFor({ timeout: 5000 });
+  const answer = page.locator("#msgs .a:has(.summary)");
+  await answer.waitFor({ timeout: 8000 });
   assert.match(await answer.textContent(), /المادة 15/);
-  assert.ok(await answer.locator('[data-go="sos"]').isVisible());
+  assert.ok(await answer.locator('[data-go="sos"]').isVisible(), "danger words always bring the safety plan");
   await answer.locator("details summary").first().click();
   assert.match(await answer.locator(".law").first().textContent(), /ابتزاز|تهديد/);
   assert.equal(await answer.locator(".law a").first().getAttribute("rel"), "noopener noreferrer");
 });
 
-await test("a question outside the corpus is refused honestly, not guessed", async (page) => {
+await test("an AI reply citing an article that does not exist is never shown", async (page) => {
+  await open(page, "chat", { ai: true });
+  await fakeAi(page, { reply: "حسب النص إلك الحق بهاد.", cites: ["999"] });
+  await page.fill("#q", "شو حقوقي؟");
+  await page.press("#q", "Enter");
+  await page.locator("#msgs .a", { hasText: "ما قدرت أوصل لخدمة الذكاء" }).waitFor({ timeout: 8000 });
+  assert.equal(await page.locator("#msgs .a", { hasText: "إلك الحق" }).count(), 0, "invented law hidden");
+  assert.equal(await page.locator("#msgs details.cite").count(), 0, "no citation card");
+  problems.length = 0; // the rejected reply is logged as an error on purpose
+});
+
+await test("with the AI off, any question gets an honest message, never a guessed answer", async (page) => {
   await open(page, "chat");
   await page.fill("#q", "كيف بطبخ مقلوبة؟");
   await page.press("#q", "Enter");
-  // (2026-11-12) wording: «ما عندي جواب أكيد… ما بدي أعطيكِ معلومة مش متأكدة منها»
-  const refusal = page.locator("#msgs .a", { hasText: "مش متأكدة" });
-  await refusal.waitFor({ timeout: 5000 }); // (the first .a is the welcome bubble, the second may be "typing")
-  assert.equal(await page.locator("#msgs .a ol").count(), 0, "no invented steps or citations");
+  await page.locator("#msgs .a", { hasText: "مطفية هلأ" }).waitFor({ timeout: 5000 });
+  assert.equal(await page.locator("#msgs .a ol, #msgs .a ul.opts").count(), 0, "no invented steps");
+  assert.equal(await page.locator("#msgs details.cite").count(), 0, "no citations");
 });
 
 await test("user text is never interpreted as HTML", async (page) => {
@@ -206,10 +233,11 @@ await test("user text is never interpreted as HTML", async (page) => {
 });
 
 await test("quick exit wipes the chat and safety ticks, shows the disguise, and leaks no title", async (page) => {
-  await open(page, "chat");
+  await open(page, "chat", { ai: true });
+  await fakeAi(page, BLACKMAIL_REPLY);
   await page.fill("#q", "حدا بيهددني بصوري");
   await page.press("#q", "Enter");
-  await page.waitForSelector("#msgs .a ol", { timeout: 5000 });
+  await page.waitForSelector("#msgs .a .summary", { timeout: 8000 });
   await page.keyboard.press("Escape");
   assert.equal(await current(page), "disguise");
   assert.equal(await page.title(), "الطقس");
@@ -222,14 +250,25 @@ await test("quick exit wipes the chat and safety ticks, shows the disguise, and 
 });
 
 await test("a reply still 'typing' when the user exits never appears afterwards", async (page) => {
-  await open(page, "chat");
+  await open(page, "chat", { ai: true });
+  await page.route("**/api/v1/answer", async (route) => {
+    await new Promise((r) => setTimeout(r, 1500)); // the AI answers only after she has left
+    await route
+      .fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({ answer: BLACKMAIL_REPLY }),
+      })
+      .catch(() => {}); // the request may already be aborted by the wipe
+  });
   await page.fill("#q", "حدا بيهددني بصوري");
   await page.press("#q", "Enter");
-  await page.keyboard.press("Escape"); // before the typing delay ends
+  await page.keyboard.press("Escape"); // before the reply arrives
   await page.waitForTimeout(2200);
   await page.dblclick(".weather .temp");
   await page.click(".ask-pill");
-  assert.equal(await page.locator("#msgs .a ol").count(), 0);
+  assert.equal(await page.locator("#msgs .a .summary").count(), 0, "the late reply was dropped");
+  assert.equal(await page.locator("#msgs .u").count(), 0);
 });
 
 await test("calculator disguise works and the code unlocks the app", async (page) => {
@@ -302,7 +341,8 @@ await test(
     assert.ok(await page.isVisible(".screen:not([hidden])"));
     await page.fill("#q", "x").catch(() => {});
     // the app tries to refresh contacts / lawyers and fails offline: expected, not an app error
-    for (let i = problems.length - 1; i >= 0; i--) if (/ERR_INTERNET_DISCONNECTED/.test(problems[i])) problems.splice(i, 1);
+    for (let i = problems.length - 1; i >= 0; i--)
+      if (/ERR_INTERNET_DISCONNECTED/.test(problems[i])) problems.splice(i, 1);
   },
   { serviceWorkers: "allow" },
 );

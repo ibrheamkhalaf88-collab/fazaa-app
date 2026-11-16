@@ -42,8 +42,22 @@
 /* emergency numbers set in the dashboard: one big call button each */
 .sos-calls {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 8px;
+}
+.sos-call-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.25;
+}
+.sos-call-label > span {
+  font-size: 13px;
+  white-space: nowrap;
+}
+.sos-call-label > b {
+  font-size: 17px;
+  direction: ltr;
 }
 .sos-calls .sos-call {
   /* emergency calls keep their own navy, apart from the gold main buttons */
