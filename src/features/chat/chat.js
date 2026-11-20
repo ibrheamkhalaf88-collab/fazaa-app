@@ -1,5 +1,5 @@
 import { TYPING_DELAY } from "../../config.js";
-import { ARTICLES } from "../../data/law/index.js";
+import { ARTICLES, articleNumber } from "../../data/law/index.js";
 import { $, $$, chip, el, icon } from "../../core/dom.js";
 import { append, messageList, scrollChat, systemNote, typingBubble } from "./messages.js";
 import { createLawyerSession } from "./lawyer-session.js";
@@ -10,8 +10,9 @@ import { MAX_MESSAGE_CHARS } from "../../ai/limits.js";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const SUGGESTIONS = [
-  ["حدا بيهددني بصوري", "حدا عم يهددني ينشر صوري إذا ما بعتله مصاري"],
-  ["شو عقوبة الابتزاز؟", "شو عقوبة الابتزاز الإلكتروني؟"],
+  // (2026-11-18) family matters first: the corpus is the Gaza family-rights law (sharia courts)
+  ["جوزي ما بيصرف علي", "جوزي ما بيصرف علي، شو حقي بالنفقة؟"],
+  ["شو حقي بالمهر؟", "شو حقي بالمهر؟"],
   ["بدي حدا يسمعني", "بدي حدا يسمعني بس"],
 ];
 
@@ -81,7 +82,7 @@ export function createChat({
     const summary = el("summary");
     const label = el("div");
     label.append(
-      el("b", null, `المادة ${id.replace(/^[a-z]+:/, "")}: ${article.topic}`),
+      el("b", null, `المادة ${articleNumber(id)}: ${article.topic}`),
       el("span", null, `${article.lawName}. النص الأصلي`),
     );
     summary.append(icon("i-file"), label);
@@ -90,11 +91,16 @@ export function createChat({
     law.appendChild(document.createTextNode(article.text));
     if (article.amended) law.appendChild(document.createTextNode(`\n\n${article.amended}.`));
     law.appendChild(document.createTextNode("\n\nالمصدر: "));
-    const link = el("a", null, hostOf(article.url) || "رابط المصدر");
-    link.href = article.url;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    law.appendChild(link);
+    if (article.url) {
+      const link = el("a", null, hostOf(article.url) || "رابط المصدر");
+      link.href = article.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      law.appendChild(link);
+    } else {
+      // texts from the lawyer's own copy of the law have no web page to link to
+      law.appendChild(document.createTextNode("نسخة القانون المعتمدة لدى المحامي"));
+    }
     if (meta?.review?.status !== "reviewed")
       law.appendChild(
         document.createTextNode("\nلسا ما راجعت محامية هالنص ولا تأكدت إنه النص النافذ اليوم."),
@@ -191,7 +197,7 @@ export function createChat({
   function renderAiChat(answer) {
     const box = el("div", "a");
     box.appendChild(el("div", null, answer.lead));
-    const articleNo = (id) => id.replace(/^[a-z]+:/, "");
+    const articleNo = (id) => articleNumber(id);
     const rights = (answer.rights || []).filter((r) => ARTICLES[r.cite]);
 
     if (rights.length) {
@@ -221,6 +227,8 @@ export function createChat({
       box.appendChild(el("div", "sec", "📖 نص القانون الأصلي"));
       cites.forEach((id) => box.appendChild(citationCard(id, false)));
     }
+    // which court, the open caveats, and the lawyer before and after any step (built by the app, not the model)
+    for (const line of answer.scope || []) box.appendChild(el("div", "note-line general", line));
     if (answer.ask) box.appendChild(el("div", "ask", answer.ask));
     const src = sourceLine(answer);
     if (src) box.appendChild(src);

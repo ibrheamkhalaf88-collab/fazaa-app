@@ -68,7 +68,55 @@ test("a bad key is not retried", async () => {
   let calls = 0;
   await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async () => {
     calls++;
-    return busy(400, "INVALID_ARGUMENT");
+    // what Google really sends for a bad key: status INVALID_ARGUMENT, reason API_KEY_INVALID
+    return {
+      ok: false,
+      status: 400,
+      json: async () => ({ error: { status: "INVALID_ARGUMENT", details: [{ reason: "API_KEY_INVALID" }] } }),
+    };
   });
   assert.equal(calls, 1);
+});
+
+test("(2026-11-17) Gemini too slow: the backup model is tried, and she gets her answer", async () => {
+  const urls = [];
+  let n = 0;
+  const { status, body } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async (url) => {
+    urls.push(url);
+    if (n++ === 0) throw new DOMException("timed out", "TimeoutError");
+    return ok({ lead: "سامعتك", steps: ["خدي نفس"] });
+  });
+  assert.equal(status, 200);
+  assert.equal(body.answer.lead, "سامعتك");
+  assert.match(urls[1], /gemini-3\.5-flash:/);
+});
+
+test("(2026-11-17) every try is cut to the time that is left, so the app never waits past its limit", async () => {
+  const timeouts = [];
+  const real = AbortSignal.timeout;
+  AbortSignal.timeout = (ms) => (timeouts.push(ms), real.call(AbortSignal, ms));
+  try {
+    await answerQuestion("بدي حدا يسمعني", "ps-wb", { ...ENV, UPSTREAM_MS: "60000" }, async () => {
+      throw new DOMException("timed out", "TimeoutError");
+    });
+  } finally {
+    AbortSignal.timeout = real;
+  }
+  assert.ok(timeouts.length >= 2);
+  assert.ok(
+    timeouts.every((ms) => ms <= 35000),
+    `timeouts: ${timeouts}`,
+  );
+});
+
+test("(2026-11-17) thinking is kept to the minimum, and a model that rejects the setting is asked again without it", async () => {
+  const bodies = [];
+  const replies = [busy(400, "INVALID_ARGUMENT"), ok({ lead: "سامعتك", steps: ["خدي نفس"] })];
+  const { status } = await answerQuestion("بدي حدا يسمعني", "ps-wb", ENV, async (_url, init) => {
+    bodies.push(JSON.parse(init.body));
+    return replies.shift();
+  });
+  assert.equal(status, 200);
+  assert.deepEqual(bodies[0].generationConfig.thinkingConfig, { thinkingLevel: "minimal" });
+  assert.equal(bodies[1].generationConfig.thinkingConfig, undefined);
 });

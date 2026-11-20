@@ -162,3 +162,26 @@ CREATE TABLE IF NOT EXISTS ai_answers (
   reviewed_at INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_ai_answers_at ON ai_answers(at);
+
+-- (2026-11-17) Law articles added by lawyers in the dashboard («القوانين»). Public law, no personal data.
+-- A lawyer enters the text verbatim with its official source and approves it (one lawyer is enough, owner's
+-- decision 2026-11-17; a developer may too); only then do the
+-- app and the AI use it. status: 'draft' (waiting for approval) | 'approved' | 'hidden'.
+CREATE TABLE IF NOT EXISTS law_articles (
+  id          INTEGER PRIMARY KEY AUTOINCREMENT,
+  law_name    TEXT NOT NULL,
+  number      TEXT NOT NULL,
+  region      TEXT NOT NULL,            -- 'ps-wb' | 'ps-gaza' | 'both'
+  topic       TEXT NOT NULL,
+  text        TEXT NOT NULL,
+  amended     TEXT NOT NULL DEFAULT '',
+  url         TEXT NOT NULL,
+  keywords    TEXT NOT NULL DEFAULT '',
+  status      TEXT NOT NULL DEFAULT 'draft',
+  created_by  TEXT NOT NULL,
+  created_at  INTEGER NOT NULL,
+  updated_at  INTEGER NOT NULL,
+  approved_by TEXT,
+  approved_at INTEGER
+);
+CREATE INDEX IF NOT EXISTS idx_law_articles_status ON law_articles(status);

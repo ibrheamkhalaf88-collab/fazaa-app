@@ -45,7 +45,6 @@ const SEVERE = compile([
   "خنقني",
   "بيخنقني",
   "طعنني",
-  "اغتصبني",
   "معه سكين",
   "معه سلاح",
   "واقف عالباب",
@@ -70,6 +69,15 @@ const VIOLENCE = compile([
   "رفع ايده علي",
   "مد ايده علي",
   "رفعلي ايده",
+  // (2026-11-17) «they» forms: the owner's «ضربوني» on the live site was missed
+  "ضربوني",
+  "بيضربوني",
+  "يضربوني",
+  "هددوني",
+  "بيهددوني",
+  "اعتدوا علي",
+  "تحرشوا فيي",
+  "رفعوا ايدهم علي",
 ]);
 
 const SELF_HARM = compile([
@@ -108,6 +116,31 @@ const SELF_HARM_INDIRECT = compile([
   "اخر مره بحكي",
 ]);
 
+/**
+ * Sexual violence and coercion (2026-11-17). Word STEMS, so every form counts («اغتصبني، اغتصبوني، انغتصبت»),
+ * plus the usual typos («اغصتبوني»). Not a fixed emergency script: most of the time she is telling something
+ * that already happened, so Gemini answers with its sexual-violence rules and the safety-plan button is
+ * always shown. When Gemini cannot answer, the app gives SEXUAL_REPLY instead of «جرّبي كمان شوي».
+ */
+const stems = (list) => list.map((p) => new RegExp(PRE + norm(p) + "[^ ]*"));
+const SEXUAL = [
+  ...stems(["اغتصب", "اغصتب", "اغتسب", "اغطصب", "انغتصب", "غتصبو", "اغتصاب", "مغتصب"]),
+  ...compile([
+    "اعتداء جنسي",
+    "اعتدى علي جنسيا",
+    "اعتدوا علي جنسيا",
+    "تحرش جنسي",
+    "لمسني غصب",
+    "لمسوني غصب",
+    "غصبني انام معه",
+    "غصبني على",
+    "اجبرني انام معه",
+    "اجبرني على علاقه",
+    "نام معي غصب",
+    "غصب عني نام معي",
+  ]),
+];
+
 const FORCED_MARRIAGE = compile([
   "بدهم يجوزوني",
   "بدهم يزوجوني",
@@ -132,6 +165,10 @@ const LEGAL_QUESTION =
 const OTHER_PERSON =
   /(?:^| )(?:صاحبتي|صديقتي|اختي|جارتي|قريبتي|بنت عمي|بنت خالي|امي|وحده بعرفها|بنت بعرفها|زميلتي)(?: |$)/;
 const MINOR = /(?:^| )(?:1[0-7]|١[٠-٧]|قاصر|قاصره|بالمدرسه|بالصف)(?: |$)/;
+/** Her child («بنتي», «ابني»): with sexual content, a child-safety case even without an age. */
+const OWN_CHILD = /(?:^| )(?:بنتي|ابني|ولدي|طفلي|طفلتي|بنتنا|ابننا)(?: |$)/;
+/** Sexual content sent to or about a child («صور اباحيه», «بيتحرش فيها»). */
+const SEXUAL_CONTENT = /(?:اباحي|جنسي|عاري|عريان|عريانه|صور خاصه|يتحرش|بيتحرش|تحرش|فاضح|فاضحه)/;
 const ARRANGED =
   /(?:^| )(?:جايبين عريس|جابولي عريس|عريس|خطبوني|بدهم يخطبوني|كتب الكتاب|بدهم يزوجوني|بدهم يجوزوني)(?: |$)/;
 export const FORCED_QUESTION = "في حدا عم يضغط عليكِ تتجوزي وإنتِ مش بدك؟";
@@ -149,6 +186,9 @@ const FAMILY_THREAT = compile([
   "بيغسلوا عارهم",
 ]);
 const CONDITIONAL = /(?:^| )(?:اذا|لو|لما)(?: |$)/;
+/** «هلأ أنا بأمان عند أهلي»: she says she is safe now; never answered with «إنتِ بمكان آمن؟» (live test, 2026-11-19). */
+const SAFE_NOW = /(?:^| )(?:بامان|صرت بامان|بمكان امن|عند اهلي|بيت اهلي|بعيده عنه|طلعت من البيت)(?: |$)/;
+const NOT_SAFE = /(?:^| )(?:مش|ما|مو) (?:بامان|امنه|بمكان امن)(?: |$)/;
 export const FAMILY_QUESTION = "بتحسي إنك بخطر من أهلك هلأ، ولا إذا عرفوا بالموضوع؟";
 
 /** First match of `patterns` that is not denied in the few words before it. @returns {number} index or -1 */
@@ -230,6 +270,7 @@ function forcedMarriageReply(n) {
 /** The one safety question added to an ordinary reply when violence is mentioned but not clearly now. */
 export const SAFETY_QUESTION = "وقبل ما نكمل: إنتِ بأمان هلأ؟";
 export const SAFETY_QUESTION_OTHER = "وإذا هي بخطر هلأ، الأمان أولاً قبل أي خطوة تانية.";
+export const SAFETY_QUESTION_CHILD = "إذا ولدك أو بنتك بخطر هلأ، الأمان أولاً قبل أي خطوة تانية.";
 
 /**
  * @param {string} question
@@ -266,11 +307,24 @@ export function assessDanger(question, numbers = {}, opts = {}) {
     return { level: "check", ask: FAMILY_QUESTION, about: "family" };
   }
 
+  // (2026-11-19) sexual content sent to a child: Gemini may refuse it (live test), so it is a danger case: if the
+  // AI fails she still gets the safety line and the safety-plan button, never only «جرّبي كمان شوي»
+  if ((minor || OWN_CHILD.test(text)) && SEXUAL_CONTENT.test(text))
+    return { level: "check", ask: SAFETY_QUESTION_CHILD, about: "child" };
+
+  // sexual violence: Gemini answers (safety-plan button forced on); never an emergency script by word alone
+  if (firstMatch(text, SEXUAL) >= 0) {
+    if (otherPerson) return { level: "check", ask: SAFETY_QUESTION_OTHER, about: "other" };
+    return { level: "check", ask: SAFETY_QUESTION, about: "sexual" };
+  }
+
   const severe = firstMatch(text, SEVERE) >= 0;
   const violence = firstMatch(text, VIOLENCE) >= 0;
   if (!severe && !violence) return null;
 
   if (otherPerson) return { level: "check", ask: SAFETY_QUESTION_OTHER, about: "other" };
+  // she already said she is safe now: the AI answers (safety-plan button on), no emergency script
+  if (SAFE_NOW.test(text) && !NOT_SAFE.test(text)) return { level: "check", ask: "", about: "safe-now" };
   if (legal || past) return { level: "check", ask: SAFETY_QUESTION };
   if (severe || PRESENT.test(text)) return { level: "immediate", answer: immediateReply(numbers) };
   return { level: "check", ask: SAFETY_QUESTION };
@@ -285,6 +339,54 @@ export function detectDanger(question, numbers = {}, opts = {}) {
   return d?.answer ? { kind: LEGACY_KIND[d.level] || d.level, answer: d.answer } : null;
 }
 const LEGACY_KIND = { immediate: "imminent", selfharm: "self-harm" };
+
+/**
+ * (2026-11-17) Sexual violence, when the AI cannot answer: support, not «جرّبي كمان شوي». Fixed text, pending
+ * professional review (docs/SAFETY-REVIEW.md). Numbers only from the contacts list, never invented.
+ * @param {{police?: string, sexualLine?: string}} n
+ */
+export function sexualSupportAnswer(n = {}) {
+  return {
+    kind: "talk",
+    lead: "مصدقتك، واللي صار مش ذنبك. شكراً إنك حكيتي، وإنتِ بتقرري شو بدك تعملي وإيمتى.",
+    options: [
+      callStep("الشرطة", n.police),
+      "إذا صار هالإشي من كم يوم، في رعاية طبية بتنفع إذا كانت بسرعة (منع حمل طارئ والوقاية من الأمراض). مركز صحي أو مستشفى بيقدروا يساعدوكِ، وما لازم تحكي لحدا تاني.",
+      "إذا بتفكري تشتكي يوم من الأيام، الأدلة بتضيع مع الوقت. بتقدري تسألي محامية التطبيق شو الخيارات، بدون أي التزام.",
+      "بصفحة «مين بيساعدني» في جهات بتسمعك بسرية.",
+    ].filter(Boolean),
+    ask: "إنتِ بأمان هلأ؟",
+    note: "ما قدرت أوصل لخدمة الذكاء هلأ، فهاد رد مكتوب مسبقاً. بتقدري تبعتي رسالتك كمان مرة.",
+    general: true,
+    sos: true,
+    source: "rules",
+  };
+}
+
+/**
+ * (2026-11-19) Sexual content sent to her child. Gemini blocks these messages outright (PROHIBITED_CONTENT, not
+ * adjustable), so the app answers with this fixed text: practical safety steps, no law. Pending professional
+ * review (docs/SAFETY-REVIEW.md). Numbers only from the contacts list, never invented.
+ * @param {{police?: string}} n
+ */
+export function childSafetyAnswer(n = {}) {
+  return {
+    kind: "talk",
+    lead: "منيح إنك انتبهتي وحكيتي. اللي عم يصير مش ذنب ولدك أو بنتك، ومش ذنبك.",
+    options: [
+      "طمّنيهم إنهم مش غلطانين، وخليهم ما يردوا عليه ولا يبعتوله إشي.",
+      "بلّغي عن الحساب واحظريه من التطبيق اللي بيبعت منه.",
+      "لا تبعتي الصور لحدا ولا تحفظي نسخ منها. الشرطة أو المحامية بتحكيلك كيف ينحفظ الدليل صح.",
+      callStep("الشرطة", n.police),
+      "محامية التطبيق بتقدر تحكيلك شو الخيارات، وبصفحة «مين بيساعدني» في جهات بتساعد بسرية.",
+    ].filter(Boolean),
+    ask: SAFETY_QUESTION_CHILD,
+    note: "هاد رد مكتوب مسبقاً، لأنه خدمة الذكاء ما بترد على هيك رسائل.",
+    general: true,
+    sos: true,
+    source: "rules",
+  };
+}
 
 /** The fixed forced-marriage reply (used when she answers «آه» to FORCED_QUESTION). */
 export const forcedMarriageAnswer = (numbers = {}) => forcedMarriageReply(numbers);

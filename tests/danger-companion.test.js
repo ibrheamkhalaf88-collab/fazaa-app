@@ -88,3 +88,20 @@ test("the eight test messages from the owner's review all get a reply", async ()
   assert.equal((await ask(msgs[5])).sos, true);
   assert.equal((await ask(msgs[6])).sos, true);
 });
+
+test("(2026-11-17) sexual violence: every form and common typos; denial and «غصب عني» in passing are not", async () => {
+  const { assessDanger } = await import("../src/ai/danger.js");
+  for (const q of [
+    "اغصتبوني",
+    "اغتصبني",
+    "اغتصبوني",
+    "انغتصبت قبل سنة",
+    "اعتدى علي جنسيا",
+    "غصبني على اشي ما بدي اياه",
+    "شو عقوبة الاغتصاب؟",
+  ])
+    assert.equal(assessDanger(q)?.about, "sexual", q);
+  assert.equal(assessDanger("صاحبتي اغتصبوها")?.about, "other");
+  for (const q of ["ما حدا اغتصبني", "ضحكت غصب عني"]) assert.equal(assessDanger(q), null, q);
+  assert.notEqual(assessDanger("اغتصبني")?.level, "immediate");
+});

@@ -223,3 +223,79 @@ export async function aiUsage(store, env, now) {
 }
 
 export const parseAnswer = (row) => ({ ...row, body: undefined, answer: JSON.parse(row.body) });
+
+/* ---------- law articles added by lawyers in the dashboard (2026-11-17) ---------- */
+
+export const LAW_LIMITS = { lawName: 160, topic: 80, text: 8000, amended: 2000, url: 500, keywords: 300 };
+const LAW_REGIONS = ["ps-wb", "ps-gaza", "both"];
+
+/**
+ * What a lawyer typed for one article, checked. The text is kept VERBATIM (only outer spaces trimmed and line
+ * ends unified): it is quoted to women and to the AI as law. Angle brackets are refused because the text goes
+ * inside the AI prompt's <article> tags; a real law text never needs them.
+ * @returns {{value: object} | {error: string}}
+ */
+export function parseLawArticle(v) {
+  const s = (x, max) =>
+    typeof x === "string"
+      ? x
+          .replace(/\r\n?/g, "\n")
+          .trim()
+          .slice(0, max + 1)
+      : "";
+  const out = {
+    lawName: s(v?.lawName, LAW_LIMITS.lawName),
+    number: s(v?.number, 4).replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d))),
+    region: s(v?.region, 10),
+    topic: s(v?.topic, LAW_LIMITS.topic),
+    text: s(v?.text, LAW_LIMITS.text),
+    amended: s(v?.amended, LAW_LIMITS.amended),
+    url: s(v?.url, LAW_LIMITS.url),
+    keywords: s(v?.keywords, LAW_LIMITS.keywords),
+  };
+  for (const [k, max] of Object.entries(LAW_LIMITS))
+    if (out[k].length > max) return { error: `too-long:${k}` };
+  if (out.lawName.length < 5) return { error: "law-name-required" };
+  if (!/^\d{1,4}$/.test(out.number)) return { error: "bad-number" };
+  if (!LAW_REGIONS.includes(out.region)) return { error: "bad-region" };
+  if (out.topic.length < 2) return { error: "topic-required" };
+  if (out.text.length < 20) return { error: "text-required" };
+  if (/[<>]/.test(out.text + out.amended + out.topic + out.lawName + out.keywords))
+    return { error: "angle-brackets" };
+  let url;
+  try {
+    url = new URL(out.url);
+  } catch {
+    return { error: "source-required" };
+  }
+  if (url.protocol !== "https:") return { error: "source-required" };
+  return { value: out };
+}
+
+/** The approved articles, kept by each Worker isolate for a minute so a busy chat does not read D1 every time. */
+let lawCache = { at: -Infinity, list: [] };
+export async function loadAddedLaws(store, now, { fresh = false } = {}) {
+  if (!fresh && now - lawCache.at < 60_000) return lawCache.list;
+  try {
+    const rows = await store.listLawArticles({ status: "approved" });
+    lawCache = {
+      at: now,
+      list: rows.map(({ id, lawName, number, region, topic, text, amended, url, keywords }) => ({
+        id,
+        lawName,
+        number,
+        region,
+        topic,
+        text,
+        amended,
+        url,
+        keywords,
+      })),
+    };
+  } catch {
+    /* table missing (schema not re-run yet) or D1 hiccup: the built-in laws still work */
+  }
+  return lawCache.list;
+}
+/** After an approve / hide in the dashboard: the next question sees the change at once. */
+export const forgetAddedLaws = () => (lawCache = { at: -Infinity, list: [] });

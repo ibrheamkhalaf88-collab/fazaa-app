@@ -107,12 +107,12 @@
 
 .tabs button.on {
   font-weight: 600;
-  background: var(--info-soft);
+  background: var(--tab-on);
   color: var(--ink);
 }
 
 .tabs button.on svg {
-  color: var(--info);
+  color: var(--tab-on-icon);
 }
 
 .tabs button.sos {

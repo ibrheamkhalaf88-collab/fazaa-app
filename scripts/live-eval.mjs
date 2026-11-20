@@ -6,7 +6,7 @@
  *
  *   node scripts/live-eval.mjs --dry-run                 fake provider, no network, no cost (default)
  *   node scripts/live-eval.mjs --live [--cap-usd 5]      real calls: needs GEMINI_API_KEY in the environment
- *        [--model gemini-3.5-flash-lite] [--fallback-model …] [--modes message,context] [--delay-ms 4000]
+ *        [--model gemini-3.5-flash-lite] [--fallback-model …] [--modes chat|message,context] [--delay-ms 4000]
  *        [--only C01,L22] [--out docs/evidence/live-eval]
  *
  * Money: the run stops calling the provider once the estimated cost reaches --cap-usd (default 5). The estimate
@@ -17,6 +17,8 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createAnswerer } from "../src/ai/answerer.js";
+import { createAssistant } from "../src/ai/assistant.js";
+import { contactsFor, DEFAULT_CONTACTS } from "../src/data/contacts.js";
 import { createRemoteEngine } from "../src/ai/remote-engine.js";
 import { answerQuestion, parseAnswerRequest, setBreaker } from "../server/ai-proxy/worker.js";
 import { createBreaker } from "../server/ai-proxy/breaker.js";
@@ -63,7 +65,11 @@ export function scenarioList(only = []) {
       turns: s.turns.map((say, i) => ({ say, expect: s.expect[i] || {} })),
     })),
   ];
-  return only.length ? list.filter((c) => only.some((p) => c.id.startsWith(p))) : list;
+  // the app is for Gaza only (2026-11-19): scenarios set to another region are not sent to the model
+  const gaza = list.filter((c) =>
+    c.turns.every((t) => typeof t === "string" || t.country === undefined || t.country === "ps-gaza"),
+  );
+  return only.length ? gaza.filter((c) => only.some((p) => c.id.startsWith(p))) : gaza;
 }
 
 const pct = (n, d) => (d ? `${((100 * n) / d).toFixed(1)}%` : "n/a");
@@ -82,12 +88,15 @@ const sentences = (text) =>
  *   fetchImpl: typeof fetch, env: Record<string,string>, scenarios: ReturnType<typeof scenarioList>,
  *   modes?: string[], capUsd?: number, prices?: {in:number,out:number}, delayMs?: number, log?: (s: string) => void,
  * }} o
+ * Modes: "chat" (default) drives the AI-first assistant the live site uses (src/ai/assistant.js, the whole
+ * conversation sent each turn, «مين بيساعدني» contacts in the prompt, as server/api/routes/public.js does);
+ * "message" and "context" drive the older rules-first answerer (src/ai/answerer.js), kept for comparison.
  */
 export async function runLiveEval({
   fetchImpl,
   env,
   scenarios,
-  modes = ["message", "context"],
+  modes = ["chat"],
   capUsd = 5,
   prices = DEFAULT_PRICE,
   delayMs = 0,
@@ -125,7 +134,10 @@ export async function runLiveEval({
   async function serverBridge(_url, init) {
     const req = parseAnswerRequest(JSON.parse(init.body));
     if (req.error) return new Response(JSON.stringify({ error: req.error }), { status: 400 });
-    const { status, body } = await answerQuestion(req.question, req.country, env, providerFetch, req);
+    const { status, body } = await answerQuestion(req.question, req.country, env, providerFetch, {
+      ...req,
+      contacts: contactsFor(DEFAULT_CONTACTS, req.country), // the live list today (no number beyond 100/101/102)
+    });
     if (status !== 200) {
       turnServerError = body.error || `status-${status}`;
       const key = turnServerError.replace(/:.*/, (m) => (m.length > 40 ? m.slice(0, 40) : m));
@@ -140,24 +152,42 @@ export async function runLiveEval({
     for (const sc of scenarios) {
       lines.push(`\n=== [${mode}] ${sc.id}`);
       const clientErrors = [];
-      const a = createAnswerer({
-        emergencyNumbers: () => sc.numbers || { police: "100", ambulance: "101" },
-        available: () => ({ lawyer: true, contacts: true }),
-        remote: createRemoteEngine({
-          endpoint: "live-eval://answer",
-          fetchImpl: serverBridge,
-          timeoutMs: 60000,
-        }),
-        isRemoteEnabled: () => true,
-        shareContext: () => mode === "context",
-        onRemoteError: (e) => clientErrors.push(e.message),
+      const remote = createRemoteEngine({
+        endpoint: "live-eval://answer",
+        fetchImpl: serverBridge,
+        timeoutMs: 60000,
       });
+      const numbers = () => sc.numbers || { police: "100", ambulance: "101" };
+      const a =
+        mode === "chat"
+          ? createAssistant({
+              emergencyNumbers: numbers,
+              available: () => ({ lawyer: true, contacts: true }),
+              remote,
+              isRemoteEnabled: () => true,
+              onRemoteError: (e) => clientErrors.push(e.message),
+            })
+          : createAnswerer({
+              emergencyNumbers: () => sc.numbers || { police: "100", ambulance: "101" },
+              available: () => ({ lawyer: true, contacts: true }),
+              remote: createRemoteEngine({
+                endpoint: "live-eval://answer",
+                fetchImpl: serverBridge,
+                timeoutMs: 60000,
+              }),
+              isRemoteEnabled: () => true,
+              shareContext: () => mode === "context",
+              onRemoteError: (e) => clientErrors.push(e.message),
+            });
       const asks = [];
       for (const turn of sc.turns) {
+        // real pacing: one message every few seconds even when no provider call is made (without it a 60-second
+        // circuit pause swallowed dozens of turns in a fraction of a second and inflated the failure count)
+        if (delayMs) await new Promise((r) => setTimeout(r, delayMs));
         turnServerError = "";
         clientErrors.length = 0;
         const t0 = performance.now();
-        const r = await a.answer(turn.say, { country: turn.country || "ps-wb" });
+        const r = await a.answer(turn.say, { country: turn.country || "ps-gaza" });
         const ms = performance.now() - t0;
         const text = r
           ? [r.lead, r.ask, r.safetyAsk, ...(r.options || []), ...(r.steps || []), r.note]
@@ -283,10 +313,10 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       : fallback;
   };
   const live = process.argv.includes("--live");
-  const model = arg("model", process.env.MODEL || "gemini-3.5-flash-lite");
+  const model = arg("model", process.env.MODEL || "gemini-flash-lite-latest"); // the model the site runs (wrangler.toml)
   const fallbackModel = arg("fallback-model", process.env.FALLBACK_MODEL || "");
   const capUsd = Number(arg("cap-usd", "5"));
-  const modes = arg("modes", "message,context").split(",").filter(Boolean);
+  const modes = arg("modes", "chat").split(",").filter(Boolean);
   const only = arg("only", "").split(",").filter(Boolean);
   const out = arg("out", "docs/evidence/live-eval");
   const scenarios = scenarioList(only);

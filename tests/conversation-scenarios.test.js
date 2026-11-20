@@ -7,14 +7,14 @@ import { test } from "node:test";
 import { createAnswerer } from "../src/ai/answerer.js";
 import { classifyNeed, createMemory, pushTurn, remember } from "../src/ai/conversation.js";
 import { assessDanger, SAFETY_QUESTION } from "../src/ai/danger.js";
-import { checkGrounding, findArticleByNumber, legalLeak } from "../src/ai/legal.js";
-import { validateAnswer, validateTalk } from "../src/ai/validate.js";
+import { checkGrounding, findArticleByNumber, lawScope, legalLeak } from "../src/ai/legal.js";
+import { validateAnswer, validateChat, validateTalk } from "../src/ai/validate.js";
 import { createRemoteEngine } from "../src/ai/remote-engine.js";
 import { ARTICLES, articlesFor } from "../src/data/law/index.js";
 import { answerQuestion, buildUserMessage, cleanContext } from "../server/ai-proxy/worker.js";
 
 const NUMBERS = { police: "100", ambulance: "101" };
-const CTX = { country: "ps-wb" };
+const CTX = { country: "ps-gaza" };
 const chat = (deps = {}) => {
   const a = createAnswerer({
     emergencyNumbers: () => NUMBERS,
@@ -83,7 +83,7 @@ test("a correction replaces the earlier fact at once; a new region clears the me
   assert.equal(a.memory.person, "جوزك");
   await say("لا، قصدي أختي");
   assert.equal(a.memory.person, "أختك");
-  await say("تعبانة", { country: "ps-gaza" });
+  await say("تعبانة", { country: "ps-wb" });
   assert.equal(a.memory.person, "", "regions are never mixed");
 });
 
@@ -146,37 +146,40 @@ test("danger replies never invent a number and never ask her to confront or coll
 /* ---------- legal sources ---------- */
 
 test("asking for an article by number returns THAT article, or says it is not in the texts", () => {
-  const hit = findArticleByNumber("شو بتقول المادة 15؟", "ps-wb");
+  const hit = findArticleByNumber("شو بتقول المادة 59 من قانون حقوق العائلة؟", "ps-gaza");
   assert.deepEqual(
     hit.found.map((a) => a.id),
-    ["15"],
+    ["gz:59"],
   );
-  assert.equal(findArticleByNumber("المادة 999", "ps-wb").missing, true);
-  const gaza = findArticleByNumber("المادة 66 من قانون الأحوال الشخصية", "ps-gaza");
-  assert.equal(gaza.missing, true);
+  // the same number in two laws: both are shown, and she is asked which one she meant
+  const both = findArticleByNumber("شو بتقول المادة 15؟", "ps-gaza");
+  assert.equal(both.ambiguous, true);
+  assert.deepEqual(both.found.map((a) => a.id).sort(), ["cy:15", "ex:15", "gz:15", "hn:15", "sp:15"]);
+  assert.equal(findArticleByNumber("المادة 999", "ps-gaza").missing, true);
+  // a Gaza article asked from the West Bank: known, but for another region, never given
+  const wb = findArticleByNumber("شو بتقول المادة 59؟", "ps-wb");
+  assert.equal(wb.missing, true);
+  assert.deepEqual(wb.outOfRegion.map((a) => a.id).sort(), ["cy:59", "gz:59", "hn:59", "sp:59"]);
+  // a law the app does not have, named: never answered with another law's article
+  const other = findArticleByNumber("المادة 66 من قانون العقوبات", "ps-gaza");
+  assert.equal(other.missing, true);
+  assert.deepEqual(other.found, []);
+  // a law named by its title: only that law's article, even when another law has the same number
+  const hanafi = findArticleByNumber("المادة 66 من قانون الأحوال الشخصية", "ps-gaza");
   assert.deepEqual(
-    gaza.outOfRegion.map((a) => a.id),
-    ["psl:66"],
-    "known, but for another region",
+    hanafi.found.map((a) => a.id),
+    ["hn:66"],
   );
 });
 
 test("a correct article id is not enough: numbers and article numbers must be in the cited text", () => {
-  const base = { lead: "x", steps: ["y"], note: "", cites: ["15"] };
-  const byId = { 15: ARTICLES["15"] };
-  assert.deepEqual(
-    checkGrounding({ ...base, note: "حبس من سنة لسنتين وغرامة من ١٠٠٠ لـ ٣٠٠٠ دينار" }, byId),
-    [],
-  );
-  assert.deepEqual(
-    checkGrounding({ ...base, note: "وإذا بتمس الشرف: غرامة من ٥٠٠٠ لـ ١٠٠٠٠ دينار" }, byId),
-    [],
-  );
-  // the 2018 amount (before decree-law 28/2020) is no longer in article 15, so an answer stating it is refused
-  assert.match(checkGrounding({ ...base, note: "غرامة ٢٠٠ دينار" }, byId)[0], /number-not-in-source:200/);
-  assert.match(checkGrounding({ ...base, note: "حسب المادة 22 كمان" }, byId)[0], /article-not-cited:22/);
+  const base = { lead: "x", steps: ["y"], note: "", cites: ["gz:118"] };
+  const byId = { "gz:118": ARTICLES["gz:118"] };
+  assert.deepEqual(checkGrounding({ ...base, note: "بعد سبع سنين لتسع للصبي" }, byId), []);
+  assert.match(checkGrounding({ ...base, note: "لحد عمر ١٥ سنة" }, byId)[0], /number-not-in-source:15/);
+  assert.match(checkGrounding({ ...base, note: "حسب المادة 59 كمان" }, byId)[0], /article-not-cited:59/);
   assert.throws(
-    () => validateAnswer({ ...base, note: "الحبس ٧ سنين" }, { articleIds: ["15"], articles: byId }),
+    () => validateAnswer({ ...base, note: "لحد ١٣ سنة" }, { articleIds: ["gz:118"], articles: byId }),
     /ungrounded/,
   );
 });
@@ -201,11 +204,11 @@ test("talk replies: at most one question, no promises, no emotional dependence",
   assert.deepEqual(validateTalk({ lead: "سامعتك", options: ["خيار"] }, { need: "listen" }).options, []);
 });
 
-test("Gaza: the cyber-crimes law comes with a caveat about its application there", async () => {
+test("a region other than Gaza (an old saved «ps-wb»): no law text, and she is told the app is for Gaza", async () => {
   const { say } = chat();
-  const r = await say("حدا عم يبتزني بصوري", { country: "ps-gaza" });
-  assert.ok(r.cites.includes("15"));
-  assert.ok(r.scope.some((s) => /غزة مش مؤكد/.test(s)));
+  const r = await say("شو حقي بالنفقة؟", { country: "ps-wb" });
+  assert.ok(![...(r.cites || []), ...(r.related || [])].some((id) => id.startsWith("gz:")));
+  assert.ok(r.scope.some((s) => /لقطاع غزة بس/.test(s)));
 });
 
 /* ---------- the online path: fake provider only ---------- */
@@ -309,7 +312,7 @@ test("server: danger is answered before any model call; context is rebuilt and f
   assert.equal(ctx.turns.length, 1, "unknown roles are dropped");
   assert.ok(!ctx.turns[0].text.includes("<"));
   assert.equal(ctx.constraints.length, 8);
-  const msg = buildUserMessage("سؤال", [ARTICLES["15"]], "ps-wb", ctx);
+  const msg = buildUserMessage("سؤال", [ARTICLES["gz:59"]], "ps-gaza", ctx);
   assert.equal((msg.match(/<context>/g) || []).length, 1);
 });
 
@@ -317,18 +320,120 @@ test("server: a law answer with an unsupported penalty is refused (502), not sho
   const fetchImpl = async () =>
     geminiReply("give_answer", {
       covered: true,
-      lead: "الابتزاز جريمة.",
-      note: "عقوبته الحبس ١٠ سنين حسب المادة 15.",
-      steps: ["لا تدفعي"],
-      cites: ["15"],
+      lead: "بغزة القاضي بيقدر يمدد الحضانة.",
+      note: "الحضانة لحد عمر ١٥ سنة حسب المادة 118.",
+      steps: ["احكي مع محامية"],
+      cites: ["gz:118"],
     });
   const { status, body } = await answerQuestion(
-    "شو عقوبة الابتزاز الإلكتروني؟",
-    "ps-wb",
+    "شو بيقول القانون عن سن الحضانة؟",
+    "ps-gaza",
     { PROVIDER: "gemini", GEMINI_API_KEY: "k", RETRY: "off" },
     fetchImpl,
   );
   assert.equal(status, 502);
-  assert.match(body.error, /ungrounded:number-not-in-source:10/);
-  assert.ok(Object.keys(articlesFor("ps-wb")).includes("15"));
+  assert.match(body.error, /ungrounded:number-not-in-source:15/);
+  assert.ok(Object.keys(articlesFor("ps-gaza")).includes("gz:118"));
+});
+
+test("every AI reply that cites law carries the court and the lawyer line, built by the app (2026-11-19)", () => {
+  const byId = { "gz:59": ARTICLES["gz:59"] };
+  const r = validateChat(
+    { reply: "ولا يهمك، خليني أوضحلك.", cites: ["gz:59"] },
+    { articleIds: ["gz:59"], articles: byId },
+  );
+  assert.ok(r.scope.some((l) => /المحاكم الشرعية بقطاع غزة/.test(l)));
+  assert.ok(r.scope.some((l) => /قبل ما تعملي أي خطوة، وبعدها كمان، استشيري محامية/.test(l)));
+  // blackmail: the regular courts, and the open question whether Gaza applies the cyber-crimes law
+  const cy = lawScope(["cy:15"]);
+  assert.ok(cy.some((l) => /المحاكم النظامية/.test(l)) && cy.some((l) => /مش مؤكد/.test(l)));
+  // both family laws cited: the lawyer says which one prevails
+  assert.ok(lawScope(["gz:118", "hn:391"]).some((l) => /إذا اختلف النصين/.test(l)));
+  // no law cited: no law lines
+  assert.deepEqual(validateChat({ reply: "سامعتك" }, { articleIds: [] }).scope, []);
+});
+
+test("a reply with a letter of another script inside a word is rejected, then rewritten", () => {
+  assert.throws(
+    () => validateChat({ reply: "المؤجل بينדفع عند الطلاق" }, { articleIds: [] }),
+    /foreign-script/,
+  );
+});
+
+test("common Gaza questions reach their own article, not a word match (legal-accuracy run, 2026-11-19)", async () => {
+  const { findSpecificArticles } = await import("../src/ai/legal.js");
+  const first = (q) => findSpecificArticles(q, "ps-gaza")?.found[0]?.id;
+  assert.equal(first("ابني عمره 7 سنين، أبوه بقدر ياخده مني؟"), "hn:391");
+  assert.equal(first("بقدر أسافر بالولاد بعد الطلاق؟"), "hn:393");
+  assert.equal(first("زوجي ما بيصرف علي وهو موجود، شو بعمل؟"), "gz:59");
+  assert.equal(first("بعد الطلاق مين بيصرف علي وقت العدة؟"), "gz:112");
+  assert.equal(first("قديش لازم يكون عمر البنت حتى تتزوج؟"), "gz:5");
+  assert.equal(first("بقدر أستأنف حكم المحكمة الشرعية؟ وقديش المدة؟"), "sp:183");
+  assert.equal(first("وين برفع الدعوى، بمحكمة بلدي ولا بلده؟"), "sp:7");
+  assert.equal(first("زوجي مسافر من سنة ونص وما بيسأل، بقدر أتطلق؟"), "gz:94");
+  assert.equal(first("طليقي ما بيدفع النفقة اللي حكمت فيها المحكمة، بقدر أحبسه؟"), "ex:14");
+  // a blackmail complaint is not a question about which sharia court
+  assert.equal(findSpecificArticles("وين بشتكي على حدا بيبتزني؟", "ps-gaza"), null);
+});
+
+test("sexual content sent to her child is a safety case, so an AI refusal still shows the safety line", () => {
+  for (const q of ["بنتي 14 سنة وفي حدا عم يبعتلها صور إباحية", "ابني حدا بيتحرش فيه"])
+    assert.equal(assessDanger(q, {})?.about, "child", q);
+  assert.equal(assessDanger("شو عقوبة نشر صور اباحية", {}), null);
+});
+
+test("the year in a cited law's name is not an invented number", () => {
+  const base = {
+    lead: "حسب قانون حقوق العائلة لسنة 1954، على الزوج نفقة معتدته.",
+    note: "",
+    steps: [],
+    cites: ["gz:112"],
+  };
+  assert.deepEqual(checkGrounding(base, { "gz:112": ARTICLES["gz:112"] }), []);
+});
+
+test("a quote given as the law's words must be in the cited text word for word (owner's rule, 2026-11-19)", () => {
+  const opts = { articleIds: ["gz:94"], articles: { "gz:94": ARTICLES["gz:94"] } };
+  const ok =
+    "حسب المادة 94 النص بيقول «جاز لزوجته أن تطلب إلي القاضي تطليقها بائنا»، يعني بتقدري تطلبي الطلاق.";
+  assert.equal(validateChat({ reply: ok, cites: ["gz:94"] }, opts).cites[0], "gz:94");
+  // the live model once wrote «إلك مال» for «له مال» (his money): a changed word inside a law quote is rejected
+  const changed = "النص بيقول «ولو كان لها مال تستطيع الإنفاق منه»، فحقك تطلبي.";
+  assert.throws(() => validateChat({ reply: changed, cites: ["gz:94"] }, opts), /misquote/);
+  // her own words in «» are not a law quote
+  const hers = "فهمت إنه حكالك «رح أطلقك وآخد الولاد منك» وهاد بيخوف. حسب المادة 94 بتقدري تطلبي التفريق.";
+  assert.equal(validateChat({ reply: hers, cites: ["gz:94"] }, opts).cites[0], "gz:94");
+});
+
+test("she says she is safe now: no emergency script asking if she is safe (live test, 2026-11-19)", () => {
+  const d = assessDanger("بيهينني قدام الناس وبيضربني أحياناً، بس هلأ أنا بأمان عند أهلي", {});
+  assert.equal(d?.level, "check");
+  assert.equal(d?.ask, "");
+  assert.equal(assessDanger("جوزي عم يضربني هلأ", {})?.level, "immediate");
+  assert.equal(assessDanger("جوزي بيضربني وأنا مش بأمان", {})?.level, "immediate");
+});
+
+test("a short follow-up («طيب شو بيقول القانون؟») gets the specific texts of the case she told", async () => {
+  const { articlesForChat } = await import("../server/ai-proxy/worker.js");
+  const turns = [
+    { role: "user", text: "طليقي بدو ياخد الولاد مني" },
+    { role: "assistant", text: "قديش أعمارهم؟" },
+    { role: "user", text: "عندي بنت عمرها 10 وولد عمره 6، وهم ساكنين معي" },
+    { role: "assistant", text: "في نزاع بالمحكمة؟" },
+    { role: "user", text: "طيب شو بيقول القانون؟" },
+  ];
+  assert.equal(articlesForChat(turns, "ps-gaza")[0].id, "hn:391");
+});
+
+test("law stated without its article is rejected (live test, 2026-11-19)", () => {
+  for (const reply of [
+    "حسب قانون حقوق العائلة بقطاع غزة، الزوج ملزم يدفع نفقة للزوجة خلال العدة.",
+    "حقك تطلبي المصروف، والقانون بيلزم الأب بمصاريفهم.",
+    "نشر الصور يعتبر انتهاك ومخالف للقانون.",
+  ])
+    assert.throws(() => validateChat({ reply }, { articleIds: [] }), /legal-leak/, reply);
+  assert.equal(
+    validateChat({ reply: "خليني أفهم منك، قديش أعمار الولاد؟" }, { articleIds: [] }).cites.length,
+    0,
+  );
 });

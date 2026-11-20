@@ -589,7 +589,7 @@ test("/v1/answer uses the dashboard key and falls back to the Worker secret", as
       new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { origin: ORIGIN, "content-type": "application/json" },
-        body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+        body: JSON.stringify({ question: "شو حقي بالنفقة إذا زوجي ما بدفع", country: "ps-gaza" }),
       }),
       env,
       { store: w.store, now: 5_000_000, fetchImpl },
@@ -632,7 +632,7 @@ test("answers are kept without the question, scrubbed, and reviewable by lawyers
   const w = world();
   await addLawyer(w);
   await w.call("PUT", "/v1/staff/ai-config", { as: DEV, body: { provider: "gemini", apiKey: SECRET_KEY } });
-  const QUESTION = "اسمي ليلى ورقمي 0599123456 وحدا عم يبتزني";
+  const QUESTION = "اسمي ليلى ورقمي 0599123456 وشو حقي بالنفقة إذا زوجي ما بدفع";
   const fetchImpl = async () =>
     geminiReply({
       covered: true,
@@ -695,7 +695,7 @@ test("a failed or empty AI call keeps nothing", async () => {
       new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { origin: ORIGIN, "content-type": "application/json" },
-        body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+        body: JSON.stringify({ question: "شو حقي بالنفقة إذا زوجي ما بدفع", country: "ps-gaza" }),
       }),
       ENV,
       { store: w.store, now: 8_000_000, fetchImpl },
@@ -714,7 +714,7 @@ test("/v1/answer stops at the daily cap, and the cap resets the next day", async
       new Request("https://fazaa.example/api/v1/answer", {
         method: "POST",
         headers: { origin: ORIGIN, "content-type": "application/json" },
-        body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+        body: JSON.stringify({ question: "شو حقي بالنفقة إذا زوجي ما بدفع", country: "ps-gaza" }),
       }),
       env,
       { store: w.store, now, fetchImpl: async () => new Response("x", { status: 500 }) },

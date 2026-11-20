@@ -8,15 +8,15 @@ const GOOD = {
   covered: true,
   lead: "إنتِ مش غلطانة.",
   steps: ["لا تدفعي", "صوّري الرسائل"],
-  note: "المادة 15",
-  cites: ["15"],
+  note: "المادة 59",
+  cites: ["gz:59"],
   sos: true,
 };
 const post = () =>
   new Request("https://ai.example/v1/answer", {
     method: "POST",
     headers: { "content-type": "application/json", origin: ORIGIN },
-    body: JSON.stringify({ question: "حدا عم يبتزني بصوري", country: "ps-wb" }),
+    body: JSON.stringify({ question: "شو حقي بالنفقة إذا زوجي ما بدفع", country: "ps-gaza" }),
   });
 const fake = (payload) => {
   const calls = [];
@@ -63,7 +63,7 @@ test("gemini: calls generateContent with the key in a header and reads functionC
     { fetchImpl: api.fetchImpl },
   );
   assert.equal(res.status, 200);
-  assert.deepEqual((await res.json()).answer.cites, ["15"]);
+  assert.deepEqual((await res.json()).answer.cites, ["gz:59"]);
   const c = api.calls[0];
   assert.match(
     c.url,
@@ -117,7 +117,11 @@ test("nvidia: accepts JSON in plain text when the model ignores tools", async ()
 test("a provider answer citing an article that was not retrieved is still rejected", async () => {
   const api = fake({
     choices: [
-      { message: { tool_calls: [{ function: { arguments: JSON.stringify({ ...GOOD, cites: ["72"] }) } }] } },
+      {
+        message: {
+          tool_calls: [{ function: { arguments: JSON.stringify({ ...GOOD, cites: ["gz:118"] }) } }],
+        },
+      },
     ],
   });
   const res = await handleRequest(

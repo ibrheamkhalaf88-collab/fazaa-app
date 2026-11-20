@@ -3,15 +3,16 @@
   "questions": [
     {
       "q": "حدا عم يبتزني بصوري",
-      "region": "ps-wb",
+      "region": "ps-gaza",
       "expect": "covered",
-      "mustInclude": ["15"]
+      "note": "cyber-crimes decree-law from the lawyer's file; whether Gaza courts apply it is not confirmed",
+      "mustInclude": ["cy:15"]
     },
     {
       "q": "حدا بهددني بصوري",
-      "region": "ps-gaza",
-      "expect": "covered",
-      "mustInclude": ["15"]
+      "region": "ps-wb",
+      "expect": "none",
+      "note": "GAP: West Bank texts removed until the lawyer reviews them"
     },
     {
       "q": "كيف بعمل مقلوبة",
@@ -52,21 +53,8 @@
     {
       "q": "بدي أطلق من زوجي",
       "region": "ps-wb",
-      "expect": "covered",
-      "mustInclude": ["psl:132"]
-    },
-    {
-      "q": "شو النفقة بعد الطلاق",
-      "region": "ps-gaza",
-      "expect": "covered",
-      "mustInclude": ["gz:59"]
-    },
-    {
-      "q": "شو المادة الأولى من القانون الأساسي",
-      "region": "ps-wb",
-      "expect": "covered",
-      "mustInclude": ["bl:32"],
-      "note": "Basic Law art. 1 is NOT in the corpus; related articles are retrieved, so the model must say the asked article is not available. Review these answers first."
+      "expect": "none",
+      "note": "GAP: West Bank texts removed until the lawyer reviews them"
     },
     {
       "q": "بدي أطلق من زوجي",
@@ -75,28 +63,51 @@
       "mustInclude": ["gz:92"]
     },
     {
-      "q": "زوجي ما بدفع نفقة",
-      "region": "ps-wb",
+      "q": "شو النفقة بعد الطلاق",
+      "region": "ps-gaza",
       "expect": "covered",
-      "mustInclude": ["psl:73"]
+      "mustInclude": ["gz:59"]
     },
     {
-      "q": "مين الأحق بحضانة الولاد",
-      "region": "ps-wb",
+      "q": "زوجي ما بدفع نفقة",
+      "region": "ps-gaza",
       "expect": "covered",
-      "mustInclude": ["psl:154"]
+      "mustInclude": ["gz:59"]
     },
     {
       "q": "مين الأحق بحضانة الولاد",
       "region": "ps-gaza",
+      "expect": "covered",
+      "mustInclude": ["gz:118"]
+    },
+    {
+      "q": "مين الأحق بحضانة الولاد",
+      "region": "ps-wb",
       "expect": "none",
-      "note": "GAP: Gaza custody text is not in the corpus yet"
+      "note": "GAP: West Bank texts removed until the lawyer reviews them"
+    },
+    {
+      "q": "زوجي غايب من سنتين وما بعرف عنه شي",
+      "region": "ps-gaza",
+      "expect": "covered"
     },
     {
       "q": "شو بيقول القانون الأساسي عن المساواة",
-      "region": "ps-wb",
+      "region": "ps-gaza",
+      "expect": "none",
+      "note": "the Basic Law is not in the lawyer's files"
+    },
+    {
+      "q": "زوجي ما بدفع نفقة",
+      "region": "",
+      "expect": "none",
+      "note": "unknown region: no law until she says where she lives"
+    },
+    {
+      "q": "طليقي ما بيدفع النفقة اللي حكمت فيها المحكمة، بقدر احبسه؟",
+      "region": "ps-gaza",
       "expect": "covered",
-      "mustInclude": ["bl:9"]
+      "mustInclude": ["ex:14"]
     }
   ]
 }

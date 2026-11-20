@@ -4,8 +4,8 @@
  */
 
 export const DEFAULT_STATE = Object.freeze({
-  theme: "auto", // "auto" | "light" | "dark"
-  country: "ps-wb", // "ps-wb" | "ps-gaza"
+  theme: "light", // "auto" | "light" | "dark"; light by default (owner, 2026-11-20), she can change it in Settings
+  country: "ps-gaza", // Gaza only for now (owner, 2026-11-19): the West Bank is out of the app until its laws are reviewed
   wipe: true, // clear chat + safety-plan ticks on quick exit
   pin: false, // reserved: real PIN lock is not implemented yet
   dg: "weather", // disguise: "weather" | "calc" | "notes"
@@ -18,7 +18,7 @@ export const DEFAULT_STATE = Object.freeze({
 });
 
 export const COUNTRY_NAMES = Object.freeze({
-  "ps-wb": "فلسطين: الضفة الغربية",
+  "": "المنطقة مش محددة",
   "ps-gaza": "فلسطين: قطاع غزة",
 });
 
@@ -29,6 +29,8 @@ export function createState(store) {
 
   const load = () => {
     for (const [key, fallback] of Object.entries(DEFAULT_STATE)) state[key] = store.get(key, fallback);
+    // a region saved before the app became Gaza-only («ps-wb» or not chosen) is Gaza now
+    if (!(state.country in COUNTRY_NAMES) || !state.country) state.country = DEFAULT_STATE.country;
   };
   load();
 

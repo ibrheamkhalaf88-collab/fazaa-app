@@ -5,6 +5,25 @@
  */
 import { buildAnalytics, buildSeries, countByDay, dayKey } from "./days.js";
 
+/** A law_articles row in the shape the memory store uses. */
+const lawRow = (r) => ({
+  id: r.id,
+  lawName: r.law_name,
+  number: r.number,
+  region: r.region,
+  topic: r.topic,
+  text: r.text,
+  amended: r.amended,
+  url: r.url,
+  keywords: r.keywords,
+  status: r.status,
+  createdBy: r.created_by,
+  createdAt: r.created_at,
+  updatedAt: r.updated_at,
+  approvedBy: r.approved_by,
+  approvedAt: r.approved_at,
+});
+
 export function createD1Store(db) {
   const q = (sql, ...args) => db.prepare(sql).bind(...args);
   const caseRow = (r) =>
@@ -568,6 +587,63 @@ export function createD1Store(db) {
       const rows = (await q("SELECT verdict, COUNT(*) AS n FROM ai_answers GROUP BY verdict").all()).results;
       for (const r of rows) c[r.verdict ?? "pending"] = r.n;
       return c;
+    },
+    /* ---- law articles added in the dashboard ---- */
+    async addLawArticle({ lawName, number, region, topic, text, amended = "", url, keywords = "", by, now }) {
+      const r = await q(
+        "INSERT INTO law_articles (law_name, number, region, topic, text, amended, url, keywords, status, created_by, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?, 'draft', ?, ?, ?) RETURNING id",
+        lawName,
+        number,
+        region,
+        topic,
+        text,
+        amended,
+        url,
+        keywords,
+        by,
+        now,
+        now,
+      ).first();
+      return this.getLawArticle(r.id);
+    },
+    async getLawArticle(id) {
+      const r = await q("SELECT * FROM law_articles WHERE id = ?", id).first();
+      return r ? lawRow(r) : null;
+    },
+    async listLawArticles({ status = "all" } = {}) {
+      const rows =
+        status === "all"
+          ? (await q("SELECT * FROM law_articles ORDER BY id DESC").all()).results
+          : (await q("SELECT * FROM law_articles WHERE status = ? ORDER BY id DESC", status).all()).results;
+      return rows.map(lawRow);
+    },
+    async updateLawArticle(id, f, now) {
+      const res = await q(
+        "UPDATE law_articles SET law_name = ?, number = ?, region = ?, topic = ?, text = ?, amended = ?, url = ?, keywords = ?, updated_at = ? WHERE id = ? AND status = 'draft'",
+        f.lawName,
+        f.number,
+        f.region,
+        f.topic,
+        f.text,
+        f.amended,
+        f.url,
+        f.keywords,
+        now,
+        id,
+      ).run();
+      return (res.meta?.changes ?? 0) > 0;
+    },
+    async setLawStatus(id, status, by, now) {
+      const approved = status === "approved";
+      const res = await q(
+        "UPDATE law_articles SET status = ?, updated_at = ?, approved_by = ?, approved_at = ? WHERE id = ?",
+        status,
+        now,
+        approved ? by : null,
+        approved ? now : null,
+        id,
+      ).run();
+      return (res.meta?.changes ?? 0) > 0;
     },
     async addAudit({ actor, action, target = "", now }) {
       await q(

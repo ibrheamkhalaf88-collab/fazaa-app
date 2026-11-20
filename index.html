@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-palette="fresh">
   <head>
     <meta charset="utf-8" />
     <meta
@@ -11,7 +11,7 @@
       name="description"
       content="فزعة: معلومات قانونية بالعامية وخطة أمان ضد الابتزاز الإلكتروني للنساء. نسخة تجريبية."
     />
-    <meta name="theme-color" content="#AEBBD3" />
+    <meta name="theme-color" content="#F3F8F4" />
     <meta name="referrer" content="no-referrer" />
     <meta name="robots" content="noindex" />
     <link rel="manifest" href="manifest.webmanifest" />
@@ -38,6 +38,7 @@
     <!-- Styles, in cascade order: tokens -> base -> layout -> components -> one file per screen -->
     <link rel="stylesheet" href="styles/fonts.css" />
     <link rel="stylesheet" href="styles/tokens.css" />
+    <link rel="stylesheet" href="styles/palette-fresh.css" />
     <link rel="stylesheet" href="styles/base.css" />
     <link rel="stylesheet" href="styles/layout.css" />
     <link rel="stylesheet" href="styles/components.css" />
@@ -83,7 +84,7 @@
                 </span>
                 <h2>كيف بتستخدميه؟</h2>
                 <ol>
-                  <li>اختاري بلدك: الضفة الغربية أو غزة، لأنو القانون بيختلف.</li>
+                  <li>فزعة هلأ لقطاع غزة، وبتجاوب حسب قوانين المحاكم بغزة.</li>
                   <li>اكتبي سؤالك بكلامك العادي، متل النفقة أو الطلاق أو الابتزاز.</li>
                   <li>بتاخدي جواب مبسّط مع المادة القانونية، وبتقدري تطلبي محامية من نفس الشاشة.</li>
                 </ol>
@@ -190,21 +191,12 @@
               </g>
             </svg>
             <h2 class="h" style="font-size: 24px">من وين إنتِ؟</h2>
-            <p class="muted">القوانين بتختلف من مكان لمكان، فحتى نجاوبك صح لازم نعرف وين ساكنة.</p>
+            <p class="muted">فزعة هلأ لنساء قطاع غزة بس، وبتجاوب حسب قوانين غزة.</p>
             <div class="countries" id="countries">
-              <button class="country sel" data-country="ps-wb">
-                <span>
-                  فلسطين: الضفة الغربية
-                  <small>قانون الجرائم الإلكترونية ٢٠١٨</small>
-                </span>
-                <span class="tick">
-                  <svg class="ic ic-14"><use href="#i-check" /></svg>
-                </span>
-              </button>
               <button class="country" data-country="ps-gaza">
                 <span>
                   فلسطين: قطاع غزة
-                  <small>قانون الجرائم الإلكترونية ٢٠١٨</small>
+                  <small>قوانين المحاكم الشرعية والنظامية بغزة، قيد المراجعة مع محامي</small>
                 </span>
                 <span class="tick">
                   <svg class="ic ic-14"><use href="#i-check" /></svg>
@@ -413,7 +405,7 @@
                 <b class="fw-5">فزعة</b>
                 <br />
                 <span style="font-size: 12px; color: var(--primary)" id="chat-sub">
-                  محادثة على جهازك · الضفة الغربية
+                  محادثة على جهازك · قطاع غزة
                 </span>
               </div>
             </div>
@@ -446,11 +438,9 @@
                 بيقول النص القانوني اللي عندي.
               </div>
               <div class="suggest" id="suggest">
-                <button class="chip" data-ask="حدا عم يهددني ينشر صوري إذا ما بعتله مصاري">
-                  حدا بيهددني بصوري
-                </button>
-                <button class="chip" data-ask="شو عقوبة الابتزاز الإلكتروني؟">شو عقوبة الابتزاز؟</button>
-                <button class="chip" data-ask="حدا نشر فيديو إلي بدون إذني">نشروا فيديو إلي</button>
+                <button class="chip" data-ask="جوزي ما بيصرف علي، شو حقي بالنفقة؟">جوزي ما بيصرف علي</button>
+                <button class="chip" data-ask="شو حقي بالمهر؟">شو حقي بالمهر؟</button>
+                <button class="chip" data-ask="قديش مدة العدة؟">قديش مدة العدة؟</button>
               </div>
             </div>
             <p class="disclaim">معلومات عامة من نص القانون، مش بديل عن محامي.</p>
@@ -818,7 +808,7 @@
                 </span>
                 <div>
                   <b>المكان</b>
-                  <small id="set-country">فلسطين: الضفة الغربية</small>
+                  <small id="set-country">فلسطين: قطاع غزة</small>
                 </div>
                 <button class="chip" data-go="country">تغيير</button>
               </div>

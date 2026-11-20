@@ -41,14 +41,18 @@ export const TELEMETRY_ENDPOINT = "";
 /**
  * Staff API for real lawyer chat (accounts + cases). "" = off: the lawyer tab stays the scripted
  * demo. When the API is deployed on the same domain: "/api".
+ * (2026-11-17, owner's decision) on: women can open a case with a real lawyer from the app.
  */
-export const API_BASE = "";
+export const API_BASE = "/api";
 
 /**
  * Public list of emergency numbers and support organisations (edited in the dashboard, "أرقام التواصل").
  * Served by the same Worker as the app. "" = use only the numbers built into the app.
  */
 export const CONTACTS_ENDPOINT = "/api/v1/contacts";
+
+/** Law articles added and approved by lawyers in the dashboard («القوانين»). "" = only the built-in laws. */
+export const LAWS_ENDPOINT = "/api/v1/laws";
 
 /** Lawyers available now (managed in the dashboard, "المحاميات"). "" = hide the lawyer cards' live data. */
 export const LAWYERS_ENDPOINT = "/api/v1/lawyers";

@@ -1,4 +1,4 @@
-import { AVATARS, LAWYER_REGIONS, MAX_CASES_DEFAULT } from "../src/data/lawyers.js";
+import { AVATARS, LAWYER_REGIONS, MAX_CASES_DEFAULT, OPEN_REGIONS } from "../src/data/lawyers.js";
 import { api, errorText } from "./api.js";
 import { ago, el, pill } from "./util.js";
 
@@ -38,7 +38,7 @@ const check = (label, checked) => {
 };
 const regionsField = (selected) => {
   const wrap = el("div", "region-checks");
-  const boxes = Object.entries(LAWYER_REGIONS).map(([id, label]) => {
+  const boxes = OPEN_REGIONS.map((id) => [id, LAWYER_REGIONS[id]]).map(([id, label]) => {
     const c = check(label, selected.includes(id));
     c.box.value = id;
     wrap.append(c.wrap);

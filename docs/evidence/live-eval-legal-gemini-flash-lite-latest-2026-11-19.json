@@ -1,0 +1,29 @@
+{
+  "model": "gemini-flash-lite-latest",
+  "date": "2026-11-19",
+  "modes": ["chat"],
+  "summary": {
+    "turns": 25,
+    "aiAnswered": 20,
+    "attemptedOnline": 20,
+    "aiRate": "100.0%",
+    "fellBack": 0,
+    "providerErrors": {},
+    "validationRejections": 0,
+    "structuralFailures": 0,
+    "otherDialect": 1,
+    "tooLong": 0,
+    "questionRepeated": 0,
+    "latencyMs": {
+      "p50": 1738,
+      "p95": 25107
+    },
+    "cost": {
+      "calls": 24,
+      "inputTokens": 76244,
+      "outputTokens": 3366,
+      "usd": 0.0698,
+      "blockedByCap": 0
+    }
+  }
+}

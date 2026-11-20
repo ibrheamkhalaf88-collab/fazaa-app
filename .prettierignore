@@ -2,3 +2,5 @@ node_modules
 assets/sprite.svg
 src/data/law/cyber-crimes-2018.js
 archive
+src/data/law/hanafi-personal-status.js
+docs/sources/gaza/pipeline

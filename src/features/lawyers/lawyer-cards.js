@@ -87,6 +87,11 @@ export function createLawyerCards({
 
   function render() {
     const list = lawyers || [];
+    // (2026-11-17) the green «live» dot only when a lawyer is really available now: a woman in danger must
+    // not think someone is waiting to answer her (unknown, e.g. offline, keeps it as it is)
+    if (lawyers)
+      for (const dot of document.querySelectorAll('[data-mode="lawyer"] .live, .path.law .live'))
+        dot.hidden = !list.length;
     const note = liveChat ? "متاحات هلأ" : "المحادثة مع المحاميات قريباً";
     for (const id of ["#home-lawyer-note", "#lawyer-list-note"]) {
       const n = $(id);

@@ -49,7 +49,7 @@ export function createRemoteEngine({
       if (data.answer.source === "rules") return { ...data.answer, source: "rules" };
       // checked again here: the app trusts its own rules, not the server's word
       const articles = articlesFor(ctx.country);
-      return validateChat(data.answer, { articleIds: Object.keys(articles), articles });
+      return validateChat(data.answer, { articleIds: Object.keys(articles), articles, region: ctx.country });
     },
 
     /**
@@ -84,7 +84,11 @@ export function createRemoteEngine({
       // checked again here: the app trusts its own rules, not the server's word
       if (data.answer.kind === "talk") return validateTalk(data.answer, { need: ctx.need });
       const articles = articlesFor(ctx.country);
-      return validateAnswer(data.answer, { articleIds: Object.keys(articles), articles });
+      return validateAnswer(data.answer, {
+        articleIds: Object.keys(articles),
+        articles,
+        region: ctx.country,
+      });
     },
   };
 }

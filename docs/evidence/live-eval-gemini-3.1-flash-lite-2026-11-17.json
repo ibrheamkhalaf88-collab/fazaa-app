@@ -1,0 +1,34 @@
+{
+  "model": "gemini-3.1-flash-lite",
+  "date": "2026-11-17",
+  "modes": ["chat"],
+  "summary": {
+    "turns": 144,
+    "aiAnswered": 94,
+    "attemptedOnline": 137,
+    "aiRate": "68.6%",
+    "fellBack": 43,
+    "providerErrors": {
+      "invalid-output:legal-leak": 4,
+      "upstream-unreachable": 4,
+      "circuit-open": 34,
+      "invalid-output:forbidden:سريه تامه": 1
+    },
+    "validationRejections": 5,
+    "structuralFailures": 3,
+    "otherDialect": 0,
+    "tooLong": 0,
+    "questionRepeated": 1,
+    "latencyMs": {
+      "p50": 4042,
+      "p95": 21611
+    },
+    "cost": {
+      "calls": 143,
+      "inputTokens": 278346,
+      "outputTokens": 10239,
+      "usd": 0.0849,
+      "blockedByCap": 0
+    }
+  }
+}

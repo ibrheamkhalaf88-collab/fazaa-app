@@ -14,6 +14,8 @@ export function createMemoryStore() {
   const settings = new Map();
   let aiAnswers = [];
   let aiSeq = 0;
+  const lawArticles = [];
+  let lawSeq = 0;
   const daily = new Map();
   const events = new Map();
   const seen = new Map();
@@ -405,6 +407,57 @@ export function createMemoryStore() {
       const c = { pending: 0, good: 0, bad: 0 };
       for (const a of aiAnswers) c[a.verdict ?? "pending"]++;
       return c;
+    },
+    /* ---- law articles added in the dashboard ---- */
+    async addLawArticle({ lawName, number, region, topic, text, amended = "", url, keywords = "", by, now }) {
+      const row = {
+        id: ++lawSeq,
+        lawName,
+        number,
+        region,
+        topic,
+        text,
+        amended,
+        url,
+        keywords,
+        status: "draft",
+        createdBy: by,
+        createdAt: now,
+        updatedAt: now,
+        approvedBy: null,
+        approvedAt: null,
+      };
+      lawArticles.push(row);
+      return { ...row };
+    },
+    async getLawArticle(id) {
+      const r = lawArticles.find((x) => x.id === id);
+      return r ? { ...r } : null;
+    },
+    async listLawArticles({ status = "all" } = {}) {
+      return lawArticles
+        .filter((r) => status === "all" || r.status === status)
+        .slice()
+        .reverse()
+        .map((r) => ({ ...r }));
+    },
+    /** Only a draft can be edited (an approved text changes by hiding it and adding the new one). */
+    async updateLawArticle(id, fields, now) {
+      const r = lawArticles.find((x) => x.id === id && x.status === "draft");
+      if (!r) return false;
+      Object.assign(r, fields, { updatedAt: now });
+      return true;
+    },
+    async setLawStatus(id, status, by, now) {
+      const r = lawArticles.find((x) => x.id === id);
+      if (!r) return false;
+      Object.assign(r, {
+        status,
+        updatedAt: now,
+        approvedBy: status === "approved" ? by : null,
+        approvedAt: status === "approved" ? now : null,
+      });
+      return true;
     },
     async addAudit({ actor, action, target = "", now }) {
       audit.push({ id: audit.length + 1, at: now, actor, action, target });

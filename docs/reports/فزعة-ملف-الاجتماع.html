@@ -1,0 +1,1118 @@
+<title>فزعة: الملف التقني</title>
+<meta name="claude:viewport-fit-sides" content="cover" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Aref+Ruqaa:wght@700&display=swap"
+/>
+<style>
+  /* Layout: one reading column, right-to-left, a sticky chip bar of sections; the app's own navy and gold. */
+  :root {
+    --bg: #f4f1e8;
+    --surface: #fffdf6;
+    --surface-2: #ebe6d6;
+    --ink: #18214a;
+    --ink-soft: #4a5577;
+    --line: #dcd5c2;
+    --accent: #b7832f;
+    --accent-soft: #f5e7c9;
+    --info: #1f6b67;
+    --info-soft: #d6ebe7;
+    --warn: #8a4b14;
+    --warn-soft: #f6e2cc;
+    --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+    --font-display: "Aref Ruqaa", "IBM Plex Sans Arabic", serif;
+    --font-mono: ui-monospace, "Cascadia Code", Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #111733;
+      --surface: #1a2247;
+      --surface-2: #232d58;
+      --ink: #f1ecdf;
+      --ink-soft: #b3bdd8;
+      --line: #34406e;
+      --accent: #e7b866;
+      --accent-soft: #3a3320;
+      --info: #82d2c7;
+      --info-soft: #1c3f45;
+      --warn: #f0b27a;
+      --warn-soft: #43301f;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #111733;
+    --surface: #1a2247;
+    --surface-2: #232d58;
+    --ink: #f1ecdf;
+    --ink-soft: #b3bdd8;
+    --line: #34406e;
+    --accent: #e7b866;
+    --accent-soft: #3a3320;
+    --info: #82d2c7;
+    --info-soft: #1c3f45;
+    --warn: #f0b27a;
+    --warn-soft: #43301f;
+    color-scheme: dark;
+  }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.85;
+    direction: rtl;
+    margin: 0;
+  }
+  .wrap {
+    max-width: 820px;
+    margin: 0 auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 28px 64px;
+  }
+  header.hero {
+    display: grid;
+    gap: 10px;
+    padding-block: 8px 20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    font-family: var(--font-display);
+    font-size: 44px;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--ink);
+  }
+  .hero p {
+    margin: 0;
+    color: var(--ink-soft);
+    max-width: 62ch;
+  }
+  .meta {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--bg);
+  }
+  nav.toc {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--bg);
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-block: 12px;
+    border-bottom: 1px solid var(--line);
+    scrollbar-width: thin;
+  }
+  nav.toc a {
+    flex: none;
+    text-decoration: none;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px 14px;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  nav.toc a:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+  section {
+    padding-block: 26px 6px;
+    scroll-margin-top: 70px;
+  }
+  h2 {
+    font-size: 24px;
+    margin: 0 0 12px;
+    text-wrap: balance;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .tag {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    padding: 1px 8px;
+  }
+  h3 {
+    font-size: 18px;
+    margin: 22px 0 8px;
+  }
+  p {
+    margin: 0 0 12px;
+    max-width: 68ch;
+  }
+  ul,
+  ol {
+    margin: 0 0 12px;
+    padding-inline-start: 22px;
+    max-width: 68ch;
+  }
+  li {
+    margin-bottom: 6px;
+  }
+  code,
+  .mono {
+    font-family: var(--font-mono);
+    font-size: 0.88em;
+    direction: ltr;
+    unicode-bidi: isolate;
+    background: var(--surface-2);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+  .say {
+    background: var(--info-soft);
+    border-inline-start: 4px solid var(--info);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0 16px;
+  }
+  .say b {
+    color: var(--info);
+  }
+  .careful {
+    background: var(--warn-soft);
+    border-inline-start: 4px solid var(--warn);
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin: 12px 0 16px;
+  }
+  .careful b {
+    color: var(--warn);
+  }
+  .table {
+    overflow-x: auto;
+    margin: 8px 0 16px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    min-width: 520px;
+    font-size: 15px;
+  }
+  th,
+  td {
+    text-align: right;
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  th {
+    background: var(--surface-2);
+    font-weight: 600;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  td.num {
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .flow {
+    list-style: none;
+    padding: 0;
+    margin: 10px 0 16px;
+    display: grid;
+    gap: 0;
+    counter-reset: step;
+    max-width: none;
+  }
+  .flow li {
+    counter-increment: step;
+    position: relative;
+    padding: 10px 52px 10px 14px;
+    margin: 0;
+    border-inline-start: 2px dashed var(--line);
+    margin-inline-start: 18px;
+  }
+  .flow li::before {
+    content: counter(step);
+    position: absolute;
+    right: -18px;
+    top: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--bg);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .flow li:last-child {
+    border-inline-start-color: transparent;
+  }
+  .flow b {
+    display: block;
+  }
+  .flow span {
+    color: var(--ink-soft);
+    font-size: 15px;
+  }
+  .where {
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .grid2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 12px;
+    margin: 8px 0 16px;
+  }
+  .box {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px 14px;
+    min-width: 0;
+  }
+  .box h4 {
+    margin: 0 0 6px;
+    font-size: 16px;
+  }
+  .box p,
+  .box ul {
+    margin: 0;
+    font-size: 15px;
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin: 10px 0 16px;
+  }
+  .stat {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  .stat b {
+    display: block;
+    font-size: 24px;
+    font-variant-numeric: tabular-nums;
+  }
+  .stat span {
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  details.q {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  details.q summary {
+    cursor: pointer;
+    padding: 10px 14px;
+    font-weight: 600;
+    list-style: none;
+    display: flex;
+    gap: 8px;
+  }
+  details.q summary::-webkit-details-marker {
+    display: none;
+  }
+  details.q summary::before {
+    content: "؟";
+    color: var(--accent);
+    font-weight: 700;
+  }
+  details.q[open] summary {
+    border-bottom: 1px solid var(--line);
+  }
+  details.q .a {
+    padding: 10px 14px 4px;
+  }
+  .mermaid {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    overflow-x: auto;
+    direction: ltr;
+  }
+  footer {
+    margin-top: 30px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+</style>
+
+<div class="wrap">
+  <header class="hero">
+    <h1 class="brand">فَزعة</h1>
+    <p>
+      كل اللي ممكن ينسأل عنه تقنياً بالاجتماع، والتركيز على الذكاء الاصطناعي. كل رقم هون مأخوذ من الكود أو من
+      تجارب حقيقية على الموقع.
+    </p>
+    <div class="meta">
+      محدّث 2026-11-17 · النسخة المنشورة
+      <span class="mono">b36e9fc7</span>
+      · الموقع
+      <span class="mono">fazaa.ibrheam-app.workers.dev</span>
+    </div>
+  </header>
+
+  <nav class="toc" aria-label="أقسام الملف">
+    <a href="#pitch">بجملتين</a>
+    <a href="#stack">التقنيات</a>
+    <a href="#ai">الذكاء: الرحلة</a>
+    <a href="#law">القانون</a>
+    <a href="#safety">الأمان</a>
+    <a href="#reliability">الثبات</a>
+    <a href="#privacy">الخصوصية</a>
+    <a href="#cost">التكلفة والحدود</a>
+    <a href="#eval">نتائج التقييم</a>
+    <a href="#lawyer">المحامية</a>
+    <a href="#security">الحماية</a>
+    <a href="#faq">أسئلة متوقعة</a>
+    <a href="#limits">نقاط ضعف</a>
+    <a href="#next">الخطوات الجاية</a>
+  </nav>
+
+  <section id="pitch">
+    <h2>فزعة بجملتين</h2>
+    <div class="say">
+      <b>قوليها هيك:</b>
+      فزعة تطبيق موبايل لنساء فلسطين بالضفة وغزة اللي بيواجهوا عنف أو تهديد أو ابتزاز أو مشاكل عائلية
+      وقانونية. فيه مساعدة ذكية بتحكي بالعامية الفلسطينية، بتسمعها، وبتشرحلها حقوقها من نص القانون الفلسطيني
+      الحقيقي بس، وبتوصلها بمحامية أو بجهة دعم، وكل هاد بخصوصية وبزر خروج سريع بيخبّي التطبيق.
+    </div>
+    <div class="grid2">
+      <div class="box">
+        <h4>شو بتعمل المساعدة</h4>
+        <ul>
+          <li>بتسمع وبتطمّن بالعامية.</li>
+          <li>بتشرح الحق القانوني من نص المادة، وبتعرض النص الأصلي.</li>
+          <li>بتعطي خطوة عملية صغيرة وآمنة.</li>
+          <li>بتحط السلامة أول لما في خطر.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h4>شو ما بتعمله أبداً</h4>
+        <ul>
+          <li>ما بتخترع قانون ولا رقم ولا عقوبة.</li>
+          <li>ما بتوعد بنتيجة ولا بأمان ولا بسرية تامة.</li>
+          <li>ما بتدّعي إنها محامية أو إنسانة.</li>
+          <li>ما بتحفظ المحادثة على السيرفر.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack">
+    <h2>
+      التقنيات
+      <span class="tag">Stack</span>
+    </h2>
+    <div class="table">
+      <table>
+        <tr>
+          <th>الجزء</th>
+          <th>التقنية</th>
+          <th>ملاحظة</th>
+        </tr>
+        <tr>
+          <td>الواجهة (Frontend)</td>
+          <td>HTML + CSS + JavaScript، بدون framework</td>
+          <td>تطبيق PWA بيتثبّت على الموبايل وبيشتغل بدون إنترنت بعد أول زيارة</td>
+        </tr>
+        <tr>
+          <td>الخادم (Backend)</td>
+          <td>
+            JavaScript على
+            <b>Cloudflare Workers</b>
+          </td>
+          <td>بدون سيرفر نديره، بيشتغل على شبكة Cloudflare</td>
+        </tr>
+        <tr>
+          <td>قاعدة البيانات</td>
+          <td>
+            <b>Cloudflare D1</b>
+            (SQLite، بلغة SQL)
+          </td>
+          <td>الرسائل والأسماء والأرقام مشفّرة</td>
+        </tr>
+        <tr>
+          <td>الذكاء الاصطناعي</td>
+          <td><b>Google Gemini</b></td>
+          <td>الكود بيدعم كمان Claude وOpenAI وOpenRouter وNVIDIA بتغيير إعداد</td>
+        </tr>
+        <tr>
+          <td>لوحة التحكم</td>
+          <td>
+            صفحات JavaScript على نفس الموقع
+            <span class="mono">/admin/</span>
+          </td>
+          <td>للمحاميات والمطوّرين، بإيميل وكلمة سر</td>
+        </tr>
+        <tr>
+          <td>أندرويد</td>
+          <td>TWA (تغليف الموقع كتطبيق)</td>
+          <td>
+            مجلد
+            <span class="mono">android-twa</span>
+          </td>
+        </tr>
+        <tr>
+          <td>الاختبارات</td>
+          <td>Node.js + Playwright</td>
+          <td>426 اختبار آلي + 17 اختبار بالمتصفح، كلهم ناجحين</td>
+        </tr>
+      </table>
+    </div>
+    <p>
+      كل إشي على عنوان واحد: التطبيق على
+      <span class="mono">/</span>
+      ، واللوحة على
+      <span class="mono">/admin/</span>
+      ، والخادم على
+      <span class="mono">/api/</span>
+      . هاد بيسهّل الحماية (المتصفح بيرفض أي اتصال لموقع تاني).
+    </p>
+    <pre class="mermaid">
+flowchart LR
+  A[Phone - PWA app] -->|her message + last 12 turns| B[Cloudflare Worker /api]
+  B -->|law texts of her region + rules| C[Google Gemini]
+  C -->|JSON reply| B
+  B -->|checked reply| A
+  B <-->|encrypted cases, accounts| D[(Cloudflare D1)]
+  E[Dashboard /admin] --> B
+</pre>
+  </section>
+
+  <section id="ai">
+    <h2>
+      الذكاء الاصطناعي: رحلة الرسالة
+      <span class="tag">أهم قسم</span>
+    </h2>
+    <p>
+      من 2026-11-13 التطبيق «الذكاء أولاً»: كل رد بيكتبه Gemini كمحادثة حقيقية، إلا حالات الخطر الحاضر. هيك
+      بتمشي رسالتها:
+    </p>
+    <ol class="flow">
+      <li>
+        <b>فحص الخطر على الموبايل نفسه</b>
+        <span>
+          قبل ما تطلع الرسالة. «عم يكسر الباب» أو «بدي أموت» بيطلع رد أمان جاهز ومراجَع فوراً مع رقم الشرطة أو
+          الإسعاف، بدون إنترنت وبدون Gemini، لأنه الثواني بتفرق.
+        </span>
+        <div class="where">src/ai/danger.js</div>
+      </li>
+      <li>
+        <b>إرسال المحادثة</b>
+        <span>
+          بتنبعت رسالتها مع آخر 12 رسالة من نفس الجلسة (حتى يفهم «طيب شو بعمل؟»). بدون اسم، بدون حساب، بدون أي
+          معرّف للجهاز.
+        </span>
+        <div class="where">src/ai/assistant.js · remote-engine.js</div>
+      </li>
+      <li>
+        <b>فحص الخطر مرة تانية على الخادم</b>
+        <span>الخادم ما بيثق بالموبايل، بيفحص لحاله.</span>
+      </li>
+      <li>
+        <b>اختيار نصوص القانون</b>
+        <span>
+          بيدوّر بين مواد قانون منطقتها بس (الضفة أو غزة) ويختار 4 مواد كحد أقصى متعلقة بالمحادثة. ومعها خطوات
+          إجرائية مراجَعة، وقائمة «مين بيساعدني».
+        </span>
+        <div class="where">articlesForChat · retrieve.js · procedures.js</div>
+      </li>
+      <li>
+        <b>التعليمات لـ Gemini</b>
+        <span>
+          تعليمات طويلة: العامية الفلسطينية، الدفء، القانون من النصوص المعطاة بس، السلامة أول، كيف يتعامل مع
+          حالات الاغتصاب، ممنوعات واضحة. وبيُجبر يرد بصيغة محددة (JSON): الرد، الحقوق، الخطوات، سؤال واحد،
+          والمواد المستشهد فيها.
+        </span>
+        <div class="where">server/ai-proxy/worker.js · CHAT_PROMPT</div>
+      </li>
+      <li>
+        <b>فحص الرد (الحارس)</b>
+        <span>
+          كل رقم أو مادة بالرد لازم يكون موجود بالنص المعطى. ممنوع الوعود («رح تكوني بأمان»، «سرية تامة»، «ما
+          رح أتركك»). إذا الرد خالف قاعدة، بيرجع لـ Gemini مرة وحدة مع سبب الرفض.
+        </span>
+        <div class="where">src/ai/validate.js · legal.js</div>
+      </li>
+      <li>
+        <b>فحص تالت على الموبايل</b>
+        <span>التطبيق بيعيد فحص الرد قبل ما يعرضه، ما بيثق بكلمة الخادم.</span>
+      </li>
+      <li>
+        <b>العرض</b>
+        <span>
+          الرد بكلام بسيط، وبعده «خلاصة حديثنا» (الحقوق والخطوات) إذا في قانون، والنص الأصلي للمادة مطوي،
+          وأزرار: خطة الأمان، محامية، مين بيساعدني.
+        </span>
+        <div class="where">src/features/chat/chat.js</div>
+      </li>
+    </ol>
+    <div class="grid2">
+      <div class="box">
+        <h4>النموذج المستخدم هلأ</h4>
+        <p>
+          <span class="mono">gemini-3.5-flash-lite</span>
+          أساسي، و
+          <span class="mono">gemini-3.1-flash-lite</span>
+          احتياطي. بيتغيّروا من لوحة التحكم بدون برمجة. التفكير على الحد الأدنى للسرعة، والرد حتى 700 كلمة-رمز
+          تقريباً.
+        </p>
+      </div>
+      <div class="box">
+        <h4>المفتاح (API key)</h4>
+        <p>محفوظ مشفّر بقاعدة البيانات، وبيتغيّر من اللوحة. ما بيرجع يبين لحدا بعد الحفظ، بس آخر 4 أحرف.</p>
+      </div>
+    </div>
+    <div class="say">
+      <b>إذا سألوكِ «ليش ما بتهلوس؟»</b>
+      لأنه ما بنعطيه حرية: بنعطيه نصوص القانون اللي لازم يحكي منها، وبنجبره يحدد المادة، وبعدها الكود بيتأكد
+      إنه كل رقم بالرد موجود فعلاً بالنص. إذا ما لقى نص، لازم يقول «اسألي محامية».
+    </div>
+  </section>
+
+  <section id="law">
+    <h2>القانون اللي جوّا التطبيق</h2>
+    <p>41 مادة من 4 قوانين فلسطينية، منسوخة حرفياً، وكل نص إله بصمة بالكود بتكشف إذا انغيّر حرف واحد.</p>
+    <div class="table">
+      <table>
+        <tr>
+          <th>القانون</th>
+          <th>المنطقة</th>
+          <th>عدد المواد</th>
+        </tr>
+        <tr>
+          <td>قانون الأحوال الشخصية رقم 61 لسنة 1976</td>
+          <td>الضفة</td>
+          <td class="num">23</td>
+        </tr>
+        <tr>
+          <td>قانون حقوق العائلة لسنة 1954</td>
+          <td>غزة</td>
+          <td class="num">9</td>
+        </tr>
+        <tr>
+          <td>قرار بقانون رقم 10 لسنة 2018 بشأن الجرائم الإلكترونية</td>
+          <td>الاثنين</td>
+          <td class="num">4</td>
+        </tr>
+        <tr>
+          <td>القانون الأساسي المعدل لسنة 2003</td>
+          <td>الاثنين</td>
+          <td class="num">5</td>
+        </tr>
+      </table>
+    </div>
+    <ul>
+      <li>
+        <b>المواضيع:</b>
+        النفقة، الحضانة، الطلاق، العدة، المهر، الابتزاز الإلكتروني ونشر الصور، الحقوق الأساسية.
+      </li>
+      <li>
+        <b>مش موجود:</b>
+        قانون العقوبات (الضرب، الاغتصاب)، الميراث. بهالمواضيع الذكاء ممنوع يحكي عقوبات، وبيحوّلها لمحامية.
+      </li>
+      <li>
+        <b>«شو بتقول المادة 15؟»</b>
+        التطبيق بيعرض النص الحرفي مباشرة من غير Gemini.
+      </li>
+      <li>
+        <b>الضفة وغزة منفصلين:</b>
+        ما بيعطي امرأة بغزة مادة من قانون الضفة.
+      </li>
+    </ul>
+    <div class="careful">
+      <b>انتبهي:</b>
+      النصوص لسا ما راجعتها محامية بشكل رسمي. التطبيق بيكتب هالشي تحت كل نص («لسا ما راجعت محامية هالنص»).
+    </div>
+  </section>
+
+  <section id="safety">
+    <h2>الأمان بالحالات الحساسة</h2>
+    <div class="table">
+      <table>
+        <tr>
+          <th>الحالة</th>
+          <th>شو بيصير</th>
+        </tr>
+        <tr>
+          <td>خطر هلأ («عم يكسر الباب»، «أهلي بيقتلوني هلأ»)</td>
+          <td>
+            رد جاهز فوراً: «سلامتك أولاً»، الشرطة 100 إذا الاتصال آمن، لا تواجهيه، وسؤال واحد عن مكانها. بدون
+            Gemini.
+          </td>
+        </tr>
+        <tr>
+          <td>إيذاء النفس («بدي أموت»)</td>
+          <td>رد جاهز: شكراً إنك حكيتي، الإسعاف 101، وسؤال «إنتِ هلأ لحالك؟».</td>
+        </tr>
+        <tr>
+          <td>كلام غير مباشر («الكل أحسن بدوني»)</td>
+          <td>سؤال مباشر ولطيف: «هل عم تفكري تأذي حالك؟».</td>
+        </tr>
+        <tr>
+          <td>اغتصاب أو إجبار (حتى لو مكتوبة غلط زي «اغصتبوني»)</td>
+          <td>
+            Gemini بيرد بتعليمات خاصة: «مصدقتك، مش ذنبك»، ما بيسأل عن تفاصيل، القرار إلها، الرعاية الطبية خلال
+            أيام كخيار. وزر خطة الأمان دايماً. وإذا Gemini فشل: رد جاهز داعم.
+          </td>
+        </tr>
+        <tr>
+          <td>بنت قاصر بدهم يجوزوها</td>
+          <td>«من حقك تحكي لأ»، شخص كبير بتثقي فيه، محامية، والشرطة إذا في خطر.</td>
+        </tr>
+        <tr>
+          <td>ابتزاز بالصور</td>
+          <td>«إنتِ مش غلطانة»، لا تبعتي مصاري، صوّري الرسائل، بلّغي، والمادة القانونية.</td>
+        </tr>
+        <tr>
+          <td>نفي («ما حدا بيضربني بس بيصرخ»)</td>
+          <td>ما بيعتبره خطر، وبيكمّل يسمعها.</td>
+        </tr>
+      </table>
+    </div>
+    <p>
+      <b>زر الخروج السريع:</b>
+      بلحظة بيخبّي التطبيق ورا شكل تاني (طقس، حاسبة، ملاحظات)، وبيمسح المحادثة من الجهاز. للرجوع: رمز سري
+      بالحاسبة.
+    </p>
+    <div class="careful">
+      <b>انتبهي:</b>
+      نصوص الأمان مكتوبة من فريق التطوير على مبادئ معروفة، ولسا ما راجعتها مختصة. هاد مسجّل بملف
+      <span class="mono">docs/SAFETY-REVIEW.md</span>
+      وهو من أول الخطوات الجاية.
+    </div>
+  </section>
+
+  <section id="reliability">
+    <h2>شو بيصير لما Gemini يتأخر أو يوقف</h2>
+    <ul>
+      <li>
+        <b>محاولة تانية بنموذج احتياطي:</b>
+        إذا الأول مشغول أو تأخر، الخادم بيجرّب التاني فوراً، وكل المحاولات ضمن الوقت اللي التطبيق بيستنى فيه (45
+        ثانية).
+      </li>
+      <li>
+        <b>قاطع دائرة (Circuit breaker):</b>
+        إذا نموذج فشل 3 مرات، بيوقّفه دقيقة حتى ما تستنى المستخدمات على الفاضي.
+      </li>
+      <li>
+        <b>رد من التطبيق نفسه:</b>
+        (من اليوم) إذا ما في رد من Gemini، التطبيق بيرد من نصوصه المراجَعة إذا عنده جواب أكيد (قانون، ابتزاز،
+        خطر)، ومكتوب إنه رد من التطبيق.
+      </li>
+      <li>
+        <b>بدون إنترنت:</b>
+        التطبيق بيفتح، ونصوص القانون وخطة الأمان والأرقام موجودة على الجهاز.
+      </li>
+    </ul>
+  </section>
+
+  <section id="privacy">
+    <h2>الخصوصية: مين بيشوف شو</h2>
+    <div class="table">
+      <table>
+        <tr>
+          <th>البيانات</th>
+          <th>وين</th>
+          <th>مين بيشوفها</th>
+          <th>لإيمتى</th>
+        </tr>
+        <tr>
+          <td>المحادثة مع المساعدة</td>
+          <td>ذاكرة الموبايل بس</td>
+          <td>هي</td>
+          <td>لحد ما تسكّر أو تعمل خروج سريع</td>
+        </tr>
+        <tr>
+          <td>الرسالة لـ Gemini</td>
+          <td>بتمر عبر خادمنا لـ Google</td>
+          <td>Google حسب شروطها</td>
+          <td>إحنا ما بنخزّنها</td>
+        </tr>
+        <tr>
+          <td>أجوبة الذكاء القانونية (بدون السؤال)</td>
+          <td>قاعدة البيانات، أسماء وأرقام ممسوحة</td>
+          <td>محاميات ومطوّرين للمراجعة</td>
+          <td>90 يوم</td>
+        </tr>
+        <tr>
+          <td>حساب المحامية: اسم مستعار + رمز 6 أرقام</td>
+          <td>قاعدة البيانات (الرمز مشفّر بطريقة ما بترجع)</td>
+          <td>المطوّر بيشوف الاسم المستعار بس</td>
+          <td>180 يوم بدون دخول</td>
+        </tr>
+        <tr>
+          <td>اسمها ورقمها للمحامية</td>
+          <td>قاعدة البيانات، مشفّر</td>
+          <td>المحامية اللي استلمت حالتها بس، وكل فتح بينسجّل</td>
+          <td>مع الحساب</td>
+        </tr>
+        <tr>
+          <td>رسائلها مع المحامية</td>
+          <td>قاعدة البيانات، مشفّرة</td>
+          <td>المحامية، والمطوّر للقراءة بس مع تسجيل</td>
+          <td>7 أيام بعد الإغلاق، 30 يوم إذا ما في نشاط</td>
+        </tr>
+      </table>
+    </div>
+    <ul>
+      <li>ما بنخزّن عناوين IP، وما بنسجّل نص الرسائل باللوغز.</li>
+      <li>
+        Gemini مسموح بس مع حساب Google مدفوع، لأنه بهالحالة Google ما بتستعمل الرسائل لتدريب نماذجها (حسب
+        شروطها).
+      </li>
+      <li>العدّادات المجهولة (كم سؤال باليوم) مطفية حالياً.</li>
+    </ul>
+  </section>
+
+  <section id="cost">
+    <h2>التكلفة والحدود</h2>
+    <div class="stats">
+      <div class="stat">
+        <b>~0.03 سنت</b>
+        <span>تكلفة الرسالة الوحدة لـ Gemini</span>
+      </div>
+      <div class="stat">
+        <b>~1 $ باليوم</b>
+        <span>لو وصلنا الحد 3000 رسالة</span>
+      </div>
+      <div class="stat">
+        <b>3000</b>
+        <span>رسالة ذكاء باليوم، حد بالكود</span>
+      </div>
+      <div class="stat">
+        <b>30 / دقيقة</b>
+        <span>حد لكل عنوان IP ضد الإساءة</span>
+      </div>
+    </div>
+    <ul>
+      <li>
+        <b>كم مستخدمة؟</b>
+        3000 رسالة باليوم تساوي تقريباً 150 مستخدمة بـ 20 رسالة لكل وحدة. الحد بيرتفع بتغيير رقم واحد (
+        <span class="mono">AI_DAILY_LIMIT</span>
+        ).
+      </li>
+      <li>
+        <b>بعد الحد:</b>
+        التطبيق بيكمّل بالردود المحلية، وما بيوقف.
+      </li>
+      <li>
+        <b>الاستضافة:</b>
+        Cloudflare، والخطة الحالية بتغطي حجم كبير. الدومين المخصص تقريباً 10 لـ 15 دولار بالسنة.
+      </li>
+      <li>الأرقام من تقييم اليوم: 280 رسالة بـ 0.08 دولار، و144 رسالة بـ 0.085 دولار.</li>
+    </ul>
+  </section>
+
+  <section id="eval">
+    <h2>نتائج التقييم (2026-11-17)</h2>
+    <p>عنا سكربت بيشغّل 72 سيناريو مصطنع (ولا كلمة من مستخدمة حقيقية) على Gemini الحقيقي، وبيطلع تقرير.</p>
+    <div class="grid2">
+      <div class="box">
+        <h4>منيح</h4>
+        <ul>
+          <li>صفر مواد مخترعة أو أرقام غلط بالقانون.</li>
+          <li>صفر كلمات من لهجة غير فلسطينية.</li>
+          <li>ردود الخطر والانتحار ممتازة وثابتة.</li>
+          <li>بيفرّق بين النفي والعنف، وبين الضفة وغزة.</li>
+          <li>بالطريقة الجديدة الردود أدفى وأقرب للإنسان.</li>
+        </ul>
+      </div>
+      <div class="box">
+        <h4>لسا بدها شغل</h4>
+        <ul>
+          <li>Gemini كان بيتأخر أو بيفشل بجزء من الطلبات (اتصلّح جزء كبير اليوم).</li>
+          <li>بيكرّر «أنا مقدرة قديش…».</li>
+          <li>بيستعمل «هل» والفصحى أحياناً.</li>
+          <li>بيسأل عن الخطر لما ما في داعي.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="where">الملفات: docs/evidence/live-eval-*.txt (كل المحادثات) و .json (الأرقام)</p>
+  </section>
+
+  <section id="lawyer">
+    <h2>المحامية الحقيقية</h2>
+    <ol>
+      <li>المستخدمة بتسجّل باسم مستعار ورمز من 6 أرقام، وبتعطي اسم ورقم للتواصل (بينحفظوا مشفّرين).</li>
+      <li>بتفتح حالة، وبتوصل لقائمة الانتظار باللوحة.</li>
+      <li>محامية «متاحة» ومنطقتها مناسبة بتستلم الحالة، وبيصير بينهم محادثة.</li>
+      <li>الحالة بتتسكّر، وبتنمسح بعد 7 أيام.</li>
+    </ol>
+    <p>
+      <b>الأدوار باللوحة:</b>
+      مطوّر (بيدير الفريق والإعدادات، وبيقرأ المحادثات للمتابعة مع تسجيل)، محامية (بتستلم حالات)، ومحامية مديرة
+      (بتدير المحاميات).
+    </p>
+    <div class="careful">
+      <b>الوضع هلأ:</b>
+      محادثة المحامية مفعّلة بالتطبيق من اليوم، بس
+      <b>ما في ولا محامية مضافة بعد</b>
+      . لازم نضيف محاميات قبل ما نعلن الخدمة. النقطة الخضرا بتبين بس لما في محامية متاحة فعلاً.
+    </div>
+  </section>
+
+  <section id="security">
+    <h2>الحماية التقنية</h2>
+    <ul>
+      <li>
+        <b>التشفير:</b>
+        الرسائل والأسماء والأرقام ومفتاح الذكاء بـ AES-GCM. رمز المستخدمة بـ PBKDF2-SHA256 (100 ألف تكرار) مع
+        ملح لكل حساب.
+      </li>
+      <li>
+        <b>المتصفح:</b>
+        سياسة أمان (CSP) بتمنع أي سكربت أو اتصال لموقع خارجي، وما في
+        <span class="mono">innerHTML</span>
+        بالكود، فكلام المستخدمة أو الذكاء ما بيقدر يحقن كود.
+      </li>
+      <li>
+        <b>حقن التعليمات (Prompt injection):</b>
+        كلامها محاط بعلامات، والتعليمات بتقول تجاهلي أي أمر جوّاه، والحارس بيفحص الرد بكل الأحوال.
+      </li>
+      <li>
+        <b>حدود:</b>
+        30 طلب بالدقيقة لكل IP، و3000 رسالة ذكاء باليوم، ورفض الطلبات اللي مش من الموقع نفسه.
+      </li>
+      <li>
+        <b>اللوحة:</b>
+        كلمة سر لكل عضو، قفل بعد محاولات فاشلة، جلسة 12 ساعة، وكلمة سر مؤقتة لازم تتغيّر بأول دخول. كل عملية
+        حساسة بتنسجّل بسجل العمليات.
+      </li>
+      <li>
+        <b>رموز ضعيفة:</b>
+        النظام بيرفض رموز زي 123456 و111111.
+      </li>
+    </ul>
+  </section>
+
+  <section id="faq">
+    <h2>أسئلة متوقعة، مع أجوبة جاهزة</h2>
+    <details class="q">
+      <summary>شو بيصير إذا الذكاء حكى معلومة قانونية غلط؟</summary>
+      <div class="a">
+        <p>
+          الذكاء ما بيحكي قانون إلا من النصوص اللي بنعطيه إياها، ولازم يحدد رقم المادة. الكود بيتأكد إنه كل
+          رقم (مدة، مبلغ، عمر) موجود بنص المادة، وإذا لا بيرفض الرد. وكل جواب قانوني بيعرض النص الأصلي تحته
+          حتى تتأكد بنفسها، ومكتوب إنه مش استشارة قانونية. بتقييم اليوم: صفر مواد أو أرقام مخترعة.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>وإذا وحدة بخطر حقيقي هلأ؟</summary>
+      <div class="a">
+        <p>
+          كلمات الخطر الحاضر بتنفحص على الموبايل قبل أي إنترنت، وبيطلع رد أمان ثابت ومكتوب مسبقاً فوراً: الشرطة
+          100 إذا الاتصال آمن، ما تواجهيه، وسؤال واحد عن مكانها. وزر خطة الأمان وزر الخروج السريع موجودين
+          دايماً. التطبيق بيحكي بصراحة إنه ما بيقدر يتصل بحدا عنها.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>مين بيقدر يقرأ المحادثات؟</summary>
+      <div class="a">
+        <p>
+          المحادثة مع المساعدة ما بتنحفظ عنا أبداً، بتضل على موبايلها وبتنمسح. الرسالة بتمر لـ Google عشان
+          تنكتب الإجابة، بحساب مدفوع ما بيستعمل البيانات للتدريب. المحادثة مع المحامية مشفّرة، بتقراها المحامية
+          اللي استلمت الحالة، وفريق التطوير للمتابعة بس، وكل قراءة بتنسجّل.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>ليش Gemini وليش مش ChatGPT أو Claude؟</summary>
+      <div class="a">
+        <p>
+          Gemini Flash-Lite سريع ورخيص كتير (حوالي 0.03 سنت للرسالة) وبيحكي عربي منيح. بس الكود مش مربوط فيه:
+          بيدعم Claude وOpenAI وOpenRouter وNVIDIA، والتغيير من لوحة التحكم أو بإعداد واحد. ونفس الحارس بيفحص
+          أي نموذج.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>شو بيصير إذا Google وقفت أو غلّت الأسعار؟</summary>
+      <div class="a">
+        <p>
+          التطبيق ما بيوقف: بيرد من نصوصه المراجَعة، وخطة الأمان والأرقام بتشتغل بدون ذكاء. وبنقدر ننقل لمزوّد
+          تاني بإعداد واحد.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>قديش بيكلّف؟ وكم مستخدمة بيستحمل؟</summary>
+      <div class="a">
+        <p>
+          تقريباً 0.03 سنت للرسالة، يعني حوالي دولار باليوم لو وصلنا 3000 رسالة (تقريباً 150 مستخدمة بـ 20
+          رسالة). الحد بيرتفع بتغيير رقم، والاستضافة على Cloudflare بتستحمل أكبر بكتير.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>جوزها ممكن يعرف إنها بتستعمل التطبيق؟</summary>
+      <div class="a">
+        <p>
+          في زر خروج سريع بيحوّل التطبيق لشكل طقس أو حاسبة أو ملاحظات، وبيمسح المحادثة. ما في حساب إجباري،
+          والمساعدة بتشتغل بدون تسجيل. بس ما بنقدر نمسح سجل المتصفح، والتطبيق بيقلها هالشي بصراحة بالإعدادات.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>بيشتغل بغزة كمان؟</summary>
+      <div class="a">
+        <p>
+          آه. أول ما تفتح بتختار منطقتها، وبياخد قانون غزة (حقوق العائلة 1954) لغزة وقانون الضفة (الأحوال
+          الشخصية 1976) للضفة، وما بيخلطهم. قانون الجرائم الإلكترونية والقانون الأساسي للاثنين.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>بيشتغل بدون إنترنت؟</summary>
+      <div class="a">
+        <p>
+          التطبيق بيفتح بدون إنترنت بعد أول زيارة، ونصوص القانون وخطة الأمان والأرقام على الجهاز. الردود
+          الذكية بدها إنترنت، وبدونه بيرد التطبيق من نصوصه أو بيقول بصراحة إنه مش متصل.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>مين راجع النصوص؟ في محامية أو مختصة؟</summary>
+      <div class="a">
+        <p>
+          النصوص القانونية منسوخة حرفياً من مصادر رسمية ومحمية من التغيير بالكود، بس لسا ما راجعتها محامية
+          رسمياً، والتطبيق بيكتب هالشي. نصوص الأمان مكتوبة على مبادئ معروفة ولسا بدها مراجعة مختصة. هاد أول إشي
+          بالخطة الجاية.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>كيف بتتأكدوا إنه الذكاء منيح؟</summary>
+      <div class="a">
+        <p>
+          عنا 426 اختبار آلي و17 اختبار متصفح، وسكربت تقييم بيشغّل 72 سيناريو حساس على Gemini الحقيقي وبيقيس:
+          نسبة الردود السليمة، القانون المخترع، اللهجة، الطول، تكرار الأسئلة، الوقت، والتكلفة. وكل محادثة
+          بتنحفظ عشان إنسان يراجعها.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>شو بيصير إذا حدا حاول يخرّب الذكاء («انسي تعليماتك»)؟</summary>
+      <div class="a">
+        <p>
+          كلامها بيوصل للنموذج محاط بعلامات ومعه تعليمات تتجاهل أي أمر جوّاه. وحتى لو النموذج انخدع، الحارس
+          بيرفض أي رد فيه قانون مش من النص أو وعود ممنوعة. وفي حد طلبات لكل IP.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>الذكاء بيتذكّر المحادثات القديمة؟</summary>
+      <div class="a">
+        <p>
+          بيتذكّر بس جوّا نفس الجلسة (آخر 12 رسالة). لما تسكّر أو تعمل خروج سريع، بينمسح كل إشي. ما في ذاكرة على
+          الخادم، وهاد مقصود للأمان.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>شو الفرق بينه وبين إنها تسأل ChatGPT مباشرة؟</summary>
+      <div class="a">
+        <p>
+          ChatGPT ممكن يجاوب من قوانين بلد تاني أو يخترع، وما بيعرف السياق الفلسطيني. فزعة بتحكي من نصوص
+          فلسطينية حقيقية بس وبتعرضها، وبتحط السلامة أول بردود مراجَعة، وفيها خروج سريع، ومحامية، وأرقام محلية،
+          وبالعامية.
+        </p>
+      </div>
+    </details>
+    <details class="q">
+      <summary>البيانات وين محفوظة جغرافياً؟</summary>
+      <div class="a">
+        <p>
+          <b>قاعدة البيانات</b>
+          (Cloudflare D1) موجودة بمراكز Cloudflare
+          <b>بشرق أوروبا</b>
+          (منطقة
+          <span class="mono">EEUR</span>
+          ، متأكد منها من الحساب يوم 2026-11-17)، والأسماء والأرقام والرسائل فيها مشفّرة بمفتاح عنا.
+          <b>الكود</b>
+          (Cloudflare Workers) بيشتغل بأقرب مركز Cloudflare للمستخدمة، فما إله مكان واحد.
+          <b>رسائل الذكاء</b>
+          بتنعالج بمراكز Google. ما اخترنا «نطاق قانوني» يلزم البيانات تضل بالاتحاد الأوروبي، وهاد ممكن نضيفه
+          إذا صار مطلوب.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="limits">
+    <h2>
+      نقاط ضعف بنعرفها
+      <span class="tag">الصراحة بتبني ثقة</span>
+    </h2>
+    <ul>
+      <li>نصوص القانون والأمان لسا بدها مراجعة محامية ومختصة.</li>
+      <li>القانون محدود: ما في قانون العقوبات ولا الميراث.</li>
+      <li>ما في محاميات مضافات بعد.</li>
+      <li>أرقام الجمعيات (زي «سوا» 164) لسا مش مؤكدة ومش مضافة، فالذكاء ما بيعطي أرقام غير 100 و101 و102.</li>
+      <li>Gemini أحياناً بيتأخر. في احتياط، بس الرد وقتها أبسط.</li>
+      <li>أسلوب الردود بده تحسين: تكرار، وفصحى أحياناً، وأسئلة أمان زيادة.</li>
+      <li>
+        كشف الخطر بالكلمات ممكن يفوّت طريقة حكي جديدة، عشان هيك Gemini كمان بيفهم السياق، وزر الأمان موجود
+        دايماً.
+      </li>
+    </ul>
+  </section>
+
+  <section id="next">
+    <h2>الخطوات الجاية</h2>
+    <ol>
+      <li>مراجعة النصوص القانونية من محامية، ونصوص الأمان من مختصة.</li>
+      <li>إضافة محاميات للوحة وتجربة الخدمة معهن.</li>
+      <li>تأكيد وإضافة أرقام الجمعيات («سوا»، المساعدة القانونية).</li>
+      <li>تحسين أسلوب الذكاء ومقارنة النموذجين واختيار الأثبت.</li>
+      <li>دومين خاص بالتطبيق.</li>
+      <li>إضافة قوانين أكتر بعد مراجعة قانونية.</li>
+    </ol>
+  </section>
+
+  <footer>
+    مبني من الكود بفرع
+    <span class="mono">audit/closed-beta</span>
+    ومن تجارب على الموقع الحقيقي يوم 2026-11-17. الأرقام اللي عليها «تقريباً» تقديرات.
+  </footer>
+</div>

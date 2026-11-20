@@ -9,7 +9,7 @@
 
 /** Category id -> label (also the filter tabs on the support screen). */
 export const CONTACT_CATS = { emergency: "طوارئ", safe: "أمني", law: "قانوني", mind: "نفسي" };
-export const CONTACT_REGIONS = { all: "الضفة وغزة", "ps-wb": "الضفة الغربية", "ps-gaza": "قطاع غزة" };
+export const CONTACT_REGIONS = { all: "كل المناطق", "ps-wb": "الضفة الغربية", "ps-gaza": "قطاع غزة" };
 export const MAX_CONTACTS = 30;
 
 /**

@@ -1,0 +1,107 @@
+/*
+  The app's palette «أبيض وأخضر وبرتقالي» (owner's choice, fixed 2026-11-19): <html data-palette="fresh">.
+  The original palette stays in tokens.css untouched; this file only overrides its tokens, so removing
+  data-palette brings the original back exactly.
+
+  White ground and cards, green for primary actions, links and active marks, orange for the main actions
+  (send, the main call-to-action, the safety-plan shortcut) and the warm washes. Still no red.
+
+  Dark mode is defined twice, like tokens.css (system setting + manual override). tests/tokens.test.js checks
+  that the two copies match and that every token of tokens.css is overridden here.
+*/
+
+:root[data-palette="fresh"] {
+  /* surfaces */
+  --ground: #f3f8f4; /* page background: white with a breath of green */
+  --surface: #ffffff; /* cards, inputs */
+  --surface-2: #edf5ef; /* quieter inset surface */
+  --line: #d3e5d8; /* borders, dividers */
+  --desk: #e3eee6; /* behind the phone frame on desktop */
+  --frame: #14532d; /* phone frame on desktop */
+
+  /* text */
+  --ink: #15301f;
+  --ink-soft: #43604d; /* secondary text, AA on --ground */
+
+  /* brand */
+  --primary: #1d7442; /* green: main buttons, active states; white text is AA */
+  --primary-soft: #d8eedf;
+  --on-primary: #ffffff;
+  --accent: #f07a17; /* orange: main actions only (deeper, not yellow) */
+  --on-accent: #241204; /* dark text on orange, AA */
+  --emphasis: #1d7442;
+  --emphasis-soft: #d8eedf;
+
+  /* calm tints */
+  --info: #17694a; /* green-teal: icons, links, active marks; AA on white */
+  --info-soft: #dcefe4;
+  --mauve-soft: #fdeedc; /* orange wash: headers, quoted law */
+  --pink-soft: #fff4e8; /* light orange wash: summary box, support chips */
+  --pink-line: #f6d3ad;
+  --pink: #f6b47a; /* icon on --primary (quick exit) */
+
+  --shadow: 0 1px 2px rgba(21, 48, 31, 0.08), 0 12px 24px -16px rgba(21, 48, 31, 0.4);
+
+  /* more orange (owner, 2026-11-19): the tab she is on and the section titles */
+  --tab-on: #ffe3c8;
+  --tab-on-icon: #c2570c;
+  --heading-accent: #c2570c; /* AA on white and on --ground */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="fresh"]:not([data-theme="light"]) {
+    --ground: #0f1f16;
+    --surface: #16291e;
+    --surface-2: #1d3426;
+    --line: #2c4a37;
+    --desk: #08120c;
+    --frame: #050c08;
+    --ink: #eef6ef;
+    --ink-soft: #a9c5b2;
+    --primary: #7fd19b;
+    --primary-soft: #21402d;
+    --on-primary: #0f1f16;
+    --accent: #ff8a3d;
+    --on-accent: #1d1006;
+    --emphasis: #7fd19b;
+    --emphasis-soft: #21402d;
+    --info: #8fd8b4;
+    --info-soft: #1d4030;
+    --mauve-soft: #3a2a1a;
+    --pink-soft: #3d2b18;
+    --pink-line: #6a4a28;
+    --pink: #c46a2a;
+    --shadow: 0 0 0 1px #2c4a37;
+    --tab-on: #4a2a12;
+    --tab-on-icon: #ff9a4d;
+    --heading-accent: #ffa65c;
+  }
+}
+
+:root[data-palette="fresh"][data-theme="dark"] {
+  --ground: #0f1f16;
+  --surface: #16291e;
+  --surface-2: #1d3426;
+  --line: #2c4a37;
+  --desk: #08120c;
+  --frame: #050c08;
+  --ink: #eef6ef;
+  --ink-soft: #a9c5b2;
+  --primary: #7fd19b;
+  --primary-soft: #21402d;
+  --on-primary: #0f1f16;
+  --accent: #ff8a3d;
+  --on-accent: #1d1006;
+  --emphasis: #7fd19b;
+  --emphasis-soft: #21402d;
+  --info: #8fd8b4;
+  --info-soft: #1d4030;
+  --mauve-soft: #3a2a1a;
+  --pink-soft: #3d2b18;
+  --pink-line: #6a4a28;
+  --pink: #c46a2a;
+  --shadow: 0 0 0 1px #2c4a37;
+  --tab-on: #4a2a12;
+  --tab-on-icon: #ff9a4d;
+  --heading-accent: #ffa65c;
+}

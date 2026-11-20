@@ -54,6 +54,7 @@ async function fakeApi(path, res) {
   if (path === "/api/v1/contacts")
     return json(200, { contacts: publicContacts(DEFAULT_CONTACTS), updatedAt: null });
   if (path === "/api/v1/lawyers") return json(200, { lawyers: [] });
+  if (path === "/api/v1/laws") return json(200, { articles: [] });
   if (path === "/api/v1/answer") return json(503, { error: "not-configured" });
   return json(404, { error: "not-found" });
 }
@@ -111,6 +112,7 @@ const open = async (page, screen, { ai = false } = {}) => {
     ([s, withAi]) => {
       localStorage.setItem("fazaa:last", JSON.stringify(s));
       localStorage.setItem("fazaa:introSeen", "true"); // the intro is first-run only
+      localStorage.setItem("fazaa:country", JSON.stringify("ps-gaza")); // (2026-11-18) the corpus is Gaza-only
       if (!withAi) localStorage.setItem("fazaa:aiOnline", "false");
     },
     [screen, ai],
@@ -178,10 +180,11 @@ await test("chat has a way back to home (not only the whole app)", async (page) 
  * no rule-based answer on the device any more. These tests stand in for the AI with a fixed reply, so they
  * check what the app does with it: validation, the summary, the original text and the safety button.
  */
-const BLACKMAIL_REPLY = {
-  reply: "اللي عم يصير معك مش ذنبك، والتهديد أو الابتزاز عبر الإنترنت جريمة حسب النص.",
-  rights: [{ text: "التهديد أو الابتزاز عبر الشبكة الإلكترونية جريمة يعاقب عليها القانون", cite: "15" }],
-  steps: ["احتفظي بصور للرسائل والتهديدات", "لا تبعتي مصاري ولا صور زيادة"],
+// (2026-11-18) the corpus is the Gaza family-rights law: a maintenance reply grounded in its article 59
+const MAINTENANCE_REPLY = {
+  reply: "ولا يهمك، خليني أوضحلك. حسب النص، القاضي بيقدّر نفقتك من يوم ما تطلبيها.",
+  rights: [{ text: "إذا امتنع زوجك عن الإنفاق وطلبتِ النفقة، القاضي بيقدّرها إلك", cite: "gz:59" }],
+  steps: ["اكتبي من إيمتى وقف الصرف"],
   ask: "",
 };
 const fakeAi = (page, answer) =>
@@ -189,18 +192,28 @@ const fakeAi = (page, answer) =>
     route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ answer }) }),
   );
 
-await test("asking about blackmail returns a cited answer with the safety-plan button", async (page) => {
+await test("asking about maintenance in Gaza returns the cited Gaza text, from the lawyer's copy", async (page) => {
   await open(page, "chat", { ai: true });
-  await fakeAi(page, BLACKMAIL_REPLY);
-  await page.fill("#q", "حدا بيهددني بصوري");
+  await fakeAi(page, MAINTENANCE_REPLY);
+  await page.fill("#q", "جوزي ما بيصرف علي، شو حقي بالنفقة؟");
   await page.press("#q", "Enter");
   const answer = page.locator("#msgs .a:has(.summary)");
   await answer.waitFor({ timeout: 8000 });
-  assert.match(await answer.textContent(), /المادة 15/);
-  assert.ok(await answer.locator('[data-go="sos"]').isVisible(), "danger words always bring the safety plan");
+  assert.match(await answer.textContent(), /المادة 59/);
   await answer.locator("details summary").first().click();
-  assert.match(await answer.locator(".law").first().textContent(), /ابتزاز|تهديد/);
-  assert.equal(await answer.locator(".law a").first().getAttribute("rel"), "noopener noreferrer");
+  const law = await answer.locator(".law").first().textContent();
+  assert.match(law, /امتنع الزوج الحاضر عن الإنفاق/);
+  assert.match(law, /نسخة القانون المعتمدة لدى المحامي/);
+});
+
+await test("danger words always bring the safety-plan button", async (page) => {
+  await open(page, "chat", { ai: true });
+  await fakeAi(page, MAINTENANCE_REPLY);
+  await page.fill("#q", "جوزي ضربني وما بيصرف علي، شو حقي بالنفقة؟");
+  await page.press("#q", "Enter");
+  const answer = page.locator("#msgs .a:has(.summary)");
+  await answer.waitFor({ timeout: 8000 });
+  assert.ok(await answer.locator('[data-go="sos"]').isVisible());
 });
 
 await test("an AI reply citing an article that does not exist is never shown", async (page) => {
@@ -234,8 +247,8 @@ await test("user text is never interpreted as HTML", async (page) => {
 
 await test("quick exit wipes the chat and safety ticks, shows the disguise, and leaks no title", async (page) => {
   await open(page, "chat", { ai: true });
-  await fakeAi(page, BLACKMAIL_REPLY);
-  await page.fill("#q", "حدا بيهددني بصوري");
+  await fakeAi(page, MAINTENANCE_REPLY);
+  await page.fill("#q", "جوزي ما بيصرف علي، شو حقي بالنفقة؟");
   await page.press("#q", "Enter");
   await page.waitForSelector("#msgs .a .summary", { timeout: 8000 });
   await page.keyboard.press("Escape");
@@ -257,11 +270,11 @@ await test("a reply still 'typing' when the user exits never appears afterwards"
       .fulfill({
         status: 200,
         contentType: "application/json",
-        body: JSON.stringify({ answer: BLACKMAIL_REPLY }),
+        body: JSON.stringify({ answer: MAINTENANCE_REPLY }),
       })
       .catch(() => {}); // the request may already be aborted by the wipe
   });
-  await page.fill("#q", "حدا بيهددني بصوري");
+  await page.fill("#q", "جوزي ما بيصرف علي، شو حقي بالنفقة؟");
   await page.press("#q", "Enter");
   await page.keyboard.press("Escape"); // before the reply arrives
   await page.waitForTimeout(2200);
@@ -282,16 +295,18 @@ await test("calculator disguise works and the code unlocks the app", async (page
   assert.equal(await current(page), "home");
 });
 
-// (2026-11-12) the scripted demo lawyer is gone: without the service the tab says so and sends nothing
-await test("no lawyer service: the tab says it is not available, no pretend lawyer, nothing sent", async (page) => {
+// (2026-11-17, owner's decision) the real lawyer chat is on (API_BASE = "/api"). The static test server has no
+// API, so nobody is available: no «live» dot (she must not think someone is waiting), and the tab asks her to
+// register before anything is sent.
+await test("lawyer chat on, nobody available: no live dot, sign-up first, no pretend lawyer", async (page) => {
   await open(page, "chat");
+  await page.waitForTimeout(500);
+  const dots = await page.$$eval('[data-mode="lawyer"] .live', (d) => d.map((n) => n.hidden));
+  assert.ok(dots.every(Boolean), "no live dot while no lawyer is available");
   await page.click('[data-mode="lawyer"]');
-  await page.locator("#msgs .a", { hasText: "خدمة المحامية مش شغّالة" }).waitFor({ timeout: 4000 });
-  await page.fill("#q", "عندي مشكلة");
-  await page.press("#q", "Enter");
-  await page.locator("#msgs .sys", { hasText: "ما انبعتت لحدا" }).waitFor({ timeout: 4000 });
+  await page.locator("#msgs .authbox").waitFor({ timeout: 4000 });
   assert.equal(await page.locator("#msgs .lw").count(), 0, "no lawyer bubble");
-  assert.equal(await page.locator('[data-mode="lawyer"] .live').count(), 0, "no 'live' dot");
+  problems.length = 0; // the static server has no API: its 404s are expected here
 });
 
 // owner's decision (2026-11-13): no notice before sending; Settings explains what is sent and turns it off

@@ -1,4 +1,4 @@
-import { ARTICLES, INTENT_TO_ARTICLES, LAWS, articlesFor } from "../data/law/index.js";
+import { ARTICLES, COURT_NAMES, INTENT_TO_ARTICLES, LAWS, articlesFor } from "../data/law/index.js";
 import {
   answeredNo,
   answeredYes,
@@ -105,19 +105,28 @@ export function createAnswerer({
     return (INTENT_TO_ARTICLES[intent] || []).filter((id) => inRegion[id]).slice(0, n);
   }
 
-  /** Which law and region the texts come from, and what the corpus does NOT have. */
+  /** Which law, court and region the texts come from, and what the corpus does NOT have. */
   function jurisdiction(ids, topic, country) {
     const lines = [];
-    const region = country === "ps-gaza" ? "قطاع غزة" : "الضفة الغربية";
+    const region = "قطاع غزة"; // the app is for Gaza only (2026-11-19)
     const laws = [...new Set(ids.map((id) => ARTICLES[id]?.lawKey))]
       .map((k) => LAWS.find((l) => l.key === k))
       .filter(Boolean);
-    if (laws.length)
+    if (laws.length) {
       lines.push(`النصوص من ${laws.map((l) => `«${l.name}»`).join(" و")}، حسب منطقتك (${region}).`);
-    if (topic === "custody" && country === "ps-gaza")
-      lines.push(
-        "ما عندي نص الحضانة المعمول فيه بغزة، فما بقدر أقلك شو بيقول القانون هناك عن الحضانة. محامية بتقدر.",
-      );
+      const courts = [...new Set(laws.map((l) => COURT_NAMES[l.court]).filter(Boolean))];
+      if (courts.length) lines.push(`هالقضايا بتنظر فيها ${courts.join(" و")}.`);
+      // decree-law issued in Ramallah: whether the Gaza courts apply it is not confirmed yet
+      if (laws.some((l) => l.key === "cyber-2018"))
+        lines.push("انتبهي: تطبيق قانون الجرائم الإلكترونية بغزة مش مؤكد، فاسألي محامية قبل ما تعتمدي عليه.");
+      // both family laws are applied by the sharia courts; which one prevails is a question for the lawyer
+      if (
+        laws.some((l) => l.key === "family-gaza-1954") &&
+        laws.some((l) => l.key === "hanafi-personal-status")
+      )
+        lines.push("إذا اختلف النصين، المحامية بتقدر تحكيلك أي واحد بتطبقه المحكمة.");
+    }
+    if (country !== "ps-gaza") lines.push("فزعة هلأ لقطاع غزة بس، فما بعطيكِ نص قانوني لمكان تاني.");
     return lines;
   }
 
@@ -272,11 +281,9 @@ export function createAnswerer({
   }
 
   /** Law answers: limits the app knows about, said next to the answer. */
-  function withScope(answer, country) {
+  function withScope(answer) {
     if (!answer.cites?.length) return answer;
     const extra = [];
-    if (country === "ps-gaza" && answer.cites.some((id) => ARTICLES[id]?.lawKey === "cyber-2018"))
-      extra.push("انتبهي: تطبيق قانون الجرائم الإلكترونية بغزة مش مؤكد، فاسألي محامية قبل ما تعتمدي عليه.");
     if (memory.constraints.has("monitored"))
       extra.push("إذا حدا بيشوف تلفونك، لا تحفظي أدلة عليه إذا هاد ممكن يعرّضك لخطر.");
     const before = answer.steps || [];
@@ -325,7 +332,9 @@ export function createAnswerer({
     if (!spec.found.length) {
       return {
         kind: "talk",
-        lead: `النص اللي عندي عن «${spec.label}» من قانون بيطبق بمنطقة غير منطقتك، فما رح أعتمد عليه إلك.`,
+        lead: spec.outOfRegion.length
+          ? `النص اللي عندي عن «${spec.label}» من قانون بيطبق بمنطقة غير منطقتك، فما رح أعتمد عليه إلك.`
+          : `ما عندي نص عن «${spec.label}» بقانون منطقتك، وما بدي أعطيكِ معلومة مش متأكدة منها.`,
         options: [],
         ask: can.lawyer ? "بتحبي تسألي محامية شو بيطبق عندك؟" : "",
         note: "",
@@ -389,9 +398,15 @@ export function createAnswerer({
         general: true,
       };
     }
-    answer = withScope(answer, ctx.country);
+    answer = withScope(answer);
     if (answer.kind === "article") {
-      if (!specific) return answer;
+      if (!specific) {
+        // an article asked by number: no extra lines, except the warning about the cyber-crimes decree-law
+        const caveat = jurisdiction(answer.cites, topic, ctx.country).filter((l) =>
+          /الجرائم الإلكترونية/.test(l),
+        );
+        return caveat.length ? { ...answer, scope: [...(answer.scope || []), ...caveat] } : answer;
+      }
       answer.cites.forEach((id) => memory.situation.shownArticles.add(id));
       return {
         ...answer,
@@ -516,32 +531,21 @@ export function createAnswerer({
         };
     }
 
-    // «وإذا بغزة؟» right after a legal answer: the same topic under the OTHER region's law (her region stays)
+    // «وإذا بغزة؟» right after a legal answer. (2026-11-18) Gaza and the West Bank apply different laws and a
+    // lawyer found answers that mixed them, so the app never shows the other region's law: it says so instead.
     const other = OTHER_REGION.exec(t);
     const legalTopic = currentTopic(memory.situation);
     if (other && t.split(" ").length <= 4 && TOPIC_QUESTION[legalTopic]) {
-      const country = /غزه/.test(other[1]) ? "ps-gaza" : "ps-wb";
-      const name = country === "ps-gaza" ? "غزة" : "الضفة";
+      const gaza = /غزه/.test(other[1]);
       memory.lastNeed = "legal";
-      if (country === ctx.country)
-        return {
-          kind: "talk",
-          lead: `منطقتك هلأ هي ${name}، فاللي حكيتلك ياه هو عن ${name}.`,
-          options: [],
-          ask: "",
-          note: "",
-        };
-      const a = await legalAnswer(TOPIC_QUESTION[legalTopic], { ...ctx, country }, can, legalTopic);
       return {
-        ...a,
-        lead:
-          a.related?.length || a.cites?.length
-            ? `ب${name} في قانون تاني، وهاي النصوص اللي عندي منه:`
-            : `ب${name} في قانون تاني. ${a.lead}`,
-        scope: [
-          ...(a.scope || []),
-          `منطقتك بالتطبيق لسا ${ctx.country === "ps-gaza" ? "غزة" : "الضفة"}؛ هاد بس للمعلومة.`,
-        ],
+        kind: "talk",
+        lead: gaza
+          ? "اللي حكيتلك ياه هو حسب قوانين غزة، لأنه فزعة هلأ لقطاع غزة بس."
+          : "فزعة هلأ لقطاع غزة بس، وما عندي نصوص قانون للضفة. محامية بتقدر تحكيلك شو القانون هناك.",
+        options: [],
+        ask: "",
+        note: "",
       };
     }
 

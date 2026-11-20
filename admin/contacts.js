@@ -102,7 +102,13 @@ export function contactsView(ctx) {
       hours: input(c.hours, { max: 40, placeholder: "مثلاً 24 ساعة، أو 8 الصبح لـ 4" }),
       note: input(c.note, { max: 200, placeholder: "مين أكد الرقم، مع مين حكينا… (ما بيظهر بالتطبيق)" }),
       cat: select(CONTACT_CATS, c.cat),
-      region: select(CONTACT_REGIONS, c.region),
+      // Gaza only for now (2026-11-19); a contact saved for the West Bank keeps that choice until edited
+      region: select(
+        Object.fromEntries(
+          Object.entries(CONTACT_REGIONS).filter(([k]) => k !== "ps-wb" || c.region === "ps-wb"),
+        ),
+        c.region,
+      ),
       active: check("متاحة: بتظهر بالتطبيق", c.active !== false),
       verified: check("الرقم مؤكد: اتصلنا وتأكدنا مع الجهة نفسها", c.verified === true),
     };

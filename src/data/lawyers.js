@@ -13,6 +13,8 @@
  */
 
 export const LAWYER_REGIONS = { "ps-wb": "الضفة الغربية", "ps-gaza": "قطاع غزة" };
+/** What staff can choose now: the app is for Gaza only (owner, 2026-11-19); old West Bank records stay valid. */
+export const OPEN_REGIONS = ["ps-gaza"];
 export const AVATARS = { hijab: "حجاب", hair: "شعر", hijab2: "حجاب ٢" };
 export const MAX_CASES_DEFAULT = 5;
 
@@ -37,7 +39,7 @@ const text = (v, max) =>
 export const emptyProfile = () => ({
   specialty: "",
   years: 0,
-  regions: Object.keys(LAWYER_REGIONS),
+  regions: [...OPEN_REGIONS],
   bio: "",
   avatar: "hijab",
   phone: "",

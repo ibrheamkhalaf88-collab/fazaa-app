@@ -23,9 +23,10 @@ function setup({ endpoint = "/api/v1/ping", current = "home" } = {}) {
 }
 
 test("sends only event + region (+ ms), with no credentials, no referrer, no ids", () => {
-  const { telemetry, sent } = setup();
+  const { telemetry, sent, state } = setup();
+  state.set("country", "ps-gaza"); // (2026-11-18) no region is assumed until she picks one
   telemetry.track("ask_ai", 1234.6);
-  assert.deepEqual(sent[0].body, { event: "ask_ai", region: "ps-wb", ms: 1235 });
+  assert.deepEqual(sent[0].body, { event: "ask_ai", region: "ps-gaza", ms: 1235 });
   assert.equal(sent[0].init.credentials, "omit");
   assert.equal(sent[0].init.referrerPolicy, "no-referrer");
   assert.deepEqual(Object.keys(sent[0].body).sort(), ["event", "ms", "region"]);

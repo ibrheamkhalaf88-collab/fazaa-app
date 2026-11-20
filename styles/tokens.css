@@ -1,5 +1,9 @@
 /*
   Design tokens: every colour, font and shadow lives here, nowhere else.
+
+  (2026-11-19) The app now runs the white-green-orange palette (styles/palette-fresh.css, fixed by the owner).
+  The colours below are the ORIGINAL palette, kept on purpose: to bring it back, set PALETTE to "classic" in
+  src/features/settings/theme.js and remove data-palette from <html> in index.html.
   Components only use var(--token). To restyle the app, change this file.
 
   Palette: dusty slate-blue ground, navy primary, cream cards, plus three calm tints:
@@ -51,6 +55,11 @@
   --pink: #f2b6c6; /* pink icon on --primary (quick exit) */
 
   --shadow: 0 1px 2px rgba(24, 33, 74, 0.08), 0 12px 24px -16px rgba(24, 33, 74, 0.45);
+
+  /* the tab she is on, and section titles (the original look; the fresh palette makes them orange) */
+  --tab-on: var(--info-soft);
+  --tab-on-icon: var(--info);
+  --heading-accent: var(--ink);
 
   /* illustration skin and hair (used by the character symbols in the sprite) */
   --skin: #f0c3a0;

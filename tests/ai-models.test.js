@@ -101,7 +101,13 @@ test("backup model is saved, shown, and used when the main one is busy; a single
                 {
                   functionCall: {
                     name: "give_answer",
-                    args: { covered: true, lead: "مش غلطانة", steps: ["لا تدفعي"], note: "", cites: ["15"] },
+                    args: {
+                      covered: true,
+                      lead: "مش غلطانة",
+                      steps: ["لا تدفعي"],
+                      note: "",
+                      cites: ["gz:59"],
+                    },
                   },
                 },
               ],

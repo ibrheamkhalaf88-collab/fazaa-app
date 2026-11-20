@@ -29,3 +29,18 @@ Planned corpus (each needs verbatim text from an official source + a legal revie
 | Cyber crimes                                             | Decree-Law 10/2018 (in corpus)                                          | **unconfirmed** - see TODO in `law/index.js`                                  |
 
 Do not enable a law for a region until a lawyer confirms it is in force there.
+
+## Adding an article from the dashboard («القوانين», 2026-11-17)
+
+No developer needed. A lawyer pastes the article verbatim with its official source (https link required) in
+`/admin/` → «القوانين». It stays a draft until a lawyer or a developer (the one who added it is enough, owner's decision 2026-11-17) ticks
+«قارنت النص بالمصدر الرسمي» and approves. Then, without a redeploy:
+
+- the server reads approved articles from D1 (`law_articles`, cached one minute per Worker isolate) and adds them
+  to `ARTICLES` (`useAddedArticles` in `src/data/law/index.js`), so retrieval, the AI prompt, the grounding
+  check and «شو بتقول المادة …؟» use them like the built-in laws;
+- the app downloads them from `/api/v1/laws` at start and keeps them on the device for offline use.
+
+Approved texts are not edited in place: hide it and add the corrected one. Anyone on the team can hide an
+article at once. Added ids look like `x12:9` (row 12, article 9). Built-in laws in `src/data/law/*.js` are not
+affected and keep their fingerprint test. Existing database: re-run `schema.sql` once (it adds `law_articles`).

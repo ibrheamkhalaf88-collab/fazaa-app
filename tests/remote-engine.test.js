@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { createRemoteEngine } from "../src/ai/remote-engine.js";
 
 const okResponse = (body, status = 200) => ({ ok: status < 400, status, json: async () => body });
-const GOOD = { lead: "إنتِ مش غلطانة.", steps: ["لا تدفعي"], note: "", cites: ["15"] };
+const GOOD = { lead: "إنتِ مش غلطانة.", steps: ["لا تدفعي"], note: "", cites: ["gz:59"] };
 
 test("sends only the question and the country, with no credentials or referrer", async () => {
   let seen;
@@ -26,28 +26,28 @@ test("refuses (does not cut) a message longer than the limit, and sends nothing"
     endpoint: "x",
     fetchImpl: async () => ((sent = true), okResponse({ answer: GOOD })),
   });
-  await assert.rejects(engine.answer("ا".repeat(1201), { country: "ps-wb" }), /message-too-long/);
+  await assert.rejects(engine.answer("ا".repeat(1201), { country: "ps-gaza" }), /message-too-long/);
   assert.equal(sent, false);
 });
 
 test("returns a validated answer, marked as AI", async () => {
   const engine = createRemoteEngine({ endpoint: "x", fetchImpl: async () => okResponse({ answer: GOOD }) });
-  const a = await engine.answer("q", { country: "ps-wb" });
+  const a = await engine.answer("q", { country: "ps-gaza" });
   assert.equal(a.source, "ai");
 });
 
 test("null answer means 'not covered'", async () => {
   const engine = createRemoteEngine({ endpoint: "x", fetchImpl: async () => okResponse({ answer: null }) });
-  assert.equal(await engine.answer("q", { country: "ps-wb" }), null);
+  assert.equal(await engine.answer("q", { country: "ps-gaza" }), null);
 });
 
 test("throws on HTTP errors", async () => {
   const engine = createRemoteEngine({ endpoint: "x", fetchImpl: async () => okResponse({}, 502) });
-  await assert.rejects(() => engine.answer("q", { country: "ps-wb" }), /proxy-status-502/);
+  await assert.rejects(() => engine.answer("q", { country: "ps-gaza" }), /proxy-status-502/);
 });
 
 test("throws when the server returns a citation the app does not have", async () => {
   const bad = { ...GOOD, cites: ["999"] };
   const engine = createRemoteEngine({ endpoint: "x", fetchImpl: async () => okResponse({ answer: bad }) });
-  await assert.rejects(() => engine.answer("q", { country: "ps-wb" }), /unknown-article:999/);
+  await assert.rejects(() => engine.answer("q", { country: "ps-gaza" }), /unknown-article:999/);
 });

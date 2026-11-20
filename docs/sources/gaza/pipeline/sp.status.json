@@ -1,0 +1,1203 @@
+{
+"0": {
+"global_gaps": [],
+"status2": "ok"
+},
+"1": {
+"global_gaps": [],
+"status2": "ok"
+},
+"2": {
+"global_gaps": [],
+"status2": "ok"
+},
+"3": {
+"global_gaps": [
+[
+"insert",
+"",
+"KHJKREHHBKHJKREHHB",
+18,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"4": {
+"global_gaps": [],
+"status2": "ok"
+},
+"5": {
+"global_gaps": [],
+"status2": "ok"
+},
+"6": {
+"global_gaps": [],
+"status2": "ok"
+},
+"7": {
+"global_gaps": [],
+"status2": "ok"
+},
+"8": {
+"global_gaps": [],
+"status2": "ok"
+},
+"9": {
+"global_gaps": [],
+"status2": "ok"
+},
+"10": {
+"global_gaps": [],
+"status2": "ok"
+},
+"11": {
+"global_gaps": [],
+"status2": "ok"
+},
+"12": {
+"global_gaps": [],
+"status2": "ok"
+},
+"13": {
+"global_gaps": [
+[
+"insert",
+"",
+"HBEHHNHBEHHN",
+12,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"14": {
+"global_gaps": [],
+"status2": "ok"
+},
+"15": {
+"global_gaps": [],
+"status2": "ok"
+},
+"16": {
+"global_gaps": [],
+"status2": "ok"
+},
+"17": {
+"global_gaps": [],
+"status2": "ok"
+},
+"18": {
+"global_gaps": [],
+"status2": "ok"
+},
+"19": {
+"global_gaps": [],
+"status2": "ok"
+},
+"20": {
+"global_gaps": [],
+"status2": "ok"
+},
+"21": {
+"global_gaps": [],
+"status2": "ok"
+},
+"22": {
+"global_gaps": [],
+"status2": "ok"
+},
+"23": {
+"global_gaps": [],
+"status2": "ok"
+},
+"24": {
+"global_gaps": [],
+"status2": "ok"
+},
+"25": {
+"global_gaps": [],
+"status2": "ok"
+},
+"26": {
+"global_gaps": [],
+"status2": "ok"
+},
+"27": {
+"global_gaps": [
+[
+"insert",
+"",
+"SNDHJKHBHS",
+10,
+0
+]
+],
+"status2": "ok",
+"cleared": "caption; checked by eye on the page image"
+},
+"28": {
+"global_gaps": [],
+"status2": "ok"
+},
+"29": {
+"global_gaps": [],
+"status2": "ok"
+},
+"30": {
+"global_gaps": [],
+"status2": "ok"
+},
+"31": {
+"global_gaps": [],
+"status2": "ok"
+},
+"32": {
+"global_gaps": [],
+"status2": "ok"
+},
+"33": {
+"global_gaps": [],
+"status2": "ok"
+},
+"34": {
+"global_gaps": [],
+"status2": "ok"
+},
+"35": {
+"global_gaps": [],
+"status2": "ok"
+},
+"36": {
+"global_gaps": [],
+"status2": "ok"
+},
+"37": {
+"global_gaps": [],
+"status2": "ok"
+},
+"38": {
+"global_gaps": [],
+"status2": "ok"
+},
+"39": {
+"global_gaps": [],
+"status2": "ok"
+},
+"40": {
+"global_gaps": [],
+"status2": "ok"
+},
+"41": {
+"global_gaps": [],
+"status2": "ok"
+},
+"42": {
+"global_gaps": [
+[
+"insert",
+"",
+"HHNSNHDHJZ",
+10,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"43": {
+"global_gaps": [],
+"status2": "ok"
+},
+"44": {
+"global_gaps": [],
+"status2": "ok"
+},
+"45": {
+"global_gaps": [],
+"status2": "ok"
+},
+"46": {
+"global_gaps": [],
+"status2": "ok"
+},
+"47": {
+"global_gaps": [],
+"status2": "ok"
+},
+"48": {
+"global_gaps": [],
+"status2": "ok"
+},
+"49": {
+"global_gaps": [
+[
+"insert",
+"",
+"NSZENNHJZHZHHR",
+14,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"50": {
+"global_gaps": [],
+"status2": "ok"
+},
+"51": {
+"global_gaps": [],
+"status2": "ok"
+},
+"52": {
+"global_gaps": [],
+"status2": "ok"
+},
+"53": {
+"global_gaps": [],
+"status2": "ok"
+},
+"54": {
+"global_gaps": [],
+"status2": "ok"
+},
+"55": {
+"global_gaps": [],
+"status2": "ok"
+},
+"56": {
+"global_gaps": [],
+"status2": "ok"
+},
+"57": {
+"global_gaps": [],
+"status2": "ok"
+},
+"58": {
+"global_gaps": [],
+"status2": "ok"
+},
+"59": {
+"global_gaps": [],
+"status2": "ok"
+},
+"60": {
+"global_gaps": [],
+"status2": "ok"
+},
+"61": {
+"global_gaps": [],
+"status2": "ok"
+},
+"62": {
+"global_gaps": [],
+"status2": "ok"
+},
+"63": {
+"global_gaps": [],
+"status2": "ok"
+},
+"64": {
+"global_gaps": [],
+"status2": "ok"
+},
+"65": {
+"global_gaps": [],
+"status2": "ok"
+},
+"66": {
+"global_gaps": [],
+"status2": "ok"
+},
+"67": {
+"global_gaps": [],
+"status2": "ok"
+},
+"68": {
+"global_gaps": [],
+"status2": "ok"
+},
+"69": {
+"global_gaps": [],
+"status2": "ok"
+},
+"70": {
+"global_gaps": [],
+"status2": "ok"
+},
+"71": {
+"global_gaps": [],
+"status2": "ok"
+},
+"72": {
+"global_gaps": [],
+"status2": "ok"
+},
+"73": {
+"global_gaps": [],
+"status2": "ok"
+},
+"74": {
+"global_gaps": [],
+"status2": "ok"
+},
+"75": {
+"global_gaps": [],
+"status2": "ok"
+},
+"76": {
+"global_gaps": [],
+"status2": "ok"
+},
+"77": {
+"global_gaps": [],
+"status2": "ok"
+},
+"78": {
+"global_gaps": [],
+"status2": "ok"
+},
+"79": {
+"global_gaps": [],
+"status2": "ok"
+},
+"80": {
+"global_gaps": [],
+"status2": "ok"
+},
+"81": {
+"global_gaps": [],
+"status2": "ok"
+},
+"82": {
+"global_gaps": [],
+"status2": "ok"
+},
+"83": {
+"global_gaps": [],
+"status2": "ok"
+},
+"84": {
+"global_gaps": [],
+"status2": "ok"
+},
+"85": {
+"global_gaps": [],
+"status2": "ok"
+},
+"86": {
+"global_gaps": [],
+"status2": "ok"
+},
+"87": {
+"global_gaps": [],
+"status2": "ok"
+},
+"88": {
+"global_gaps": [],
+"status2": "ok"
+},
+"89": {
+"global_gaps": [],
+"status2": "ok"
+},
+"90": {
+"global_gaps": [],
+"status2": "ok"
+},
+"91": {
+"global_gaps": [],
+"status2": "ok"
+},
+"92": {
+"global_gaps": [],
+"status2": "ok"
+},
+"93": {
+"global_gaps": [],
+"status2": "ok"
+},
+"94": {
+"global_gaps": [],
+"status2": "ok"
+},
+"95": {
+"global_gaps": [],
+"status2": "ok"
+},
+"96": {
+"global_gaps": [],
+"status2": "ok"
+},
+"97": {
+"global_gaps": [],
+"status2": "ok"
+},
+"98": {
+"global_gaps": [],
+"status2": "ok"
+},
+"99": {
+"global_gaps": [],
+"status2": "ok"
+},
+"100": {
+"global_gaps": [],
+"status2": "ok"
+},
+"101": {
+"global_gaps": [],
+"status2": "ok"
+},
+"102": {
+"global_gaps": [],
+"status2": "ok"
+},
+"103": {
+"global_gaps": [],
+"status2": "ok"
+},
+"104": {
+"global_gaps": [],
+"status2": "ok"
+},
+"105": {
+"global_gaps": [],
+"status2": "ok"
+},
+"106": {
+"global_gaps": [],
+"status2": "ok"
+},
+"107": {
+"global_gaps": [],
+"status2": "ok"
+},
+"108": {
+"global_gaps": [],
+"status2": "ok"
+},
+"109": {
+"global_gaps": [],
+"status2": "ok"
+},
+"110": {
+"global_gaps": [],
+"status2": "ok"
+},
+"111": {
+"global_gaps": [],
+"status2": "ok"
+},
+"112": {
+"global_gaps": [],
+"status2": "ok"
+},
+"113": {
+"global_gaps": [],
+"status2": "ok"
+},
+"114": {
+"global_gaps": [],
+"status2": "ok"
+},
+"115": {
+"global_gaps": [],
+"status2": "ok"
+},
+"116": {
+"global_gaps": [],
+"status2": "ok"
+},
+"117": {
+"global_gaps": [
+[
+"insert",
+"",
+"SHHHHN",
+6,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"118": {
+"global_gaps": [],
+"status2": "ok"
+},
+"119": {
+"global_gaps": [],
+"status2": "ok"
+},
+"120": {
+"global_gaps": [],
+"status2": "ok"
+},
+"121": {
+"global_gaps": [],
+"status2": "ok"
+},
+"122": {
+"global_gaps": [],
+"status2": "ok"
+},
+"123": {
+"global_gaps": [],
+"status2": "ok"
+},
+"124": {
+"global_gaps": [],
+"status2": "ok"
+},
+"125": {
+"global_gaps": [],
+"status2": "ok"
+},
+"126": {
+"global_gaps": [],
+"status2": "ok"
+},
+"127": {
+"global_gaps": [],
+"status2": "ok"
+},
+"128": {
+"global_gaps": [],
+"status2": "ok"
+},
+"129": {
+"global_gaps": [],
+"status2": "ok"
+},
+"130": {
+"global_gaps": [],
+"status2": "ok"
+},
+"131": {
+"global_gaps": [],
+"status2": "ok"
+},
+"132": {
+"global_gaps": [],
+"status2": "ok"
+},
+"133": {
+"global_gaps": [],
+"status2": "ok"
+},
+"134": {
+"global_gaps": [],
+"status2": "ok"
+},
+"135": {
+"global_gaps": [],
+"status2": "ok"
+},
+"136": {
+"global_gaps": [],
+"status2": "ok"
+},
+"137": {
+"global_gaps": [],
+"status2": "ok"
+},
+"138": {
+"global_gaps": [],
+"status2": "ok"
+},
+"139": {
+"global_gaps": [],
+"status2": "ok"
+},
+"140": {
+"global_gaps": [],
+"status2": "ok"
+},
+"141": {
+"global_gaps": [],
+"status2": "ok"
+},
+"142": {
+"global_gaps": [],
+"status2": "ok"
+},
+"143": {
+"global_gaps": [],
+"status2": "ok"
+},
+"144": {
+"global_gaps": [],
+"status2": "ok"
+},
+"145": {
+"global_gaps": [],
+"status2": "ok"
+},
+"146": {
+"global_gaps": [],
+"status2": "ok"
+},
+"147": {
+"global_gaps": [],
+"status2": "ok"
+},
+"148": {
+"global_gaps": [],
+"status2": "ok"
+},
+"149": {
+"global_gaps": [],
+"status2": "ok"
+},
+"150": {
+"global_gaps": [],
+"status2": "ok"
+},
+"151": {
+"global_gaps": [],
+"status2": "ok"
+},
+"152": {
+"global_gaps": [],
+"status2": "ok"
+},
+"153": {
+"global_gaps": [],
+"status2": "ok"
+},
+"154": {
+"global_gaps": [],
+"status2": "ok"
+},
+"155": {
+"global_gaps": [],
+"status2": "ok"
+},
+"156": {
+"global_gaps": [
+[
+"insert",
+"",
+"BSBHBJK",
+7,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"157": {
+"global_gaps": [],
+"status2": "ok"
+},
+"158": {
+"global_gaps": [
+[
+"insert",
+"",
+"HNSNHJKHBH",
+10,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"159": {
+"global_gaps": [],
+"status2": "ok"
+},
+"160": {
+"global_gaps": [],
+"status2": "ok"
+},
+"161": {
+"global_gaps": [],
+"status2": "ok"
+},
+"162": {
+"global_gaps": [],
+"status2": "ok"
+},
+"163": {
+"global_gaps": [
+[
+"insert",
+"",
+"NSJKHJHH",
+8,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"164": {
+"global_gaps": [],
+"status2": "ok"
+},
+"165": {
+"global_gaps": [],
+"status2": "ok"
+},
+"166": {
+"global_gaps": [],
+"status2": "ok"
+},
+"167": {
+"global_gaps": [],
+"status2": "ok"
+},
+"168": {
+"global_gaps": [],
+"status2": "ok"
+},
+"169": {
+"global_gaps": [],
+"status2": "ok"
+},
+"170": {
+"global_gaps": [],
+"status2": "ok"
+},
+"171": {
+"global_gaps": [],
+"status2": "ok"
+},
+"172": {
+"global_gaps": [],
+"status2": "ok"
+},
+"173": {
+"global_gaps": [],
+"status2": "ok"
+},
+"174": {
+"global_gaps": [],
+"status2": "ok"
+},
+"175": {
+"global_gaps": [],
+"status2": "ok"
+},
+"176": {
+"global_gaps": [],
+"status2": "ok"
+},
+"177": {
+"global_gaps": [],
+"status2": "ok"
+},
+"178": {
+"global_gaps": [],
+"status2": "ok"
+},
+"179": {
+"global_gaps": [
+[
+"insert",
+"",
+"NSNHSBHNN",
+9,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"180": {
+"global_gaps": [],
+"status2": "ok"
+},
+"181": {
+"global_gaps": [],
+"status2": "ok"
+},
+"182": {
+"global_gaps": [
+[
+"insert",
+"",
+"HSHJKBSBHNNH",
+12,
+0
+]
+],
+"status2": "ok",
+"cleared": "caption and title; checked by eye on the page image"
+},
+"183": {
+"global_gaps": [],
+"status2": "ok"
+},
+"184": {
+"global_gaps": [],
+"status2": "ok"
+},
+"185": {
+"global_gaps": [],
+"status2": "ok"
+},
+"186": {
+"global_gaps": [],
+"status2": "ok"
+},
+"187": {
+"global_gaps": [],
+"status2": "ok"
+},
+"188": {
+"global_gaps": [],
+"status2": "ok"
+},
+"189": {
+"global_gaps": [],
+"status2": "ok"
+},
+"190": {
+"global_gaps": [],
+"status2": "ok"
+},
+"191": {
+"global_gaps": [],
+"status2": "ok"
+},
+"192": {
+"global_gaps": [],
+"status2": "ok"
+},
+"193": {
+"global_gaps": [],
+"status2": "ok"
+},
+"194": {
+"global_gaps": [],
+"status2": "ok"
+},
+"195": {
+"global_gaps": [],
+"status2": "ok"
+},
+"196": {
+"global_gaps": [],
+"status2": "ok"
+},
+"197": {
+"global_gaps": [],
+"status2": "ok"
+},
+"198": {
+"global_gaps": [],
+"status2": "ok"
+},
+"199": {
+"global_gaps": [
+[
+"insert",
+"",
+"NSBSEDHNZR",
+10,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"200": {
+"global_gaps": [],
+"status2": "ok"
+},
+"201": {
+"global_gaps": [],
+"status2": "ok"
+},
+"202": {
+"global_gaps": [],
+"status2": "ok"
+},
+"203": {
+"global_gaps": [],
+"status2": "ok"
+},
+"204": {
+"global_gaps": [],
+"status2": "ok"
+},
+"205": {
+"global_gaps": [
+[
+"insert",
+"",
+"BSJHJJK",
+7,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"206": {
+"global_gaps": [
+[
+"insert",
+"",
+"ZBBSJHJ",
+7,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"207": {
+"global_gaps": [],
+"status2": "ok"
+},
+"208": {
+"global_gaps": [],
+"status2": "ok"
+},
+"209": {
+"global_gaps": [],
+"status2": "ok"
+},
+"210": {
+"global_gaps": [],
+"status2": "ok"
+},
+"211": {
+"global_gaps": [],
+"status2": "ok"
+},
+"212": {
+"global_gaps": [],
+"status2": "ok"
+},
+"213": {
+"global_gaps": [],
+"status2": "ok"
+},
+"214": {
+"global_gaps": [
+[
+"insert",
+"",
+"BJHRBNNHD",
+9,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"215": {
+"global_gaps": [],
+"status2": "ok"
+},
+"216": {
+"global_gaps": [],
+"status2": "ok"
+},
+"217": {
+"global_gaps": [],
+"status2": "ok"
+},
+"218": {
+"global_gaps": [],
+"status2": "ok"
+},
+"219": {
+"global_gaps": [],
+"status2": "ok"
+},
+"220": {
+"global_gaps": [
+[
+"insert",
+"",
+"BNNHDHBBNNHDHB",
+14,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"221": {
+"global_gaps": [],
+"status2": "ok"
+},
+"222": {
+"global_gaps": [],
+"status2": "ok"
+},
+"223": {
+"global_gaps": [],
+"status2": "ok"
+},
+"224": {
+"global_gaps": [],
+"status2": "ok"
+},
+"225": {
+"global_gaps": [],
+"status2": "ok"
+},
+"226": {
+"global_gaps": [],
+"status2": "ok"
+},
+"227": {
+"global_gaps": [],
+"status2": "ok"
+},
+"228": {
+"global_gaps": [],
+"status2": "ok"
+},
+"229": {
+"global_gaps": [],
+"status2": "ok"
+},
+"230": {
+"global_gaps": [],
+"status2": "ok"
+},
+"231": {
+"global_gaps": [],
+"status2": "ok"
+},
+"232": {
+"global_gaps": [],
+"status2": "ok"
+},
+"233": {
+"global_gaps": [
+[
+"insert",
+"",
+"BBHHJHJS",
+8,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"234": {
+"global_gaps": [
+[
+"insert",
+"",
+"BBHSHRHJHNB",
+11,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"235": {
+"global_gaps": [],
+"status2": "ok"
+},
+"236": {
+"global_gaps": [],
+"status2": "ok"
+},
+"237": {
+"global_gaps": [],
+"status2": "ok"
+},
+"238": {
+"global_gaps": [
+[
+"insert",
+"",
+"SKHBJS",
+6,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"239": {
+"global_gaps": [],
+"status2": "ok"
+},
+"240": {
+"global_gaps": [],
+"status2": "ok"
+},
+"241": {
+"global_gaps": [],
+"status2": "ok"
+},
+"242": {
+"global_gaps": [],
+"status2": "ok"
+},
+"243": {
+"global_gaps": [
+[
+"insert",
+"",
+"BHEJJHR",
+7,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"244": {
+"global_gaps": [],
+"status2": "ok"
+},
+"245": {
+"global_gaps": [],
+"status2": "ok"
+},
+"246": {
+"global_gaps": [],
+"status2": "ok"
+},
+"247": {
+"global_gaps": [],
+"status2": "ok"
+},
+"248": {
+"global_gaps": [],
+"status2": "ok"
+},
+"249": {
+"global_gaps": [],
+"status2": "ok"
+},
+"250": {
+"global_gaps": [],
+"status2": "ok"
+},
+"251": {
+"global_gaps": [],
+"status2": "ok"
+},
+"252": {
+"global_gaps": [
+[
+"insert",
+"",
+"SDRBRHNHDHJJHHNNRHHHHSNEBDHEJRHDHJKEZERH",
+924,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is the signature and the explanatory memorandum after the last article"
+}
+}

@@ -1,4 +1,4 @@
-import { checkGrounding, legalLeak } from "./legal.js";
+import { checkGrounding, lawScope, legalLeak, otherRegionLaw } from "./legal.js";
 import { tokenize } from "./normalize.js";
 
 /**
@@ -101,6 +101,33 @@ const dropPetNames = (s) =>
     .trim();
 // matched at a word start, with the usual prefixes («بسريه تامه», «وما رح اتركك»)
 const FORBIDDEN_RE = FORBIDDEN.map((p) => ({ p, re: new RegExp(`(?:^| )(?:و|ف|ب|بال|ل)?${p}(?= |$)`) }));
+/**
+ * (2026-11-19, owner's rule «النص الحرفي بدون تغيير أي كلمة») A quote the reply gives as the law's words
+ * («النص بيقول: «…»», «المادة 59 بتقول «…»») must be in a cited text word for word. Only quotes of four words
+ * or more that follow a word naming the text are checked, so her own words in «» are not. «…» splits a quote.
+ * @returns {string} the first quote that is not in the texts, or ""
+ */
+const LAW_WORD = /(?:النص|نص|الماده|ماده|القانون|بيقول|بتقول|بينص|بتنص|ينص|تنص|حرفيا)[^«»]{0,25}$/;
+function misquote(text, cites, articles) {
+  const source = tokenize(
+    cites
+      .map((id) => articles[id]?.text || "")
+      .join(" ")
+      .replace(/[«»]/g, " "),
+  ).join(" ");
+  for (const m of String(text).matchAll(/«([^«»]+)»/g)) {
+    if (!LAW_WORD.test(tokenize(text.slice(0, m.index)).join(" "))) continue;
+    for (const part of m[1].split(/…|\.\.\./)) {
+      const words = tokenize(part);
+      if (words.length >= 4 && !` ${source} `.includes(` ${words.join(" ")} `)) return part.trim();
+    }
+  }
+  return "";
+}
+
+/** Letters of scripts that never belong in her reply (Hebrew, Cyrillic, Greek, CJK…); Latin is allowed. */
+const FOREIGN_SCRIPT = /[֐-׿Ѐ-ӿͰ-Ͽ぀-ヿ一-鿿가-힯]/;
+
 const forbidden = (text) => {
   // a QUESTION may ask it («إنتِ بأمان هلأ؟»); only a statement may not claim it
   const statements = String(text)
@@ -120,12 +147,13 @@ function oneQuestion(text) {
 /**
  * Law answer (cites articles).
  * @param {unknown} raw
- * @param {{articleIds: string[], articles?: Record<string, {text:string, amended?:string}>}} opts
- *        ids the answer may cite; with `articles`, the text is also checked against them
+ * @param {{articleIds: string[], articles?: Record<string, {text:string, amended?:string}>, region?: string}} opts
+ *        ids the answer may cite; with `articles`, the text is also checked against them; with `region`, a
+ *        law of the other region may not be named
  * @returns {import("./types.js").Answer}
  * @throws {Error} with a short machine-readable reason
  */
-export function validateAnswer(raw, { articleIds, articles }) {
+export function validateAnswer(raw, { articleIds, articles, region = "" }) {
   if (!raw || typeof raw !== "object") throw new Error("not-an-object");
   const a = /** @type {Record<string, unknown>} */ (raw);
 
@@ -159,6 +187,8 @@ export function validateAnswer(raw, { articleIds, articles }) {
   const bad = forbidden(all);
   if (bad) throw new Error(`forbidden:${bad}`);
   if (cites.length === 0 && legalLeak(all)) throw new Error("legal-leak");
+  const wrongRegion = otherRegionLaw(all, region);
+  if (wrongRegion) throw new Error(`other-region-law:${wrongRegion}`);
   if (articles) {
     const problems = checkGrounding(answer, articles);
     if (problems.length) throw new Error(`ungrounded:${problems[0]}`);
@@ -172,9 +202,10 @@ export function validateAnswer(raw, { articleIds, articles }) {
  * every number / article number in the text must be in the cited articles. With no citation, no legal claim.
  * Plus: no forbidden promise, pet names removed, one question at most.
  * @param {unknown} raw  {reply, ask?, steps?, cites?, sos?}
- * @param {{articleIds: string[], articles?: Record<string, {text:string, amended?:string}>}} opts
+ * @param {{articleIds: string[], articles?: Record<string, {text:string, amended?:string}>, region?: string}} opts
+ *        region: her region; a reply naming a law of the other region is rejected (otherRegionLaw)
  */
-export function validateChat(raw, { articleIds, articles }) {
+export function validateChat(raw, { articleIds, articles, region = "" }) {
   if (!raw || typeof raw !== "object") throw new Error("not-an-object");
   const a = /** @type {Record<string, unknown>} */ (raw);
   const reply = clean(a.reply ?? a.lead, LIMITS.chat);
@@ -200,16 +231,33 @@ export function validateChat(raw, { articleIds, articles }) {
   if (unknown) throw new Error(`unknown-article:${unknown}`);
   if (reply.includes("؟") && ask) ask = ""; // one question per reply
   const all = [reply, ask, ...steps, ...rights.map((r) => r.text)].join("\n");
+  // a letter of another script inside Arabic words («بينדفع», live test 2026-11-19): a broken reply, rewritten
+  if (FOREIGN_SCRIPT.test(all)) throw new Error("foreign-script");
   const bad = forbidden(all);
   if (bad) throw new Error(`forbidden:${bad}`);
   if (cites.length === 0 && legalLeak(all)) throw new Error("legal-leak");
+  const wrongRegion = otherRegionLaw(all, region);
+  if (wrongRegion) throw new Error(`other-region-law:${wrongRegion}`);
   if (cites.length && articles) {
     const problems = checkGrounding({ lead: reply, note: "", steps, cites }, articles);
     for (const r of rights)
       problems.push(...checkGrounding({ lead: r.text, note: "", steps: [], cites: [r.cite] }, articles));
     if (problems.length) throw new Error(`ungrounded:${problems[0]}`);
+    const bad = misquote(all, cites, articles);
+    if (bad) throw new Error(`misquote:${bad.slice(0, 40)}`);
   }
-  return { kind: "chat-ai", lead: reply, rights, ask, steps, cites, sos: a.sos === true, source: "ai" };
+  const scope = lawScope(cites);
+  return {
+    kind: "chat-ai",
+    lead: reply,
+    rights,
+    ask,
+    steps,
+    cites,
+    scope,
+    sos: a.sos === true,
+    source: "ai",
+  };
 }
 
 /**

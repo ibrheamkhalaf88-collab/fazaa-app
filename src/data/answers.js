@@ -7,15 +7,15 @@
  *
  * Content rules (agreed with the project owner):
  *  - never invent a penalty or article number; cite only ids from src/data/law;
- *  - family-law answers are GENERAL (the personal-status law is not in the app yet),
- *    so they carry `general: true` and a lawyer hand-off;
+ *  - offline answers are GENERAL: they carry `general: true` and a lawyer hand-off. Since 2026-11-18 the old
+ *    corpus (cyber-crimes decree-law, West Bank personal status) is removed, so no offline answer quotes a penalty;
  *  - tone: warm, short, Palestinian dialect, addressed to a woman.
  */
 
 // Offline, the app does not interpret family law: the texts it has are partial and still pending a
 // lawyer's review, and the answer depends on facts (region, religion, contract, dates) it does not know.
 const GENERAL_NOTE =
-  "هاد مش جواب قانوني. القواعد بتختلف بين الضفة وغزة وحسب تفاصيل وضعك، فمحامية بتقدر تقلك شو بينطبق عليكِ بالزبط.";
+  "هاد مش جواب قانوني. الحكم بيعتمد على تفاصيل وضعك. قبل ما تعملي أي خطوة استشيري محامية، وبعدها كمان.";
 
 /** True when the question is a cyber-abuse case (blackmail, leaked images, unwanted porn). */
 const isCyberAbuse = (h) => h.blackmail || h.privacy || h.porn;
@@ -32,15 +32,17 @@ export const RULES = [
   {
     id: "minor-cyber-abuse",
     when: (h) => h.minor && isCyberAbuse(h),
-    answer: (h) => ({
-      lead: "خوفك مفهوم، والقانون بيتعامل مع هالحالة بشدة أكبر لأنها قاصر.",
+    answer: () => ({
+      lead: "خوفك مفهوم، وهي مش غلطانة.",
       steps: [
         "طمّنيها إنها مش غلطانة، وخليها ما ترد على الشخص ولا تبعتله شي",
         "احتفظوا بكل الرسائل وصوّروا الشاشة واسم الحساب",
         "بلّغوا عن الحساب بالمنصة، وتواصلوا مع جهة رسمية بأسرع وقت",
       ],
-      note: "المادة ٧٢ (كانت ٥٢) بتضاعف العقوبة إذا الجريمة فيها استغلال لحدا عمره أقل من ١٨ سنة.",
-      cites: ["72", h.blackmail ? "15" : h.porn ? "16" : "22"],
+      note: GENERAL_NOTE,
+      cites: [],
+      general: true,
+      topic: "ابتزاز قاصر",
     }),
   },
   {
@@ -123,15 +125,17 @@ export const RULES = [
   {
     id: "blackmail",
     when: (h) => Boolean(h.blackmail),
-    answer: (h) => ({
+    answer: () => ({
       lead: "إنتِ مش غلطانة. الابتزاز جريمة، والقانون بيعاقب عليها.",
       steps: [
         "لا تبعتي مصاري ولا صور، ولا تردّي عليه",
         "لا تمسحي المحادثة، وصوّري الرسائل واسم الحساب",
         "بلّغي عن الحساب بالمنصة، وتواصلي مع جهة رسمية",
       ],
-      note: "حسب المادة ١٥ بعد تعديلها سنة ٢٠٢٠، الابتزاز الإلكتروني عقوبته حبس من سنة لسنتين وغرامة من ١٠٠٠ لـ ٣٠٠٠ دينار. وإذا التهديد بأمور بتمس الشرف، الحبس من سنتين لـ ٣ سنين وغرامة من ٥٠٠٠ لـ ١٠٠٠٠ دينار.",
-      cites: h.privacy ? ["15", "22"] : ["15"],
+      note: GENERAL_NOTE,
+      cites: [],
+      general: true,
+      topic: "ابتزاز",
       sos: true,
     }),
   },
@@ -145,8 +149,10 @@ export const RULES = [
         "بلّغي المنصة إنو المحتوى خاص ومنشور بدون إذنك",
         "تواصلي مع جهة رسمية ومعك الأدلة",
       ],
-      note: "حسب المادة ٢٢، اللي بينشر صور أو تسجيلات عن الحياة الخاصة عقوبته حبس ما بيقل عن سنة، أو غرامة من ١٠٠٠ لـ ٣٠٠٠ دينار.",
-      cites: ["22"],
+      note: GENERAL_NOTE,
+      cites: [],
+      general: true,
+      topic: "نشر صور خاصة",
     }),
   },
   {
@@ -155,8 +161,10 @@ export const RULES = [
     answer: () => ({
       lead: "اللي بيبعتلك محتوى إباحي بدون رضاكِ عم يرتكب جريمة.",
       steps: ["لا تردّي، واعملي حظر للحساب بعد ما توثّقي", "صوّري الرسائل والحساب", "بلّغي المنصة وجهة رسمية"],
-      note: "حسب المادة ١٦، العقوبة حبس من ٣ شهور لسنتين أو غرامة من ٢٠٠ لـ ١٠٠٠ دينار.",
-      cites: ["16"],
+      note: GENERAL_NOTE,
+      cites: [],
+      general: true,
+      topic: "محتوى إباحي",
     }),
   },
 ];

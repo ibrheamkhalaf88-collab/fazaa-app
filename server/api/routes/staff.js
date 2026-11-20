@@ -34,6 +34,8 @@ import {
   aiSummary,
   aiUsage,
   parseAnswer,
+  parseLawArticle,
+  forgetAddedLaws,
 } from "../shared.js";
 
 /** @param {import("../worker.js").RouteContext} ctx  @returns {Promise<Response|undefined>} */
@@ -391,6 +393,75 @@ export async function staffRoutes(ctx) {
       return reply(json({ items: rows.map(parseAnswer) }));
     }
 
+    /* ---- law articles («القوانين», 2026-11-17): a lawyer adds and approves, then the app uses it ---- */
+    if (path === "/v1/staff/laws" && request.method === "GET")
+      return reply(json({ articles: await store.listLawArticles(), me: staff.email, role: staff.role }));
+
+    if (path === "/v1/staff/laws" && request.method === "POST") {
+      const { value, error } = await readJson(request, 32768);
+      if (error) return reply(fail(error, "bad-body"));
+      const parsed = parseLawArticle(value);
+      if (parsed.error) return reply(fail(400, parsed.error));
+      const row = await store.addLawArticle({ ...parsed.value, by: staff.email, now });
+      await store.addAudit({
+        actor: staff.email,
+        action: "law-add",
+        target: `${parsed.value.lawName} م${parsed.value.number}`,
+        now,
+      });
+      return reply(json({ article: row }, 201));
+    }
+
+    const lawOne = m(/^\/v1\/staff\/laws\/(\d+)(?:\/(approve|hide|restore))?$/);
+    if (lawOne) {
+      const id = Number(lawOne[1]);
+      const action = lawOne[2] || "";
+      const row = await store.getLawArticle(id);
+      if (!row) return reply(fail(404, "not-found"));
+      const label = `${row.lawName} م${row.number}`;
+
+      // edit: only while it waits for approval, by whoever added it (or a developer)
+      if (!action && request.method === "PUT") {
+        if (row.status !== "draft") return reply(fail(409, "not-a-draft"));
+        if (row.createdBy !== staff.email && staff.role !== "developer") return reply(fail(403, "not-yours"));
+        const { value, error } = await readJson(request, 32768);
+        if (error) return reply(fail(error, "bad-body"));
+        const parsed = parseLawArticle(value);
+        if (parsed.error) return reply(fail(400, parsed.error));
+        await store.updateLawArticle(id, parsed.value, now);
+        await store.addAudit({ actor: staff.email, action: "law-edit", target: label, now });
+        return reply(json({ article: await store.getLawArticle(id) }));
+      }
+
+      if (request.method === "POST" && action === "approve") {
+        // (2026-11-17, owner's decision) a lawyer or a developer approves, the one who added it included, after
+        // ticking that the text was compared with the official source
+        if (!["lawyer", "developer"].includes(staff.role)) return reply(fail(403, "wrong-role"));
+        if (row.status !== "draft") return reply(fail(409, "not-a-draft"));
+        await store.setLawStatus(id, "approved", staff.email, now);
+        forgetAddedLaws();
+        await store.addAudit({ actor: staff.email, action: "law-approve", target: label, now });
+        return reply(json({ article: await store.getLawArticle(id) }));
+      }
+
+      // hide at once (a mistake, a repealed text): any lawyer or developer
+      if (request.method === "POST" && action === "hide") {
+        await store.setLawStatus(id, "hidden", staff.email, now);
+        forgetAddedLaws();
+        await store.addAudit({ actor: staff.email, action: "law-hide", target: label, now });
+        return reply(json({ article: await store.getLawArticle(id) }));
+      }
+
+      // back from hidden: it needs a second lawyer's approval again
+      if (request.method === "POST" && action === "restore") {
+        if (row.status !== "hidden") return reply(fail(409, "not-hidden"));
+        await store.setLawStatus(id, "draft", staff.email, now);
+        await store.addAudit({ actor: staff.email, action: "law-restore", target: label, now });
+        return reply(json({ article: await store.getLawArticle(id) }));
+      }
+      return reply(fail(405, "method"));
+    }
+
     /* ---- AI settings: developer only; the key is write-only ---- */
     if (path === "/v1/staff/ai-config" && request.method === "GET") {
       const denied = need("developer");
@@ -503,8 +574,8 @@ export async function staffRoutes(ctx) {
       const live = aiEnv(env, await loadAi(store, open));
       const started = Date.now();
       const { status, body } = await answerQuestion(
-        "حدا عم يبتزني بصوري",
-        "ps-wb",
+        "شو حقي بالنفقة إذا زوجي ما بدفع",
+        "ps-gaza", // the corpus is Gaza-only since 2026-11-18
         only ? { ...live, MODEL: only, RETRY: "off" } : live,
         fetchImpl,
       );

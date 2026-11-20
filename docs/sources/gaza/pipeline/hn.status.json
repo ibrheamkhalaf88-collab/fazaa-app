@@ -1,0 +1,2710 @@
+{
+"1": {
+"global_gaps": [
+[
+"insert",
+"",
+"BBHNHNJHJSHTEHDHBBHJNHNTNENSHNKJHRHZH",
+37,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is the law's title printed before article 1"
+},
+"2": {
+"global_gaps": [],
+"status2": "ok"
+},
+"3": {
+"global_gaps": [],
+"status2": "ok"
+},
+"4": {
+"global_gaps": [],
+"status2": "ok"
+},
+"5": {
+"global_gaps": [],
+"status2": "ok"
+},
+"6": {
+"global_gaps": [],
+"status2": "ok"
+},
+"7": {
+"global_gaps": [],
+"status2": "ok"
+},
+"8": {
+"global_gaps": [],
+"status2": "ok"
+},
+"9": {
+"global_gaps": [],
+"status2": "ok"
+},
+"10": {
+"global_gaps": [],
+"status2": "ok"
+},
+"11": {
+"global_gaps": [],
+"status2": "ok"
+},
+"12": {
+"global_gaps": [],
+"status2": "ok"
+},
+"13": {
+"global_gaps": [],
+"status2": "ok"
+},
+"14": {
+"global_gaps": [],
+"status2": "ok"
+},
+"15": {
+"global_gaps": [],
+"status2": "ok"
+},
+"16": {
+"global_gaps": [],
+"status2": "ok"
+},
+"17": {
+"global_gaps": [],
+"status2": "ok"
+},
+"18": {
+"global_gaps": [],
+"status2": "ok"
+},
+"19": {
+"global_gaps": [
+[
+"insert",
+"",
+"SNHHNENKJREH",
+12,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"20": {
+"global_gaps": [],
+"status2": "ok"
+},
+"21": {
+"global_gaps": [],
+"status2": "ok"
+},
+"22": {
+"global_gaps": [],
+"status2": "ok"
+},
+"23": {
+"global_gaps": [],
+"status2": "ok"
+},
+"24": {
+"global_gaps": [],
+"status2": "ok"
+},
+"25": {
+"global_gaps": [],
+"status2": "ok"
+},
+"26": {
+"global_gaps": [],
+"status2": "ok"
+},
+"27": {
+"global_gaps": [],
+"status2": "ok"
+},
+"28": {
+"global_gaps": [],
+"status2": "ok"
+},
+"29": {
+"global_gaps": [],
+"status2": "ok"
+},
+"30": {
+"global_gaps": [],
+"status2": "ok"
+},
+"31": {
+"global_gaps": [],
+"status2": "ok"
+},
+"32": {
+"global_gaps": [],
+"status2": "ok"
+},
+"33": {
+"global_gaps": [
+[
+"insert",
+"",
+"SHHHRHZH",
+8,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"34": {
+"global_gaps": [],
+"status2": "ok"
+},
+"35": {
+"global_gaps": [],
+"status2": "ok"
+},
+"36": {
+"global_gaps": [],
+"status2": "ok"
+},
+"37": {
+"global_gaps": [],
+"status2": "ok"
+},
+"38": {
+"global_gaps": [],
+"status2": "ok"
+},
+"39": {
+"global_gaps": [],
+"status2": "ok"
+},
+"40": {
+"global_gaps": [],
+"status2": "ok"
+},
+"41": {
+"global_gaps": [],
+"status2": "ok"
+},
+"42": {
+"global_gaps": [],
+"status2": "ok"
+},
+"43": {
+"global_gaps": [
+[
+"insert",
+"",
+"SRBENKJSTHRHKN",
+14,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"44": {
+"global_gaps": [],
+"status2": "ok"
+},
+"45": {
+"global_gaps": [],
+"status2": "ok"
+},
+"46": {
+"global_gaps": [],
+"status2": "ok"
+},
+"47": {
+"global_gaps": [],
+"status2": "ok"
+},
+"48": {
+"global_gaps": [],
+"status2": "ok"
+},
+"49": {
+"global_gaps": [],
+"status2": "ok"
+},
+"50": {
+"global_gaps": [],
+"status2": "ok"
+},
+"51": {
+"global_gaps": [],
+"status2": "ok"
+},
+"52": {
+"global_gaps": [],
+"status2": "ok"
+},
+"53": {
+"global_gaps": [],
+"status2": "ok"
+},
+"54": {
+"global_gaps": [],
+"status2": "ok"
+},
+"55": {
+"global_gaps": [],
+"status2": "ok"
+},
+"56": {
+"global_gaps": [],
+"status2": "ok"
+},
+"57": {
+"global_gaps": [],
+"status2": "ok"
+},
+"58": {
+"global_gaps": [],
+"status2": "ok"
+},
+"59": {
+"global_gaps": [],
+"status2": "ok"
+},
+"60": {
+"global_gaps": [],
+"status2": "ok"
+},
+"61": {
+"global_gaps": [],
+"status2": "ok"
+},
+"62": {
+"global_gaps": [],
+"status2": "ok"
+},
+"63": {
+"global_gaps": [],
+"status2": "ok"
+},
+"64": {
+"global_gaps": [],
+"status2": "ok"
+},
+"65": {
+"global_gaps": [],
+"status2": "ok"
+},
+"66": {
+"global_gaps": [],
+"status2": "ok"
+},
+"67": {
+"global_gaps": [],
+"status2": "ok"
+},
+"68": {
+"global_gaps": [],
+"status2": "ok"
+},
+"69": {
+"global_gaps": [],
+"status2": "ok"
+},
+"70": {
+"global_gaps": [],
+"status2": "ok"
+},
+"71": {
+"global_gaps": [],
+"status2": "ok"
+},
+"72": {
+"global_gaps": [],
+"status2": "ok"
+},
+"73": {
+"global_gaps": [],
+"status2": "ok"
+},
+"74": {
+"global_gaps": [],
+"status2": "ok"
+},
+"75": {
+"global_gaps": [],
+"status2": "ok"
+},
+"76": {
+"global_gaps": [],
+"status2": "ok"
+},
+"77": {
+"global_gaps": [],
+"status2": "ok"
+},
+"78": {
+"global_gaps": [
+[
+"delete",
+"NHHNHBHHBNE",
+"",
+0,
+11
+],
+[
+"insert",
+"",
+"NHHNHBHHBNE",
+11,
+0
+]
+],
+"status2": "ok",
+"cleared": "lines are out of order in the PDF text layer; the page image matches our text"
+},
+"79": {
+"global_gaps": [],
+"status2": "ok"
+},
+"80": {
+"global_gaps": [],
+"status2": "ok"
+},
+"81": {
+"global_gaps": [],
+"status2": "ok"
+},
+"82": {
+"global_gaps": [],
+"status2": "ok"
+},
+"83": {
+"global_gaps": [],
+"status2": "ok"
+},
+"84": {
+"global_gaps": [],
+"status2": "ok"
+},
+"85": {
+"global_gaps": [],
+"status2": "ok"
+},
+"86": {
+"global_gaps": [],
+"status2": "ok"
+},
+"87": {
+"global_gaps": [],
+"status2": "ok"
+},
+"88": {
+"global_gaps": [],
+"status2": "ok"
+},
+"89": {
+"global_gaps": [],
+"status2": "ok"
+},
+"90": {
+"global_gaps": [],
+"status2": "ok"
+},
+"91": {
+"global_gaps": [],
+"status2": "ok"
+},
+"92": {
+"global_gaps": [],
+"status2": "ok"
+},
+"93": {
+"global_gaps": [],
+"status2": "ok"
+},
+"94": {
+"global_gaps": [],
+"status2": "ok"
+},
+"95": {
+"global_gaps": [],
+"status2": "ok"
+},
+"96": {
+"global_gaps": [],
+"status2": "ok"
+},
+"97": {
+"global_gaps": [],
+"status2": "ok"
+},
+"98": {
+"global_gaps": [],
+"status2": "ok"
+},
+"99": {
+"global_gaps": [],
+"status2": "ok"
+},
+"100": {
+"global_gaps": [],
+"status2": "ok"
+},
+"101": {
+"global_gaps": [],
+"status2": "ok"
+},
+"102": {
+"global_gaps": [],
+"status2": "ok"
+},
+"103": {
+"global_gaps": [],
+"status2": "ok"
+},
+"104": {
+"global_gaps": [],
+"status2": "ok"
+},
+"105": {
+"global_gaps": [],
+"status2": "ok"
+},
+"106": {
+"global_gaps": [],
+"status2": "ok"
+},
+"107": {
+"global_gaps": [],
+"status2": "ok"
+},
+"108": {
+"global_gaps": [],
+"status2": "ok"
+},
+"109": {
+"global_gaps": [],
+"status2": "ok"
+},
+"110": {
+"global_gaps": [],
+"status2": "ok"
+},
+"111": {
+"global_gaps": [],
+"status2": "ok"
+},
+"112": {
+"global_gaps": [],
+"status2": "ok"
+},
+"113": {
+"global_gaps": [],
+"status2": "ok"
+},
+"114": {
+"global_gaps": [],
+"status2": "ok"
+},
+"115": {
+"global_gaps": [],
+"status2": "ok"
+},
+"116": {
+"global_gaps": [],
+"status2": "ok"
+},
+"117": {
+"global_gaps": [],
+"status2": "ok"
+},
+"118": {
+"global_gaps": [],
+"status2": "ok"
+},
+"119": {
+"global_gaps": [],
+"status2": "ok"
+},
+"120": {
+"global_gaps": [
+[
+"insert",
+"",
+"SNHERNKJSKBBHB",
+14,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"121": {
+"global_gaps": [],
+"status2": "ok"
+},
+"122": {
+"global_gaps": [],
+"status2": "ok"
+},
+"123": {
+"global_gaps": [],
+"status2": "ok"
+},
+"124": {
+"global_gaps": [],
+"status2": "ok"
+},
+"125": {
+"global_gaps": [],
+"status2": "ok"
+},
+"126": {
+"global_gaps": [],
+"status2": "ok"
+},
+"127": {
+"global_gaps": [],
+"status2": "ok"
+},
+"128": {
+"global_gaps": [],
+"status2": "ok"
+},
+"129": {
+"global_gaps": [],
+"status2": "ok"
+},
+"130": {
+"global_gaps": [],
+"status2": "ok"
+},
+"131": {
+"global_gaps": [
+[
+"insert",
+"",
+"SERNKJTHRSJHJ",
+13,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"132": {
+"global_gaps": [],
+"status2": "ok"
+},
+"133": {
+"global_gaps": [],
+"status2": "ok"
+},
+"134": {
+"global_gaps": [],
+"status2": "ok"
+},
+"135": {
+"global_gaps": [],
+"status2": "ok"
+},
+"136": {
+"global_gaps": [],
+"status2": "ok"
+},
+"137": {
+"global_gaps": [],
+"status2": "ok"
+},
+"138": {
+"global_gaps": [],
+"status2": "ok"
+},
+"139": {
+"global_gaps": [],
+"status2": "ok"
+},
+"140": {
+"global_gaps": [],
+"status2": "ok"
+},
+"141": {
+"global_gaps": [],
+"status2": "ok"
+},
+"142": {
+"global_gaps": [],
+"status2": "ok"
+},
+"143": {
+"global_gaps": [],
+"status2": "ok"
+},
+"144": {
+"global_gaps": [],
+"status2": "ok"
+},
+"145": {
+"global_gaps": [],
+"status2": "ok"
+},
+"146": {
+"global_gaps": [],
+"status2": "ok"
+},
+"147": {
+"global_gaps": [],
+"status2": "ok"
+},
+"148": {
+"global_gaps": [],
+"status2": "ok"
+},
+"149": {
+"global_gaps": [],
+"status2": "ok"
+},
+"150": {
+"global_gaps": [],
+"status2": "ok"
+},
+"151": {
+"global_gaps": [],
+"status2": "ok"
+},
+"152": {
+"global_gaps": [],
+"status2": "ok"
+},
+"153": {
+"global_gaps": [],
+"status2": "ok"
+},
+"154": {
+"global_gaps": [],
+"status2": "ok"
+},
+"155": {
+"global_gaps": [],
+"status2": "ok"
+},
+"156": {
+"global_gaps": [],
+"status2": "ok"
+},
+"157": {
+"global_gaps": [],
+"status2": "ok"
+},
+"158": {
+"global_gaps": [],
+"status2": "ok"
+},
+"159": {
+"global_gaps": [],
+"status2": "ok"
+},
+"160": {
+"global_gaps": [],
+"status2": "ok"
+},
+"161": {
+"global_gaps": [],
+"status2": "ok"
+},
+"162": {
+"global_gaps": [],
+"status2": "ok"
+},
+"163": {
+"global_gaps": [],
+"status2": "ok"
+},
+"164": {
+"global_gaps": [],
+"status2": "ok"
+},
+"165": {
+"global_gaps": [],
+"status2": "ok"
+},
+"166": {
+"global_gaps": [],
+"status2": "ok"
+},
+"167": {
+"global_gaps": [],
+"status2": "ok"
+},
+"168": {
+"global_gaps": [],
+"status2": "ok"
+},
+"169": {
+"global_gaps": [],
+"status2": "ok"
+},
+"170": {
+"global_gaps": [],
+"status2": "ok"
+},
+"171": {
+"global_gaps": [],
+"status2": "ok"
+},
+"172": {
+"global_gaps": [],
+"status2": "ok"
+},
+"173": {
+"global_gaps": [
+[
+"insert",
+"",
+"SNERNNTZE",
+9,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"174": {
+"global_gaps": [],
+"status2": "ok"
+},
+"175": {
+"global_gaps": [],
+"status2": "ok"
+},
+"176": {
+"global_gaps": [],
+"status2": "ok"
+},
+"177": {
+"global_gaps": [],
+"status2": "ok"
+},
+"178": {
+"global_gaps": [],
+"status2": "ok"
+},
+"179": {
+"global_gaps": [],
+"status2": "ok"
+},
+"180": {
+"global_gaps": [],
+"status2": "ok"
+},
+"181": {
+"global_gaps": [],
+"status2": "ok"
+},
+"182": {
+"global_gaps": [],
+"status2": "ok"
+},
+"183": {
+"global_gaps": [],
+"status2": "ok"
+},
+"184": {
+"global_gaps": [],
+"status2": "ok"
+},
+"185": {
+"global_gaps": [],
+"status2": "ok"
+},
+"186": {
+"global_gaps": [],
+"status2": "ok"
+},
+"187": {
+"global_gaps": [],
+"status2": "ok"
+},
+"188": {
+"global_gaps": [],
+"status2": "ok"
+},
+"189": {
+"global_gaps": [],
+"status2": "ok"
+},
+"190": {
+"global_gaps": [],
+"status2": "ok"
+},
+"191": {
+"global_gaps": [],
+"status2": "ok"
+},
+"192": {
+"global_gaps": [],
+"status2": "ok"
+},
+"193": {
+"global_gaps": [],
+"status2": "ok"
+},
+"194": {
+"global_gaps": [],
+"status2": "ok"
+},
+"195": {
+"global_gaps": [],
+"status2": "ok"
+},
+"196": {
+"global_gaps": [],
+"status2": "ok"
+},
+"197": {
+"global_gaps": [],
+"status2": "ok"
+},
+"198": {
+"global_gaps": [],
+"status2": "ok"
+},
+"199": {
+"global_gaps": [],
+"status2": "ok"
+},
+"200": {
+"global_gaps": [],
+"status2": "ok"
+},
+"201": {
+"global_gaps": [],
+"status2": "ok"
+},
+"202": {
+"global_gaps": [],
+"status2": "ok"
+},
+"203": {
+"global_gaps": [],
+"status2": "ok"
+},
+"204": {
+"global_gaps": [],
+"status2": "ok"
+},
+"205": {
+"global_gaps": [],
+"status2": "ok"
+},
+"206": {
+"global_gaps": [],
+"status2": "ok"
+},
+"207": {
+"global_gaps": [],
+"status2": "ok"
+},
+"208": {
+"global_gaps": [],
+"status2": "ok"
+},
+"209": {
+"global_gaps": [],
+"status2": "ok"
+},
+"210": {
+"global_gaps": [],
+"status2": "ok"
+},
+"211": {
+"global_gaps": [],
+"status2": "ok"
+},
+"212": {
+"global_gaps": [],
+"status2": "ok"
+},
+"213": {
+"global_gaps": [],
+"status2": "ok"
+},
+"214": {
+"global_gaps": [],
+"status2": "ok"
+},
+"215": {
+"global_gaps": [],
+"status2": "ok"
+},
+"216": {
+"global_gaps": [],
+"status2": "ok"
+},
+"217": {
+"global_gaps": [],
+"status2": "ok"
+},
+"218": {
+"global_gaps": [],
+"status2": "ok"
+},
+"219": {
+"global_gaps": [],
+"status2": "ok"
+},
+"220": {
+"global_gaps": [],
+"status2": "ok"
+},
+"221": {
+"global_gaps": [],
+"status2": "ok"
+},
+"222": {
+"global_gaps": [],
+"status2": "ok"
+},
+"223": {
+"global_gaps": [],
+"status2": "ok"
+},
+"224": {
+"global_gaps": [],
+"status2": "ok"
+},
+"225": {
+"global_gaps": [],
+"status2": "ok"
+},
+"226": {
+"global_gaps": [],
+"status2": "ok"
+},
+"227": {
+"global_gaps": [],
+"status2": "ok"
+},
+"228": {
+"global_gaps": [],
+"status2": "ok"
+},
+"229": {
+"global_gaps": [],
+"status2": "ok"
+},
+"230": {
+"global_gaps": [],
+"status2": "ok"
+},
+"231": {
+"global_gaps": [],
+"status2": "ok"
+},
+"232": {
+"global_gaps": [],
+"status2": "ok"
+},
+"233": {
+"global_gaps": [],
+"status2": "ok"
+},
+"234": {
+"global_gaps": [],
+"status2": "ok"
+},
+"235": {
+"global_gaps": [],
+"status2": "ok"
+},
+"236": {
+"global_gaps": [],
+"status2": "ok"
+},
+"237": {
+"global_gaps": [],
+"status2": "ok"
+},
+"238": {
+"global_gaps": [],
+"status2": "ok"
+},
+"239": {
+"global_gaps": [],
+"status2": "ok"
+},
+"240": {
+"global_gaps": [],
+"status2": "ok"
+},
+"241": {
+"global_gaps": [],
+"status2": "ok"
+},
+"242": {
+"global_gaps": [],
+"status2": "ok"
+},
+"243": {
+"global_gaps": [],
+"status2": "ok"
+},
+"244": {
+"global_gaps": [],
+"status2": "ok"
+},
+"245": {
+"global_gaps": [],
+"status2": "ok"
+},
+"246": {
+"global_gaps": [],
+"status2": "ok"
+},
+"247": {
+"global_gaps": [],
+"status2": "ok"
+},
+"248": {
+"global_gaps": [],
+"status2": "ok"
+},
+"249": {
+"global_gaps": [],
+"status2": "ok"
+},
+"250": {
+"global_gaps": [],
+"status2": "ok"
+},
+"251": {
+"global_gaps": [],
+"status2": "ok"
+},
+"252": {
+"global_gaps": [],
+"status2": "ok"
+},
+"253": {
+"global_gaps": [],
+"status2": "ok"
+},
+"254": {
+"global_gaps": [],
+"status2": "ok"
+},
+"255": {
+"global_gaps": [],
+"status2": "ok"
+},
+"256": {
+"global_gaps": [],
+"status2": "ok"
+},
+"257": {
+"global_gaps": [],
+"status2": "ok"
+},
+"258": {
+"global_gaps": [],
+"status2": "ok"
+},
+"259": {
+"global_gaps": [],
+"status2": "ok"
+},
+"260": {
+"global_gaps": [],
+"status2": "ok"
+},
+"261": {
+"global_gaps": [],
+"status2": "ok"
+},
+"262": {
+"global_gaps": [],
+"status2": "ok"
+},
+"263": {
+"global_gaps": [],
+"status2": "ok"
+},
+"264": {
+"global_gaps": [],
+"status2": "ok"
+},
+"265": {
+"global_gaps": [],
+"status2": "ok"
+},
+"266": {
+"global_gaps": [],
+"status2": "ok"
+},
+"267": {
+"global_gaps": [],
+"status2": "ok"
+},
+"268": {
+"global_gaps": [],
+"status2": "ok"
+},
+"269": {
+"global_gaps": [],
+"status2": "ok"
+},
+"270": {
+"global_gaps": [],
+"status2": "ok"
+},
+"271": {
+"global_gaps": [],
+"status2": "ok"
+},
+"272": {
+"global_gaps": [],
+"status2": "ok"
+},
+"273": {
+"global_gaps": [],
+"status2": "ok"
+},
+"274": {
+"global_gaps": [],
+"status2": "ok"
+},
+"275": {
+"global_gaps": [],
+"status2": "ok"
+},
+"276": {
+"global_gaps": [],
+"status2": "ok"
+},
+"277": {
+"global_gaps": [],
+"status2": "ok"
+},
+"278": {
+"global_gaps": [],
+"status2": "ok"
+},
+"279": {
+"global_gaps": [],
+"status2": "ok"
+},
+"280": {
+"global_gaps": [],
+"status2": "ok"
+},
+"281": {
+"global_gaps": [],
+"status2": "ok"
+},
+"282": {
+"global_gaps": [],
+"status2": "ok"
+},
+"283": {
+"global_gaps": [],
+"status2": "ok"
+},
+"284": {
+"global_gaps": [],
+"status2": "ok"
+},
+"285": {
+"global_gaps": [],
+"status2": "ok"
+},
+"286": {
+"global_gaps": [],
+"status2": "ok"
+},
+"287": {
+"global_gaps": [],
+"status2": "ok"
+},
+"288": {
+"global_gaps": [],
+"status2": "ok"
+},
+"289": {
+"global_gaps": [],
+"status2": "ok"
+},
+"290": {
+"global_gaps": [],
+"status2": "ok"
+},
+"291": {
+"global_gaps": [],
+"status2": "ok"
+},
+"292": {
+"global_gaps": [],
+"status2": "ok"
+},
+"293": {
+"global_gaps": [],
+"status2": "ok"
+},
+"294": {
+"global_gaps": [],
+"status2": "ok"
+},
+"295": {
+"global_gaps": [],
+"status2": "ok"
+},
+"296": {
+"global_gaps": [],
+"status2": "ok"
+},
+"297": {
+"global_gaps": [],
+"status2": "ok"
+},
+"298": {
+"global_gaps": [],
+"status2": "ok"
+},
+"299": {
+"global_gaps": [],
+"status2": "ok"
+},
+"300": {
+"global_gaps": [],
+"status2": "ok"
+},
+"301": {
+"global_gaps": [],
+"status2": "ok"
+},
+"302": {
+"global_gaps": [],
+"status2": "ok"
+},
+"303": {
+"global_gaps": [],
+"status2": "ok"
+},
+"304": {
+"global_gaps": [],
+"status2": "ok"
+},
+"305": {
+"global_gaps": [],
+"status2": "ok"
+},
+"306": {
+"global_gaps": [],
+"status2": "ok"
+},
+"307": {
+"global_gaps": [],
+"status2": "ok"
+},
+"308": {
+"global_gaps": [],
+"status2": "ok"
+},
+"309": {
+"global_gaps": [],
+"status2": "ok"
+},
+"310": {
+"global_gaps": [],
+"status2": "ok"
+},
+"311": {
+"global_gaps": [],
+"status2": "ok"
+},
+"312": {
+"global_gaps": [],
+"status2": "ok"
+},
+"313": {
+"global_gaps": [],
+"status2": "ok"
+},
+"314": {
+"global_gaps": [],
+"status2": "ok"
+},
+"315": {
+"global_gaps": [],
+"status2": "ok"
+},
+"316": {
+"global_gaps": [],
+"status2": "ok"
+},
+"317": {
+"global_gaps": [],
+"status2": "ok"
+},
+"318": {
+"global_gaps": [],
+"status2": "ok"
+},
+"319": {
+"global_gaps": [],
+"status2": "ok"
+},
+"320": {
+"global_gaps": [],
+"status2": "ok"
+},
+"321": {
+"global_gaps": [],
+"status2": "ok"
+},
+"322": {
+"global_gaps": [],
+"status2": "ok"
+},
+"323": {
+"global_gaps": [],
+"status2": "ok"
+},
+"324": {
+"global_gaps": [],
+"status2": "ok"
+},
+"325": {
+"global_gaps": [],
+"status2": "ok"
+},
+"326": {
+"global_gaps": [],
+"status2": "ok"
+},
+"327": {
+"global_gaps": [],
+"status2": "ok"
+},
+"328": {
+"global_gaps": [],
+"status2": "ok"
+},
+"329": {
+"global_gaps": [],
+"status2": "ok"
+},
+"330": {
+"global_gaps": [],
+"status2": "ok"
+},
+"331": {
+"global_gaps": [],
+"status2": "ok"
+},
+"332": {
+"global_gaps": [],
+"status2": "ok"
+},
+"333": {
+"global_gaps": [],
+"status2": "ok"
+},
+"334": {
+"global_gaps": [],
+"status2": "ok"
+},
+"335": {
+"global_gaps": [],
+"status2": "ok"
+},
+"336": {
+"global_gaps": [],
+"status2": "ok"
+},
+"337": {
+"global_gaps": [],
+"status2": "ok"
+},
+"338": {
+"global_gaps": [],
+"status2": "ok"
+},
+"339": {
+"global_gaps": [],
+"status2": "ok"
+},
+"340": {
+"global_gaps": [],
+"status2": "ok"
+},
+"341": {
+"global_gaps": [],
+"status2": "ok"
+},
+"342": {
+"global_gaps": [],
+"status2": "ok"
+},
+"343": {
+"global_gaps": [],
+"status2": "ok"
+},
+"344": {
+"global_gaps": [],
+"status2": "ok"
+},
+"345": {
+"global_gaps": [],
+"status2": "ok"
+},
+"346": {
+"global_gaps": [],
+"status2": "ok"
+},
+"347": {
+"global_gaps": [],
+"status2": "ok"
+},
+"348": {
+"global_gaps": [],
+"status2": "ok"
+},
+"349": {
+"global_gaps": [],
+"status2": "ok"
+},
+"350": {
+"global_gaps": [],
+"status2": "ok"
+},
+"351": {
+"global_gaps": [],
+"status2": "ok"
+},
+"352": {
+"global_gaps": [],
+"status2": "ok"
+},
+"353": {
+"global_gaps": [],
+"status2": "ok"
+},
+"354": {
+"global_gaps": [],
+"status2": "ok"
+},
+"355": {
+"global_gaps": [],
+"status2": "ok"
+},
+"356": {
+"global_gaps": [],
+"status2": "ok"
+},
+"357": {
+"global_gaps": [],
+"status2": "ok"
+},
+"358": {
+"global_gaps": [],
+"status2": "ok"
+},
+"359": {
+"global_gaps": [],
+"status2": "ok"
+},
+"360": {
+"global_gaps": [],
+"status2": "ok"
+},
+"361": {
+"global_gaps": [],
+"status2": "ok"
+},
+"362": {
+"global_gaps": [],
+"status2": "ok"
+},
+"363": {
+"global_gaps": [],
+"status2": "ok"
+},
+"364": {
+"global_gaps": [],
+"status2": "ok"
+},
+"365": {
+"global_gaps": [],
+"status2": "ok"
+},
+"366": {
+"global_gaps": [],
+"status2": "ok"
+},
+"367": {
+"global_gaps": [],
+"status2": "ok"
+},
+"368": {
+"global_gaps": [],
+"status2": "ok"
+},
+"369": {
+"global_gaps": [],
+"status2": "ok"
+},
+"370": {
+"global_gaps": [],
+"status2": "ok"
+},
+"371": {
+"global_gaps": [],
+"status2": "ok"
+},
+"372": {
+"global_gaps": [],
+"status2": "ok"
+},
+"373": {
+"global_gaps": [],
+"status2": "ok"
+},
+"374": {
+"global_gaps": [],
+"status2": "ok"
+},
+"375": {
+"global_gaps": [],
+"status2": "ok"
+},
+"376": {
+"global_gaps": [],
+"status2": "ok"
+},
+"377": {
+"global_gaps": [],
+"status2": "ok"
+},
+"378": {
+"global_gaps": [],
+"status2": "ok"
+},
+"379": {
+"global_gaps": [],
+"status2": "ok"
+},
+"380": {
+"global_gaps": [],
+"status2": "ok"
+},
+"381": {
+"global_gaps": [],
+"status2": "ok"
+},
+"382": {
+"global_gaps": [],
+"status2": "ok"
+},
+"383": {
+"global_gaps": [],
+"status2": "ok"
+},
+"384": {
+"global_gaps": [],
+"status2": "ok"
+},
+"385": {
+"global_gaps": [],
+"status2": "ok"
+},
+"386": {
+"global_gaps": [],
+"status2": "ok"
+},
+"387": {
+"global_gaps": [],
+"status2": "ok"
+},
+"388": {
+"global_gaps": [],
+"status2": "ok"
+},
+"389": {
+"global_gaps": [],
+"status2": "ok"
+},
+"390": {
+"global_gaps": [],
+"status2": "ok"
+},
+"391": {
+"global_gaps": [],
+"status2": "ok"
+},
+"392": {
+"global_gaps": [],
+"status2": "ok"
+},
+"393": {
+"global_gaps": [],
+"status2": "ok"
+},
+"394": {
+"global_gaps": [],
+"status2": "ok"
+},
+"395": {
+"global_gaps": [],
+"status2": "ok"
+},
+"396": {
+"global_gaps": [],
+"status2": "ok"
+},
+"397": {
+"global_gaps": [],
+"status2": "ok"
+},
+"398": {
+"global_gaps": [],
+"status2": "ok"
+},
+"399": {
+"global_gaps": [],
+"status2": "ok"
+},
+"400": {
+"global_gaps": [],
+"status2": "ok"
+},
+"401": {
+"global_gaps": [],
+"status2": "ok"
+},
+"402": {
+"global_gaps": [],
+"status2": "ok"
+},
+"403": {
+"global_gaps": [],
+"status2": "ok"
+},
+"404": {
+"global_gaps": [],
+"status2": "ok"
+},
+"405": {
+"global_gaps": [
+[
+"delete",
+"STHRHHBH",
+"",
+0,
+8
+],
+[
+"insert",
+"",
+"HJTHBSTHRHHBH",
+13,
+0
+]
+],
+"status2": "ok",
+"cleared": "lines out of order in the PDF text layer; checked by eye on the page image"
+},
+"406": {
+"global_gaps": [
+[
+"insert",
+"",
+"EHHNDRNNT",
+9,
+0
+],
+[
+"delete",
+"JEHHNDRNNT",
+"",
+0,
+10
+]
+],
+"status2": "ok",
+"cleared": "lines out of order in the PDF text layer; checked by eye on the page image"
+},
+"407": {
+"global_gaps": [],
+"status2": "ok"
+},
+"408": {
+"global_gaps": [],
+"status2": "ok"
+},
+"409": {
+"global_gaps": [],
+"status2": "ok"
+},
+"410": {
+"global_gaps": [],
+"status2": "ok"
+},
+"411": {
+"global_gaps": [],
+"status2": "ok"
+},
+"412": {
+"global_gaps": [],
+"status2": "ok"
+},
+"413": {
+"global_gaps": [],
+"status2": "ok"
+},
+"414": {
+"global_gaps": [],
+"status2": "ok"
+},
+"415": {
+"global_gaps": [],
+"status2": "ok"
+},
+"416": {
+"global_gaps": [],
+"status2": "ok"
+},
+"417": {
+"global_gaps": [],
+"status2": "ok"
+},
+"418": {
+"global_gaps": [],
+"status2": "ok"
+},
+"419": {
+"global_gaps": [],
+"status2": "ok"
+},
+"420": {
+"global_gaps": [],
+"status2": "ok"
+},
+"421": {
+"global_gaps": [],
+"status2": "ok"
+},
+"422": {
+"global_gaps": [],
+"status2": "ok"
+},
+"423": {
+"global_gaps": [],
+"status2": "ok"
+},
+"424": {
+"global_gaps": [],
+"status2": "ok"
+},
+"425": {
+"global_gaps": [],
+"status2": "ok"
+},
+"426": {
+"global_gaps": [],
+"status2": "ok"
+},
+"427": {
+"global_gaps": [],
+"status2": "ok"
+},
+"428": {
+"global_gaps": [],
+"status2": "ok"
+},
+"429": {
+"global_gaps": [],
+"status2": "ok"
+},
+"430": {
+"global_gaps": [],
+"status2": "ok"
+},
+"431": {
+"global_gaps": [],
+"status2": "ok"
+},
+"432": {
+"global_gaps": [],
+"status2": "ok"
+},
+"433": {
+"global_gaps": [],
+"status2": "ok"
+},
+"434": {
+"global_gaps": [],
+"status2": "ok"
+},
+"435": {
+"global_gaps": [],
+"status2": "ok"
+},
+"436": {
+"global_gaps": [],
+"status2": "ok"
+},
+"437": {
+"global_gaps": [],
+"status2": "ok"
+},
+"438": {
+"global_gaps": [],
+"status2": "ok"
+},
+"439": {
+"global_gaps": [],
+"status2": "ok"
+},
+"440": {
+"global_gaps": [],
+"status2": "ok"
+},
+"441": {
+"global_gaps": [],
+"status2": "ok"
+},
+"442": {
+"global_gaps": [],
+"status2": "ok"
+},
+"443": {
+"global_gaps": [],
+"status2": "ok"
+},
+"444": {
+"global_gaps": [],
+"status2": "ok"
+},
+"445": {
+"global_gaps": [],
+"status2": "ok"
+},
+"446": {
+"global_gaps": [],
+"status2": "ok"
+},
+"447": {
+"global_gaps": [],
+"status2": "ok"
+},
+"448": {
+"global_gaps": [],
+"status2": "ok"
+},
+"449": {
+"global_gaps": [],
+"status2": "ok"
+},
+"450": {
+"global_gaps": [],
+"status2": "ok"
+},
+"451": {
+"global_gaps": [],
+"status2": "ok"
+},
+"452": {
+"global_gaps": [],
+"status2": "ok"
+},
+"453": {
+"global_gaps": [],
+"status2": "ok"
+},
+"454": {
+"global_gaps": [],
+"status2": "ok"
+},
+"455": {
+"global_gaps": [],
+"status2": "ok"
+},
+"456": {
+"global_gaps": [],
+"status2": "ok"
+},
+"457": {
+"global_gaps": [],
+"status2": "ok"
+},
+"458": {
+"global_gaps": [],
+"status2": "ok"
+},
+"459": {
+"global_gaps": [],
+"status2": "ok"
+},
+"460": {
+"global_gaps": [],
+"status2": "ok"
+},
+"461": {
+"global_gaps": [],
+"status2": "ok"
+},
+"462": {
+"global_gaps": [],
+"status2": "ok"
+},
+"463": {
+"global_gaps": [],
+"status2": "ok"
+},
+"464": {
+"global_gaps": [],
+"status2": "ok"
+},
+"465": {
+"global_gaps": [],
+"status2": "ok"
+},
+"466": {
+"global_gaps": [],
+"status2": "ok"
+},
+"467": {
+"global_gaps": [],
+"status2": "ok"
+},
+"468": {
+"global_gaps": [],
+"status2": "ok"
+},
+"469": {
+"global_gaps": [],
+"status2": "ok"
+},
+"470": {
+"global_gaps": [],
+"status2": "ok"
+},
+"471": {
+"global_gaps": [],
+"status2": "ok"
+},
+"472": {
+"global_gaps": [],
+"status2": "ok"
+},
+"473": {
+"global_gaps": [],
+"status2": "ok"
+},
+"474": {
+"global_gaps": [],
+"status2": "ok"
+},
+"475": {
+"global_gaps": [],
+"status2": "ok"
+},
+"476": {
+"global_gaps": [],
+"status2": "ok"
+},
+"477": {
+"global_gaps": [],
+"status2": "ok"
+},
+"478": {
+"global_gaps": [],
+"status2": "ok"
+},
+"479": {
+"global_gaps": [],
+"status2": "ok"
+},
+"480": {
+"global_gaps": [],
+"status2": "ok"
+},
+"481": {
+"global_gaps": [],
+"status2": "ok"
+},
+"482": {
+"global_gaps": [],
+"status2": "ok"
+},
+"483": {
+"global_gaps": [],
+"status2": "ok"
+},
+"484": {
+"global_gaps": [],
+"status2": "ok"
+},
+"485": {
+"global_gaps": [],
+"status2": "ok"
+},
+"486": {
+"global_gaps": [],
+"status2": "ok"
+},
+"487": {
+"global_gaps": [],
+"status2": "ok"
+},
+"488": {
+"global_gaps": [],
+"status2": "ok"
+},
+"489": {
+"global_gaps": [],
+"status2": "ok"
+},
+"490": {
+"global_gaps": [],
+"status2": "ok"
+},
+"491": {
+"global_gaps": [],
+"status2": "ok"
+},
+"492": {
+"global_gaps": [],
+"status2": "ok"
+},
+"493": {
+"global_gaps": [],
+"status2": "ok"
+},
+"494": {
+"global_gaps": [],
+"status2": "ok"
+},
+"495": {
+"global_gaps": [],
+"status2": "ok"
+},
+"496": {
+"global_gaps": [],
+"status2": "ok"
+},
+"497": {
+"global_gaps": [],
+"status2": "ok"
+},
+"498": {
+"global_gaps": [],
+"status2": "ok"
+},
+"499": {
+"global_gaps": [],
+"status2": "ok"
+},
+"500": {
+"global_gaps": [],
+"status2": "ok"
+},
+"501": {
+"global_gaps": [],
+"status2": "ok"
+},
+"502": {
+"global_gaps": [],
+"status2": "ok"
+},
+"503": {
+"global_gaps": [],
+"status2": "ok"
+},
+"504": {
+"global_gaps": [],
+"status2": "ok"
+},
+"505": {
+"global_gaps": [],
+"status2": "ok"
+},
+"506": {
+"global_gaps": [],
+"status2": "ok"
+},
+"507": {
+"global_gaps": [],
+"status2": "ok"
+},
+"508": {
+"global_gaps": [],
+"status2": "ok"
+},
+"509": {
+"global_gaps": [],
+"status2": "ok"
+},
+"510": {
+"global_gaps": [],
+"status2": "ok"
+},
+"511": {
+"global_gaps": [],
+"status2": "ok"
+},
+"512": {
+"global_gaps": [],
+"status2": "ok"
+},
+"513": {
+"global_gaps": [],
+"status2": "ok"
+},
+"514": {
+"global_gaps": [],
+"status2": "ok"
+},
+"515": {
+"global_gaps": [],
+"status2": "ok"
+},
+"516": {
+"global_gaps": [],
+"status2": "ok"
+},
+"517": {
+"global_gaps": [],
+"status2": "ok"
+},
+"518": {
+"global_gaps": [],
+"status2": "ok"
+},
+"519": {
+"global_gaps": [],
+"status2": "ok"
+},
+"520": {
+"global_gaps": [],
+"status2": "ok"
+},
+"521": {
+"global_gaps": [],
+"status2": "ok"
+},
+"522": {
+"global_gaps": [],
+"status2": "ok"
+},
+"523": {
+"global_gaps": [],
+"status2": "ok"
+},
+"524": {
+"global_gaps": [],
+"status2": "ok"
+},
+"525": {
+"global_gaps": [],
+"status2": "ok"
+},
+"526": {
+"global_gaps": [],
+"status2": "ok"
+},
+"527": {
+"global_gaps": [],
+"status2": "ok"
+},
+"528": {
+"global_gaps": [],
+"status2": "ok"
+},
+"529": {
+"global_gaps": [],
+"status2": "ok"
+},
+"530": {
+"global_gaps": [],
+"status2": "ok"
+},
+"531": {
+"global_gaps": [],
+"status2": "ok"
+},
+"532": {
+"global_gaps": [],
+"status2": "ok"
+},
+"533": {
+"global_gaps": [],
+"status2": "ok"
+},
+"534": {
+"global_gaps": [],
+"status2": "ok"
+},
+"535": {
+"global_gaps": [],
+"status2": "ok"
+},
+"536": {
+"global_gaps": [],
+"status2": "ok"
+},
+"537": {
+"global_gaps": [],
+"status2": "ok"
+},
+"538": {
+"global_gaps": [],
+"status2": "ok"
+},
+"539": {
+"global_gaps": [],
+"status2": "ok"
+},
+"540": {
+"global_gaps": [],
+"status2": "ok"
+},
+"541": {
+"global_gaps": [],
+"status2": "ok"
+},
+"542": {
+"global_gaps": [],
+"status2": "ok"
+},
+"543": {
+"global_gaps": [],
+"status2": "ok"
+},
+"544": {
+"global_gaps": [],
+"status2": "ok"
+},
+"545": {
+"global_gaps": [],
+"status2": "ok"
+},
+"546": {
+"global_gaps": [],
+"status2": "ok"
+},
+"547": {
+"global_gaps": [],
+"status2": "ok"
+},
+"548": {
+"global_gaps": [],
+"status2": "ok"
+},
+"549": {
+"global_gaps": [],
+"status2": "ok"
+},
+"550": {
+"global_gaps": [],
+"status2": "ok"
+},
+"551": {
+"global_gaps": [],
+"status2": "ok"
+},
+"552": {
+"global_gaps": [],
+"status2": "ok"
+},
+"553": {
+"global_gaps": [],
+"status2": "ok"
+},
+"554": {
+"global_gaps": [],
+"status2": "ok"
+},
+"555": {
+"global_gaps": [],
+"status2": "ok"
+},
+"556": {
+"global_gaps": [],
+"status2": "ok"
+},
+"557": {
+"global_gaps": [],
+"status2": "ok"
+},
+"558": {
+"global_gaps": [],
+"status2": "ok"
+},
+"559": {
+"global_gaps": [],
+"status2": "ok"
+},
+"560": {
+"global_gaps": [],
+"status2": "ok"
+},
+"561": {
+"global_gaps": [],
+"status2": "ok"
+},
+"562": {
+"global_gaps": [],
+"status2": "ok"
+},
+"563": {
+"global_gaps": [],
+"status2": "ok"
+},
+"564": {
+"global_gaps": [],
+"status2": "ok"
+},
+"565": {
+"global_gaps": [],
+"status2": "ok"
+},
+"566": {
+"global_gaps": [],
+"status2": "ok"
+},
+"567": {
+"global_gaps": [],
+"status2": "ok"
+},
+"568": {
+"global_gaps": [],
+"status2": "ok"
+},
+"569": {
+"global_gaps": [],
+"status2": "ok"
+},
+"570": {
+"global_gaps": [],
+"status2": "ok"
+},
+"571": {
+"global_gaps": [],
+"status2": "ok"
+},
+"572": {
+"global_gaps": [],
+"status2": "ok"
+},
+"573": {
+"global_gaps": [],
+"status2": "ok"
+},
+"574": {
+"global_gaps": [],
+"status2": "ok"
+},
+"575": {
+"global_gaps": [],
+"status2": "ok"
+},
+"576": {
+"global_gaps": [],
+"status2": "ok"
+},
+"577": {
+"global_gaps": [],
+"status2": "ok"
+},
+"578": {
+"global_gaps": [],
+"status2": "ok"
+},
+"579": {
+"global_gaps": [],
+"status2": "ok"
+},
+"580": {
+"global_gaps": [],
+"status2": "ok"
+},
+"581": {
+"global_gaps": [],
+"status2": "ok"
+},
+"582": {
+"global_gaps": [],
+"status2": "ok"
+},
+"583": {
+"global_gaps": [
+[
+"insert",
+"",
+"SJDHHJSHNHRH",
+12,
+0
+]
+],
+"status2": "ok",
+"cleared": "the gap is a chapter title / caption, not article text"
+},
+"584": {
+"global_gaps": [],
+"status2": "ok"
+},
+"585": {
+"global_gaps": [],
+"status2": "ok"
+},
+"586": {
+"global_gaps": [],
+"status2": "ok"
+},
+"587": {
+"global_gaps": [],
+"status2": "ok"
+},
+"588": {
+"global_gaps": [],
+"status2": "ok"
+},
+"589": {
+"global_gaps": [],
+"status2": "ok"
+},
+"590": {
+"global_gaps": [],
+"status2": "ok"
+},
+"591": {
+"global_gaps": [],
+"status2": "ok"
+},
+"592": {
+"global_gaps": [],
+"status2": "ok"
+},
+"593": {
+"global_gaps": [],
+"status2": "ok"
+},
+"594": {
+"global_gaps": [],
+"status2": "ok"
+},
+"595": {
+"global_gaps": [],
+"status2": "ok"
+},
+"596": {
+"global_gaps": [],
+"status2": "ok"
+},
+"597": {
+"global_gaps": [],
+"status2": "ok"
+},
+"598": {
+"global_gaps": [],
+"status2": "ok"
+},
+"599": {
+"global_gaps": [],
+"status2": "ok"
+},
+"600": {
+"global_gaps": [],
+"status2": "ok"
+},
+"601": {
+"global_gaps": [],
+"status2": "ok"
+},
+"602": {
+"global_gaps": [],
+"status2": "ok"
+},
+"603": {
+"global_gaps": [],
+"status2": "ok"
+},
+"604": {
+"global_gaps": [],
+"status2": "ok"
+},
+"605": {
+"global_gaps": [],
+"status2": "ok"
+},
+"606": {
+"global_gaps": [],
+"status2": "ok"
+},
+"607": {
+"global_gaps": [],
+"status2": "ok"
+},
+"608": {
+"global_gaps": [],
+"status2": "ok"
+},
+"609": {
+"global_gaps": [],
+"status2": "ok"
+},
+"610": {
+"global_gaps": [],
+"status2": "ok"
+},
+"611": {
+"global_gaps": [],
+"status2": "ok"
+},
+"612": {
+"global_gaps": [],
+"status2": "ok"
+},
+"613": {
+"global_gaps": [],
+"status2": "ok"
+},
+"614": {
+"global_gaps": [],
+"status2": "ok"
+},
+"615": {
+"global_gaps": [],
+"status2": "ok"
+},
+"616": {
+"global_gaps": [],
+"status2": "ok"
+},
+"617": {
+"global_gaps": [],
+"status2": "ok"
+},
+"618": {
+"global_gaps": [],
+"status2": "ok"
+},
+"619": {
+"global_gaps": [],
+"status2": "ok"
+},
+"620": {
+"global_gaps": [],
+"status2": "ok"
+},
+"621": {
+"global_gaps": [],
+"status2": "ok"
+},
+"622": {
+"global_gaps": [],
+"status2": "ok"
+},
+"623": {
+"global_gaps": [],
+"status2": "ok"
+},
+"624": {
+"global_gaps": [],
+"status2": "ok"
+},
+"625": {
+"global_gaps": [],
+"status2": "ok"
+},
+"626": {
+"global_gaps": [],
+"status2": "ok"
+},
+"627": {
+"global_gaps": [],
+"status2": "ok"
+},
+"628": {
+"global_gaps": [],
+"status2": "ok"
+},
+"629": {
+"global_gaps": [],
+"status2": "ok"
+},
+"630": {
+"global_gaps": [],
+"status2": "ok"
+},
+"631": {
+"global_gaps": [],
+"status2": "ok"
+},
+"632": {
+"global_gaps": [],
+"status2": "ok"
+},
+"633": {
+"global_gaps": [],
+"status2": "ok"
+},
+"634": {
+"global_gaps": [],
+"status2": "ok"
+},
+"635": {
+"global_gaps": [],
+"status2": "ok"
+},
+"636": {
+"global_gaps": [],
+"status2": "ok"
+},
+"637": {
+"global_gaps": [],
+"status2": "ok"
+},
+"638": {
+"global_gaps": [],
+"status2": "ok"
+},
+"639": {
+"global_gaps": [],
+"status2": "ok"
+},
+"640": {
+"global_gaps": [],
+"status2": "ok"
+},
+"641": {
+"global_gaps": [],
+"status2": "ok"
+},
+"642": {
+"global_gaps": [],
+"status2": "ok"
+},
+"643": {
+"global_gaps": [],
+"status2": "ok"
+},
+"644": {
+"global_gaps": [],
+"status2": "ok"
+},
+"645": {
+"global_gaps": [],
+"status2": "ok"
+},
+"646": {
+"global_gaps": [],
+"status2": "ok"
+},
+"647": {
+"global_gaps": [],
+"status2": "ok"
+}
+}

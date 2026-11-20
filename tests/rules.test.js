@@ -31,17 +31,19 @@ test("family-law answers are marked general and offer a lawyer", () => {
   }
 });
 
-test("blackmail: cites article 15 and offers the safety plan", () => {
+test("blackmail: no penalty is quoted (old corpus removed 2026-11-18), the safety plan stays", () => {
   const a = answerFromRules("حدا عم يبتزني بصوري");
-  assert.ok(a.cites.includes("15"));
+  assert.deepEqual(a.cites, []);
+  assert.equal(a.general, true);
   assert.equal(a.sos, true);
   assert.equal(a.source, "rules");
+  assert.ok(!/عقوبت|حبس|غرامة|دينار/.test(`${a.lead} ${a.note}`));
 });
 
-test("a minor being blackmailed cites article 72 (doubled penalty, was 52) first", () => {
+test("a minor being blackmailed: general answer, no article, no penalty", () => {
   const a = answerFromRules("بنتي عمرها ١٥ وحدا عم يبتزها");
-  assert.equal(a.cites[0], "72");
-  assert.ok(a.cites.includes("15"));
+  assert.deepEqual(a.cites, []);
+  assert.equal(a.topic, "ابتزاز قاصر");
 });
 
 test("violence takes priority over family-law topics", () => {

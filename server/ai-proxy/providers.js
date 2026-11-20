@@ -57,6 +57,23 @@ const anthropic = {
   parse: (data, name) => data.content?.find((b) => b.type === "tool_use" && b.name === name)?.input,
 };
 
+/**
+ * (2026-11-17) Thinking kept to the minimum: a chat reply needs no long reasoning, and thinking is what made
+ * replies slow enough to time out. Google's table (ai.google.dev/gemini-api/docs/thinking, read 2026-11-17):
+ * Gemini 3.x accepts «minimal» (3.1/3.5 Flash-Lite already default to it, 3.5 Flash defaults to «medium»);
+ * 3.8 Flash and Gemini 4 do not accept «minimal», so they get «low»; 2.5 Flash-Lite thinks only if asked.
+ * THINKING_LEVEL overrides ("off" sends nothing).
+ */
+export function thinkingFor(model, env = {}) {
+  const set = env.THINKING_LEVEL;
+  if (set === "off") return {};
+  if (set) return { thinkingConfig: { thinkingLevel: set } };
+  if (/^gemini-2\.5-flash-lite/.test(model)) return {};
+  if (/^gemini-(?:2\.5|3\.8|4)/.test(model)) return { thinkingConfig: { thinkingLevel: "low" } };
+  if (/^gemini-3/.test(model)) return { thinkingConfig: { thinkingLevel: "minimal" } };
+  return {};
+}
+
 /** Google Gemini (generativelanguage REST). Free tier exists; see docs/AI.md for the privacy catch. */
 /** @type {Provider} */
 const gemini = {
@@ -87,7 +104,11 @@ const gemini = {
           },
         ],
         toolConfig: { functionCallingConfig: { mode: "ANY", allowedFunctionNames: [tool.name] } },
-        generationConfig: { maxOutputTokens: MAX_TOKENS, temperature: 0.2 },
+        generationConfig: {
+          maxOutputTokens: MAX_TOKENS,
+          temperature: 0.2,
+          ...thinkingFor(model, env),
+        },
       },
     };
   },

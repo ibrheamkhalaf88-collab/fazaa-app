@@ -11,7 +11,7 @@
  * RELEASING: bump CACHE_VERSION on every deploy. tests/precache.test.js fails if a file
  * in the app is missing from PRECACHE, so a forgotten file cannot ship unnoticed.
  */
-const CACHE_VERSION = "fazaa-v31";
+const CACHE_VERSION = "fazaa-v40";
 
 const PRECACHE = [
   "./",
@@ -34,6 +34,7 @@ const PRECACHE = [
   "assets/fonts/ibm-plex-sans-arabic-latin-600-normal.woff2",
   "styles/fonts.css",
   "styles/tokens.css",
+  "styles/palette-fresh.css",
   "styles/base.css",
   "styles/layout.css",
   "styles/components.css",
@@ -81,10 +82,14 @@ const PRECACHE = [
   "src/data/intents.js",
   "src/data/procedures.js",
   "src/data/law/index.js",
-  "src/data/law/basic-law-2003.js",
+  "src/data/law/added.js",
   "src/data/law/cyber-crimes-2018.js",
   "src/data/law/family-rights-gaza-1954.js",
-  "src/data/law/personal-status-wb-1976.js",
+  "src/data/law/hanafi-personal-status.js",
+  "src/data/law/sharia-procedure-1965.js",
+  "src/data/law/majalla-claims.js",
+  "src/data/law/sharia-execution-2021.js",
+  "src/data/law/types.js",
   "src/features/chat/chat.js",
   "src/features/chat/lawyer-session.js",
   "src/features/chat/lawyer-live.js",

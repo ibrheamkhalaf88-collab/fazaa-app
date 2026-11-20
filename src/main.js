@@ -7,11 +7,13 @@ import {
   AI_ENDPOINT,
   API_BASE,
   CONTACTS_ENDPOINT,
+  LAWS_ENDPOINT,
   LAWYERS_ENDPOINT,
   TELEMETRY_ENDPOINT,
 } from "./config.js";
 import { createLawyerCards } from "./features/lawyers/lawyer-cards.js";
 import { createContacts } from "./features/support/contacts.js";
+import { createAddedLaws } from "./data/law/added.js";
 import { createAssistant } from "./ai/assistant.js";
 import { createRemoteEngine } from "./ai/remote-engine.js";
 import { createSavedTopics } from "./ai/saved.js";
@@ -86,6 +88,8 @@ async function boot() {
   const telemetry = createTelemetry({ endpoint: TELEMETRY_ENDPOINT, state, store, router });
 
   const contacts = createContacts({ store, state, endpoint: CONTACTS_ENDPOINT });
+  // articles approved by lawyers in the dashboard join the built-in laws (cached for offline)
+  createAddedLaws({ store, endpoint: LAWS_ENDPOINT }).refresh();
 
   readBetaCode(state);
   // closed beta: the online AI only on a tester's device (src/config.js AI_BETA_ONLY)

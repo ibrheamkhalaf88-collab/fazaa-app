@@ -1,4 +1,4 @@
-import { AVATARS, LAWYER_REGIONS } from "../src/data/lawyers.js";
+import { AVATARS, LAWYER_REGIONS, OPEN_REGIONS } from "../src/data/lawyers.js";
 import { api, errorText } from "./api.js";
 import { el, pill } from "./util.js";
 
@@ -73,7 +73,7 @@ export function myProfileView(ctx) {
     for (const [v, label] of Object.entries(AVATARS)) avatar.append(new Option(label, v));
     avatar.value = p.avatar;
     const regionWrap = el("div", "region-checks");
-    const boxes = Object.entries(LAWYER_REGIONS).map(([id, label]) => {
+    const boxes = OPEN_REGIONS.map((id) => [id, LAWYER_REGIONS[id]]).map(([id, label]) => {
       const lab = el("label", "check");
       const b = el("input");
       b.type = "checkbox";

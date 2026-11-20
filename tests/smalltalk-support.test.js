@@ -33,7 +33,8 @@ test("a long question that starts with hello still gets the law answer", async (
   assert.equal(detectSmallTalk("مرحبا، حدا عم يبتزني بصوري وبدّه مصاري، شو بعمل؟"), null);
   const a = await ask("مرحبا، حدا عم يبتزني بصوري وبدّه مصاري، شو بعمل؟");
   assert.notEqual(a.kind, "chat");
-  assert.ok(a.cites.length > 0);
+  assert.equal(a.topic, "ابتزاز"); // the blackmail answer, not a greeting (no article since 2026-11-18)
+  assert.equal(a.sos, true);
   // (2026-11-12) no rotating "line of hope" any more: it repeated in every reply
 });
 

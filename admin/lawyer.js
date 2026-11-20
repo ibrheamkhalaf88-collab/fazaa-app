@@ -195,7 +195,6 @@ export function lawyerView(ctx) {
   for (const [id, label] of [
     ["all", "الكل"],
     ["ps-gaza", "غزة"],
-    ["ps-wb", "الضفة"],
   ]) {
     const c = el("button", "chip", label);
     c.type = "button";

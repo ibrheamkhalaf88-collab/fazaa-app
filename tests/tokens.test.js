@@ -54,3 +54,32 @@ test("no red anywhere in the palette (design decision: alarming colours are the 
     assert.ok(!(r > 150 && g < 90 && b < 90), `#${hex} looks red`);
   }
 });
+
+test("trial palette «أبيض وأخضر وبرتقالي»: both dark copies match, and it overrides every colour the original sets", () => {
+  const fresh = readFileSync(new URL("../styles/palette-fresh.css", import.meta.url), "utf8");
+  const blockOf = (text, opener) => {
+    const start = text.indexOf(opener);
+    assert.ok(start >= 0, `missing block: ${opener}`);
+    const open = text.indexOf("{", start);
+    let depth = 0;
+    for (let i = open; i < text.length; i++) {
+      if (text[i] === "{") depth++;
+      if (text[i] === "}" && --depth === 0) return text.slice(open + 1, i);
+    }
+    throw new Error("unbalanced braces");
+  };
+  const names = (text) => [...text.matchAll(/(--[\w-]+):/g)].map((m) => m[1]).sort();
+  const system = decls(blockOf(fresh, ':root[data-palette="fresh"]:not('));
+  const manual = decls(blockOf(fresh, ':root[data-palette="fresh"][data-theme="dark"]'));
+  assert.deepEqual(system, manual);
+  // the original dark block lists every colour that changes between modes: the trial must set each of them
+  const colours = names(block(':root[data-theme="dark"]'));
+  assert.deepEqual(
+    names(blockOf(fresh, ':root[data-palette="fresh"] {')).filter((n) => colours.includes(n)),
+    colours,
+  );
+  assert.deepEqual(
+    names(manual.join(";") + ";").filter((n) => colours.includes(n)),
+    colours,
+  );
+});

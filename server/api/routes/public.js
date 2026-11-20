@@ -4,9 +4,20 @@
 import { answerQuestion, betaAllowed, parseAnswerRequest } from "../../ai-proxy/worker.js";
 import { MAX_BODY_BYTES } from "../../../src/ai/limits.js";
 import { EVENTS } from "../store/days.js";
-import { publicContacts } from "../../../src/data/contacts.js";
+import { contactsFor, publicContacts } from "../../../src/data/contacts.js";
 import { publicLawyer } from "../../../src/data/lawyers.js";
-import { REGIONS, json, fail, readJson, loadAi, aiEnv, keepAnswer, takeAiSlot } from "../shared.js";
+import {
+  REGIONS,
+  json,
+  fail,
+  readJson,
+  loadAi,
+  aiEnv,
+  keepAnswer,
+  takeAiSlot,
+  loadAddedLaws,
+} from "../shared.js";
+import { useAddedArticles } from "../../../src/data/law/index.js";
 
 /** @param {import("../worker.js").RouteContext} ctx  @returns {Promise<Response|undefined>} */
 export async function publicRoutes(ctx) {
@@ -61,9 +72,16 @@ export async function publicRoutes(ctx) {
     // closed beta: not a tester -> no model call, no quota used; the app answers offline
     if (!betaAllowed(req, env)) return reply(json({ answer: null }, 200, { "cache-control": "no-store" }));
     if (!(await takeAiSlot(store, env, now))) return reply(fail(429, "daily-limit"));
+    // articles approved in the dashboard («القوانين») join the built-in laws for retrieval, the AI and the check
+    useAddedArticles(await loadAddedLaws(store, now));
     const saved = await loadAi(store, open);
     const live = aiEnv(env, saved);
-    const { status, body } = await answerQuestion(req.question, req.country, live, fetchImpl, req);
+    // the region's support contacts (as in «مين بيساعدني»), so the AI can name real places to turn to
+    const { contacts } = await loadContacts();
+    const { status, body } = await answerQuestion(req.question, req.country, live, fetchImpl, {
+      ...req,
+      contacts: contactsFor(publicContacts(contacts), req.country),
+    });
     // kept for lawyer review: law answers only (talk replies echo her words more closely)
     // (chat replies retell her story: never kept)
     if (
@@ -75,6 +93,13 @@ export async function publicRoutes(ctx) {
       await keepAnswer(store, body.answer, req.country, live, now);
     return reply(json(body, status));
   }
+
+  /* ============ public: law articles approved in the dashboard (public law, no personal data) ============ */
+  // the app caches them for offline use and for showing the original text under a cited answer
+  if (path === "/v1/laws" && request.method === "GET")
+    return reply(
+      json({ articles: await loadAddedLaws(store, now) }, 200, { "cache-control": "public, max-age=300" }),
+    );
 
   /* ============ anonymous usage counters ============ */
   // Whitelisted event + region only. Nothing identifying is read, stored or logged.

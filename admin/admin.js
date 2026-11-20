@@ -4,6 +4,7 @@ import { contactsView } from "./contacts.js";
 import { lawyersView } from "./lawyers.js";
 import { myProfileView } from "./my-profile.js";
 import { answersView } from "./answers.js";
+import { lawsView } from "./laws.js";
 import { auditView, healthView, overviewView, teamView } from "./developer.js";
 import { conversationsView, lawyerView } from "./lawyer.js";
 import { aiView, usageView, usersView } from "./usage.js";
@@ -187,6 +188,7 @@ $("logout").addEventListener("click", async () => {
           ["work", "لوحة العمل", workView, "chart"],
           ...(me.manager ? [["lawyers", "إدارة المحاميات", lawyersView, "team"]] : []),
           ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
+          ["laws", "القوانين", lawsView, "list"],
         ]
       : [
           ["overview", "نظرة عامة", overviewView, "chart"],
@@ -196,6 +198,7 @@ $("logout").addEventListener("click", async () => {
           ["usage", "الزوّار والاستخدام", usageView, "list"],
           ["ai", "الذكاء الاصطناعي", aiView, "spark"],
           ["answers", "مراجعة أجوبة الذكاء", answersView, "check"],
+          ["laws", "القوانين", lawsView, "list"],
           ["ai-settings", "إعدادات الذكاء", aiSettingsView, "gear"],
           ["contacts", "أرقام التواصل", contactsView, "list"],
           ["lawyers", "المحاميات", lawyersView, "users"],
