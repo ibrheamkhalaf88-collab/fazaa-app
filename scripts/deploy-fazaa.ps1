@@ -22,6 +22,7 @@ node scripts\build-admin.mjs
 
 Write-Host "3/3  Deploying..." -ForegroundColor Cyan
 Set-Location (Join-Path $repo "server\api")
-npx wrangler deploy
+# Pinned: an unpinned npx fetched a new Wrangler on every run and hung while downloading it.
+npx --yes wrangler@4.164.0 deploy
 
 Write-Host "Done. Open the site and refresh it twice." -ForegroundColor Green
