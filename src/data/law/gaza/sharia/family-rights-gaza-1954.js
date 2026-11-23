@@ -10,7 +10,7 @@
  * text currently applied by the sharia courts in Gaza.
  */
 
-/** @typedef {import("./types.js").Article} Article */
+/** @typedef {import("../../types.js").Article} Article */
 
 export const FAMILY_GAZA_NAME = "قانون حقوق العائلة لسنة 1954 (قطاع غزة)";
 

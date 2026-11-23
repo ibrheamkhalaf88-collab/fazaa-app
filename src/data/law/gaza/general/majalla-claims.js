@@ -7,7 +7,7 @@
  * printed as one glyph. Diacritics removed. Do NOT edit article text by hand; tests fingerprint it.
  */
 
-/** @typedef {import("./types.js").Article} Article */
+/** @typedef {import("../../types.js").Article} Article */
 
 export const MAJALLA_NAME = "مجلة الأحكام العدلية: الكتاب الرابع عشر في الدعوى";
 

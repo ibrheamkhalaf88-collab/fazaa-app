@@ -17,7 +17,17 @@ const req = (body, { origin = ORIGIN, method = "POST", path = "/v1/answer", raw 
 const anthropic = (input, { status = 200 } = {}) => {
   const calls = [];
   const fetchImpl = async (url, init) => {
-    calls.push({ url, init, body: JSON.parse(init.body) });
+    const body = JSON.parse(init.body);
+    // the small «legal_terms» step before an answer: no terms, and not counted as a call of the test
+    if (body.tools?.[0]?.name === "legal_terms")
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          content: [{ type: "tool_use", name: "legal_terms", input: { terms: "", area: "none" } }],
+        }),
+      };
+    calls.push({ url, init, body });
     return {
       ok: status < 400,
       status,

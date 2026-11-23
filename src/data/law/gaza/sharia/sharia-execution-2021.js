@@ -7,7 +7,7 @@
  * Do NOT edit article text without checking the source; tests/law-integrity.test.js fingerprints it.
  */
 
-/** @typedef {import("./types.js").Article} Article */
+/** @typedef {import("../../types.js").Article} Article */
 
 export const EXECUTION_NAME = "قانون التنفيذ الشرعي رقم (6) لسنة 2021 (قطاع غزة)";
 

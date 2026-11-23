@@ -330,8 +330,13 @@ export const LEGAL = [
   { id: "L02 unknown article: honest", say: "شو بتقول المادة 999؟", expect: { lead: /مش موجودة/ } },
   {
     id: "L03 an article of a law the app does not have: honest, never another law's article",
-    say: "المادة 66 من قانون العقوبات",
-    expect: { lead: /مش موجودة/, notCites: ["gz:66", "hn:66"] },
+    say: "المادة 66 من قانون البينات",
+    expect: { lead: /مش موجودة/, notCites: ["gz:66", "hn:66", "pc:66"] },
+  },
+  {
+    id: "L03c an article of the penal code 1936: that article, not another law's",
+    say: "المادة 248 من قانون العقوبات",
+    expect: { cites: ["pc:248"], notCites: ["hn:248"] },
   },
   {
     id: "L03b an article of the Hanafi personal-status law: that article, not the 1954 one",

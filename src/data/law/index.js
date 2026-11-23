@@ -1,9 +1,9 @@
-import { CYBER_CRIMES, CYBER_NAME } from "./cyber-crimes-2018.js";
-import { FAMILY_GAZA_1954, FAMILY_GAZA_NAME } from "./family-rights-gaza-1954.js";
-import { HANAFI_NAME, HANAFI_PERSONAL_STATUS } from "./hanafi-personal-status.js";
-import { MAJALLA_CLAIMS, MAJALLA_NAME } from "./majalla-claims.js";
-import { EXECUTION_NAME, SHARIA_EXECUTION_2021 } from "./sharia-execution-2021.js";
-import { SHARIA_PROCEDURE_1965, SHARIA_PROCEDURE_NAME } from "./sharia-procedure-1965.js";
+import { activeCorpora, CORPORA } from "./corpora.js";
+import { LAWS as GAZA_GENERAL } from "./gaza/general/index.js";
+import { LAWS as GAZA_NIZAMI } from "./gaza/nizami/index.js";
+import { LAWS as GAZA_SHARIA } from "./gaza/sharia/index.js";
+import { LAWS as WB_NIZAMI } from "./wb/nizami/index.js";
+import { LAWS as WB_SHARIA } from "./wb/sharia/index.js";
 
 /** @typedef {import("./types.js").Region} Region */
 /** @typedef {import("./types.js").Court} Court */
@@ -16,116 +16,76 @@ export const REGION_NAMES = { "ps-gaza": "قطاع غزة", "ps-wb": "الضفة
 export const COURT_NAMES = { sharia: "المحاكم الشرعية", nizami: "المحاكم النظامية", general: "" };
 
 /**
- * LAW REGISTRY: the single list of laws the app may cite.
+ * One law as written in a box's index.js. Region and court are NOT here: they come from the box.
+ *
+ * @typedef {{
+ *   key: string,              unique across all boxes
+ *   name: string,             the law's full Arabic name, shown to users
+ *   prefix: string,           every article id starts with it ("gz:"); unique across all boxes
+ *   articles: import("./types.js").Article[],
+ *   hints: string[],          normalised words that name the law in a question («حقوق العائله»)
+ *   marks: string[],          words or years that name THIS law and no law of the other region: a reply to a
+ *                             user of the other region that contains one is rejected (src/ai/legal.js)
+ *   caveat?: string,          a line shown under every reply that cites this law (e.g. «تطبيقه بغزة مش مؤكد»)
+ *   conflicts?: {with: string, note: string}[],  a line shown when this law and `with` are cited together
+ *   source: string, scope: string[], review: {status: string, by: string, at: string},
+ * }} LawEntry
+ *
+ * @typedef {LawEntry & {corpus: string, regions: Region[], court: Court}} Law
+ */
+
+/** Each box's laws, by box key. A new box needs a line here and in corpora.js. */
+const BOXES = {
+  "gaza-sharia": GAZA_SHARIA,
+  "gaza-nizami": GAZA_NIZAMI,
+  "gaza-general": GAZA_GENERAL,
+  "wb-sharia": WB_SHARIA,
+  "wb-nizami": WB_NIZAMI,
+};
+
+/**
+ * LAW REGISTRY: the single list of laws the app may cite, built from the boxes in corpora.js.
  *
  * GAZA FIRST (2026-11-18): the old corpus (mostly West Bank law and Ramallah decree-laws) was removed after a
  * lawyer found errors in it. The corpus is rebuilt ONLY from the files the owner's lawyer gave, Gaza first.
- * West Bank law comes later, after the owner meets the lawyer again; until then a West Bank question gets no
- * law text and is told so honestly.
+ * The West Bank boxes are ready and empty (2026-11-21); until they are filled and reviewed, a West Bank question
+ * gets no law text and is told so honestly.
  *
- * Gaza and the West Bank apply DIFFERENT laws (penal code 1936 vs 1960, family rights 1954 vs personal status
- * 1976, sharia procedure 1965 vs 1959). So every law names exactly where it applies (`regions`) and which
- * courts apply it (`court`). Retrieval only ever sees the laws of the user's region (articlesFor), and the
- * AI reply is rejected if it names a law of the other region (src/ai/legal.js otherRegionLaw).
+ * SEPARATION (owner, 2026-11-21): Gaza and the West Bank apply DIFFERENT laws (penal code 1936 vs 1960, family
+ * rights 1954 vs personal status 1976, sharia procedure 1965 vs 1959), and the sharia and nizami courts apply
+ * different laws. Each law sits in exactly ONE box (region + court), and the box stamps `regions` and `court`
+ * on it, so a law cannot claim to be somewhere else. Retrieval only ever sees the boxes of the user's region
+ * (articlesFor), keeps the courts apart (src/ai/retrieve.js), every article reaches the model tagged with its
+ * court, and a reply naming a law of the other region is rejected (src/ai/legal.js otherRegionLaw).
+ * tests/law-separation.test.js guards all of this.
  *
  * Always store the LATEST text in force: when a later law amends an article, store the amended wording and
  * name the amending law in `amended`. An article that was repealed is removed.
  *
- * To add a law: create src/data/law/<name>.js (shape: ./types.js Article), import it below, add one entry,
- * and add its names to OTHER_REGION_NAMES in src/ai/legal.js if it is region-specific. Ids must be unique
- * across ALL laws, so prefix them (e.g. "gzp:12").
+ * To add a law: docs/LAW-INTAKE.md.
  *
  * `review.status` is "pending" until a LAWYER has checked the text against the official gazette, its
- * current force (amendments, repeals) and its application in each region. Nothing here may say "reviewed"
+ * current force (amendments, repeals) and its application in its region. Nothing here may say "reviewed"
  * before that happens.
  *
- * @type {{key:string, name:string, regions:Region[], court:Court, articles:import("./types.js").Article[],
- *         source:string, scope:string[], review:{status:string, by:string, at:string}}[]}
+ * Only boxes with status "active" are registered: an "awaiting-texts" box that already holds files stays out
+ * of the app until its status is changed on purpose.
+ *
+ * @type {Law[]}
  */
-export const LAWS = [
-  {
-    key: "family-gaza-1954",
-    name: FAMILY_GAZA_NAME,
-    regions: ["ps-gaza"],
-    court: "sharia",
-    articles: FAMILY_GAZA_1954,
-    source: "PDF from the owner's lawyer, 2026-11-18 («قانون-حقوق-العائلة-معدل.pdf»)",
-    scope: [
-      "Applied by the sharia courts in the Gaza Strip.",
-      "The PDF is titled «معدل» (amended) but has no amendment notes: a lawyer must confirm it is the current text.",
-    ],
-    review: { status: "pending", by: "", at: "" },
-  },
-  {
-    key: "hanafi-personal-status",
-    name: HANAFI_NAME,
-    regions: ["ps-gaza"],
-    court: "sharia",
-    articles: HANAFI_PERSONAL_STATUS,
-    source: "PDF from the owner's lawyer, 2026-11-18; transcribed from the page images (see the file header)",
-    scope: [
-      "The detailed personal-status rules (Hanafi school) applied by the sharia courts in Gaza.",
-      "Where it and the 1954 family-rights law differ, which one the court applies is a question for the lawyer.",
-      "Transcribed from images and checked three ways; the lawyer is reviewing it through the app (2026-11-19).",
-    ],
-    review: { status: "pending", by: "", at: "" },
-  },
-  {
-    key: "sharia-procedure-1965",
-    name: SHARIA_PROCEDURE_NAME,
-    regions: ["ps-gaza"],
-    court: "sharia",
-    articles: SHARIA_PROCEDURE_1965,
-    source: "PDF from the owner's lawyer, 2026-11-18; transcribed from the page images (see the file header)",
-    scope: [
-      "How a case is brought and decided in the sharia courts of Gaza (procedure, evidence, appeal).",
-      "Transcribed from images and checked three ways; the lawyer is reviewing it through the app (2026-11-19).",
-    ],
-    review: { status: "pending", by: "", at: "" },
-  },
-  {
-    key: "sharia-execution-2021",
-    name: EXECUTION_NAME,
-    regions: ["ps-gaza"],
-    court: "sharia",
-    articles: SHARIA_EXECUTION_2021,
-    source:
-      "PDF from the owner's lawyer, 2026-11-18 (Palestinian Gazette no. 102); text transcribed from the page images",
-    scope: [
-      "Passed by the Legislative Council and issued in Gaza City (14/10/2021): applied by the sharia courts in Gaza.",
-      "How a sharia judgment (maintenance, mahr, custody, visits) is enforced when the other side does not comply.",
-    ],
-    review: { status: "pending", by: "", at: "" },
-  },
-  {
-    key: "cyber-2018",
-    name: CYBER_NAME,
-    regions: ["ps-gaza"],
-    court: "nizami",
-    articles: CYBER_CRIMES,
-    source: "PDFs from the owner's lawyer, 2026-11-18 (decree-law 10/2018 and decree-law 38/2021)",
-    scope: [
-      "Decree-law issued in Ramallah: whether the courts in Gaza apply it is NOT confirmed (question for the lawyer).",
-      "Stored as amended by decree-law 38/2021 (new articles 31-50, renumbering of 31-57).",
-      "Article 15 is the 2018 wording from the lawyer's file; a later amendment (decree-law 28/2020) is not in the lawyer's files.",
-    ],
-    review: { status: "pending", by: "", at: "" },
-  },
-  {
-    // general rules on claims and evidence: not tied to one court, so no court is named in replies
-    key: "majalla-claims",
-    name: MAJALLA_NAME,
-    regions: ["ps-gaza"],
-    court: "general",
-    articles: MAJALLA_CLAIMS,
-    source: "maqam.najah.edu/legislation/158, checked against the lawyer's PDF (2026-11-18)",
-    scope: [
-      "Book 14 (claims, articles 1616-1770) only: the lawyer's file holds this book.",
-      "maqam lists the Majalla as in force in the West Bank and Gaza; kept Gaza-only until the West Bank texts are reviewed.",
-    ],
-    review: { status: "pending", by: "", at: "" },
-  },
-];
+export const LAWS = CORPORA.filter((c) => c.status === "active").flatMap((c) =>
+  (BOXES[c.key] || []).map((law) => ({ ...law, corpus: c.key, regions: [c.region], court: c.court })),
+);
+
+/** Every law of every box, active or not, for the separation tests and the review list. */
+export const ALL_BOX_LAWS = CORPORA.flatMap((c) =>
+  (BOXES[c.key] || []).map((law) => ({ ...law, corpus: c.key, regions: [c.region], court: c.court })),
+);
+
+/** True when the app has law texts for this region. @param {string} region */
+export const hasLawTexts = (region) => LAWS.some((l) => l.regions.includes(region));
+
+export { activeCorpora, CORPORA };
 
 /**
  * Everyday words people use for a topic («غايب», «بيضربني»), so retrieval finds the formal text. They only
@@ -158,6 +118,23 @@ const TOPIC_KEYWORDS = {
   "الاحتيال الإلكتروني": "احتيال نصب",
   "تشديد العقوبة (ومنها استغلال القاصرين)": "قاصر بنتي ابني طفل",
   "الجهة المختصة: المحاكم النظامية والنيابة": "وين اشتكي شكوى نيابه شرطه",
+  // penal code 1936
+  الاعتداء: "بيضربني بضربني ضربني ضرب يضرب لطمني كف عنف اعتدى",
+  "الإيذاء بالاعتداء": "ضربني ضرب جرح كدمات اذى عنف",
+  "الإيذاء البليغ": "ضرب كسر جرح اذى بليغ عنف",
+  "التهديد باستعمال العنف": "تهديد هددني بيهددني يهددني",
+  "التهديد بالقتل": "يقتلني بيقتلني رح يقتلني هددني بالقتل تهديد",
+  "التدخل بغير حق": "بيلحقني يلاحقني بيراقبني بيخوفني يجبرني غصب",
+  "الجرائم الجنسية": "اغتصاب اغتصبني غصبا عني",
+  "الأفعال المنافية للحياء بالقوة": "تحرش تحرشني تحرش بي لمسني",
+  // criminal procedure 3/2001 (topics are its chapter titles)
+  "من له حق إقامة الدعوى الجزائية": "شكوى اشتكي اقدم شكوى بلاغ نيابه",
+  // not «اتنازل»: a woman giving up her dower («اتنازل عن مهري») is a sharia question
+  "انقضاء الدعوى الجزائية": "اسحب سحب الشكوى اسقط",
+  "مأمورو الضبطية القضائية وواجباتهم": "شرطه الشرطه بوليس بلاغ",
+  "في القبض على المتهم": "قبض قبضوا يقبضوا اعتقال اعتقلوا مسكوه يمسكوه",
+  "التوقيف والحبس الاحتياطي": "توقيف موقوف محبوس حبس",
+  "الإفراج بالكفالة": "كفاله يطلع يطلعوه افراج",
 };
 
 /** Everyday words for whole groups of chapters, matched on the chapter title (personal status, procedure). */
@@ -200,6 +177,7 @@ export const ARTICLES = Object.fromEntries(
         lawName: law.name,
         regions: law.regions,
         court: law.court,
+        corpus: law.corpus,
       },
     ]),
   ),
@@ -262,11 +240,30 @@ export function articlesFor(region) {
  * region are skipped by retrieval. Whether the Gaza courts apply the cyber-crimes law is still a question for
  * the lawyer (the 2018 decree-law was issued in Ramallah); answers carry that caveat.
  */
+export const INTENT_COURTS = {
+  // which court a detected topic belongs to, so retrieval does not mix the sharia and the nizami texts
+  // (owner, 2026-11-21). Violence and threats are both: a crime for the nizami courts, and a ground for
+  // divorce for harm at the sharia courts, so they keep both and the reply keeps the two parts apart.
+  blackmail: ["nizami"],
+  porn: ["nizami"],
+  privacy: ["nizami"],
+  minor: ["nizami"],
+  violence: ["nizami", "sharia"],
+  threat: ["nizami", "sharia"],
+  nafaqa: ["sharia"],
+  divorce: ["sharia"],
+  custody: ["sharia"],
+  inherit: ["sharia"],
+};
+
 export const INTENT_TO_ARTICLES = {
   blackmail: ["cy:15", "cy:3"],
   porn: ["cy:16"],
   privacy: ["cy:22"],
   minor: ["cy:72", "cy:16"],
+  // penal code 1936: assault, injury, coercion by violence, sexual violence; threats
+  violence: ["pc:248", "pc:249", "pc:250", "pc:238", "pc:211", "pc:152", "pc:157"],
+  threat: ["pc:100", "pc:224", "pc:211"],
   nafaqa: [
     "gz:59",
     "gz:38",

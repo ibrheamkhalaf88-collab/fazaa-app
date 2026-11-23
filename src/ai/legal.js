@@ -1,4 +1,4 @@
-import { ARTICLES, articleNumber, COURT_NAMES, LAWS } from "../data/law/index.js";
+import { ALL_BOX_LAWS, ARTICLES, articleNumber, COURT_NAMES, LAWS, REGION_NAMES } from "../data/law/index.js";
 import { tokenize } from "./normalize.js";
 
 /**
@@ -15,25 +15,15 @@ import { tokenize } from "./normalize.js";
 const toLatin = (s) => s.replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
 const norm = (s) => tokenize(s).join(" ");
 
-/** Words that name a law, to pick between laws that share an article number. */
-const LAW_HINTS = {
-  "family-gaza-1954": ["حقوق العائله", "العائله"],
-  "sharia-execution-2021": ["التنفيذ الشرعي", "قانون التنفيذ"],
-  "cyber-2018": ["الجرائم الالكترونيه", "الكترونيه", "الكتروني", "ابتزاز"],
-  "majalla-claims": ["المجله", "مجله الاحكام"],
-  "hanafi-personal-status": ["الاحوال الشخصيه", "احوال شخصيه", "ابي حنيفه"],
-  "sharia-procedure-1965": ["اصول المحاكمات", "المحاكمات الشرعيه"],
-};
-const PREFIX = {
-  "family-gaza-1954": "gz:",
-  "sharia-execution-2021": "ex:",
-  "cyber-2018": "cy:",
-  "majalla-claims": "mj:",
-  "hanafi-personal-status": "hn:",
-  "sharia-procedure-1965": "sp:",
-};
-/** Names of laws that are NOT in the app (yet). Asked by name, they get an honest "not in my texts". */
-const NOT_IN_APP = ["العقوبات", "القانون الاساسي"];
+/** Words that name a law, to pick between laws that share an article number (from each law's `hints`). */
+const LAW_HINTS = Object.fromEntries(LAWS.map((l) => [l.key, l.hints || []]));
+/** Each law's id prefix («gz:»), from the registry. */
+const PREFIX = Object.fromEntries(LAWS.map((l) => [l.key, l.prefix]));
+/**
+ * Names of laws that are NOT in the app (yet). Asked by name, they get an honest "not in my texts". A name drops
+ * out by itself once a registered law of the user's region lists it in its `hints` (e.g. the Gaza penal code).
+ */
+const NOT_IN_APP = ["العقوبات", "القانون الاساسي", "الاجراءات الجزائيه", "البينات", "قانون الطفل"];
 
 /**
  * @param {string} question
@@ -50,7 +40,9 @@ export function findArticleByNumber(question, region) {
     .filter(([, words]) => words.some((w) => t.includes(norm(w))))
     .map(([key]) => key);
   // she named a law the app does not have («المادة 66 من قانون الأحوال الشخصية»): never answer from another law
-  if (!hinted.length && NOT_IN_APP.some((w) => t.includes(norm(w))))
+  const known = LAWS.filter((l) => l.regions.includes(region)).flatMap((l) => (l.hints || []).map(norm));
+  const absent = NOT_IN_APP.filter((w) => !known.some((k) => k.includes(norm(w)) || norm(w).includes(k)));
+  if (!hinted.length && absent.some((w) => t.includes(norm(w))))
     return { number, found: [], missing: true, ambiguous: false, outOfRegion: [] };
   const laws = hinted.length ? LAWS.filter((l) => hinted.includes(l.key)) : LAWS;
   const all = laws.map((l) => ARTICLES[`${PREFIX[l.key]}${number}`]).filter(Boolean);
@@ -328,11 +320,36 @@ export const legalLeak = (text) => LEGAL_CLAIM.test(norm(text)) || LAW_STATED.te
  * laws, and a lawyer found answers that mixed them. A reply for a Gaza user that names a West Bank law (or
  * the reverse) is rejected, whatever it cites. Years are matched as whole numbers, Arabic or Latin digits.
  */
-const REGION_LAW_MARKS = {
-  // named in a reply to a GAZA user -> wrong region
+const STATIC_REGION_LAW_MARKS = {
+  // named in a reply to a GAZA user -> wrong region (laws of the West Bank, known before their texts arrive)
   "ps-gaza": [/(?:^|[^0-9])(?:1976|1960|1959)(?:[^0-9]|$)/, /الاردني/],
   // named in a reply to a WEST BANK user -> wrong region
   "ps-wb": [/(?:^|[^0-9])(?:1954|1936|1965)(?:[^0-9]|$)/, /حقوق العائله/, /قطاع غزه|في غزه/],
+};
+
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+/**
+ * The marks of every law in a box of ANOTHER region (each law's `marks`), added to the static list: a law put
+ * in a West Bank box makes its own name or year wrong in a Gaza reply, and the reverse, with no code change.
+ * A year is matched as a whole number; a word as normalised text.
+ * @param {{regions: string[], marks?: string[]}[]} laws
+ * @param {string} region
+ * @returns {RegExp[]}
+ */
+export function regionMarks(laws, region) {
+  const derived = laws
+    .filter((l) => !l.regions.includes(region))
+    .flatMap((l) => l.marks || [])
+    .map((m) =>
+      /^[0-9]{4}$/.test(m)
+        ? new RegExp(`(?:^|[^0-9])${m}(?:[^0-9]|$)`)
+        : new RegExp(`(?:^| )${escapeRe(norm(m))}(?= |$)`),
+    );
+  return [...(STATIC_REGION_LAW_MARKS[region] || []), ...derived];
+}
+const REGION_LAW_MARKS = {
+  "ps-gaza": regionMarks(ALL_BOX_LAWS, "ps-gaza"),
+  "ps-wb": regionMarks(ALL_BOX_LAWS, "ps-wb"),
 };
 
 /**
@@ -350,8 +367,10 @@ export function otherRegionLaw(text, region) {
 
 /**
  * Lines shown under every AI reply that cites a law (owner's rule, 2026-11-19): which court applies the cited
- * texts in Gaza, the caveats the lawyer has not settled yet, and ALWAYS the lawyer, before any step and after.
- * Built from the cited ids, never by the model, so they are there even when the model forgets them.
+ * texts in her region, the caveats the lawyer has not settled yet, and ALWAYS the lawyer, before any step and
+ * after. Built from the cited ids and the registry, never by the model, so they are there even when the model
+ * forgets them. When the cited texts belong to two courts, each law is named with its own court (2026-11-21), so
+ * a sharia text is never read as one the nizami courts apply, or the reverse.
  * @param {string[]} ids
  * @returns {string[]}
  */
@@ -361,12 +380,19 @@ export function lawScope(ids) {
     .filter(Boolean);
   if (!laws.length) return [];
   const lines = [];
-  const courts = [...new Set(laws.map((l) => COURT_NAMES[l.court]).filter(Boolean))];
-  if (courts.length) lines.push(`هالنصوص بتطبقها ${courts.join(" و")} بقطاع غزة.`);
-  if (laws.some((l) => l.key === "cyber-2018"))
-    lines.push("انتبهي: تطبيق قانون الجرائم الإلكترونية بغزة مش مؤكد، فاسألي محامية قبل ما تعتمدي عليه.");
-  if (laws.some((l) => l.key === "family-gaza-1954") && laws.some((l) => l.key === "hanafi-personal-status"))
-    lines.push("إذا اختلف النصين، المحامية بتقدر تحكيلك أي واحد بتطبقه المحكمة.");
+  const where = (l) => REGION_NAMES[l.regions[0]] || "";
+  const courts = [...new Set(laws.map((l) => l.court).filter((c) => COURT_NAMES[c]))];
+  if (courts.length === 1) {
+    const regions = [...new Set(laws.filter((l) => COURT_NAMES[l.court]).map(where))];
+    lines.push(`هالنصوص بتطبقها ${COURT_NAMES[courts[0]]} ب${regions.join(" و")}.`);
+  } else if (courts.length > 1) {
+    lines.push("هالنصوص من محكمتين مختلفتين، وكل نص بتطبقه محكمته بس:");
+    for (const l of laws.filter((x) => COURT_NAMES[x.court]))
+      lines.push(`«${l.name}»: بتطبقه ${COURT_NAMES[l.court]} ب${where(l)}.`);
+  }
+  for (const l of laws) if (l.caveat) lines.push(l.caveat);
+  const keys = new Set(laws.map((l) => l.key));
+  for (const l of laws) for (const c of l.conflicts || []) if (keys.has(c.with)) lines.push(c.note);
   lines.push("قبل ما تعملي أي خطوة، وبعدها كمان، استشيري محامية (تبويب «محامية»).");
   return lines;
 }

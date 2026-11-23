@@ -9,7 +9,7 @@
  * decision 2026-11-19: in the app meanwhile, marked as not yet reviewed). Do NOT edit article text by hand.
  */
 
-/** @typedef {import("./types.js").Article} Article */
+/** @typedef {import("../../types.js").Article} Article */
 
 export const SHARIA_PROCEDURE_NAME = "قانون أصول المحاكمات الشرعية رقم (12) لسنة 1965 (قطاع غزة)";
 

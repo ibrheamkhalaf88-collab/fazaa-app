@@ -12,6 +12,7 @@ import { createRemoteEngine } from "../src/ai/remote-engine.js";
 import {
   articlesForChat,
   answerQuestion,
+  keepArea,
   parseAnswerRequest,
   setBreaker,
 } from "../server/ai-proxy/worker.js";
@@ -28,12 +29,24 @@ const reply = (args) =>
     { status: 200 },
   );
 
+/** The fake model's answer to the «legal_terms» step: no terms unless a test gives some. */
+const termsReply = (args = { terms: "", area: "none" }) =>
+  new Response(
+    JSON.stringify({
+      candidates: [{ content: { parts: [{ functionCall: { name: "legal_terms", args } }] } }],
+    }),
+    { status: 200 },
+  );
+
 /** A whole stack in one process: app assistant -> remote engine -> server chat -> fake provider. */
-function stack(provider, extra = {}) {
+function stack(provider, { terms, ...extra } = {}) {
   const seen = [];
   const providerFetch = async (url, init) => {
-    seen.push(JSON.parse(init.body));
-    return provider(JSON.parse(init.body));
+    const body = JSON.parse(init.body);
+    // the small «legal_terms» step before each answer (worker.js): answered here, not counted as a reply
+    if (body.tools?.[0]?.functionDeclarations?.[0]?.name === "legal_terms") return termsReply(terms);
+    seen.push(body);
+    return provider(body);
   };
   const serverFetch = async (_u, init) => {
     const req = parseAnswerRequest(JSON.parse(init.body));
@@ -88,8 +101,11 @@ test("1: the server keeps nothing between requests: the same server, two users, 
     return answerQuestion(req.question, req.country, ENV, fetchImpl, req);
   };
   await ask([{ role: "user", text: "سرّ المستخدمة الأولى: طليقي ما بيدفع" }]);
+  // (2026-11-23) one request may make two calls (the «legal_terms» step, then the reply): check all of the second
+  const second = bodies.length;
   await ask([{ role: "user", text: "مرحبا، أنا مستخدمة تانية" }]);
-  assert.ok(!bodies[1].includes("المستخدمة الأولى"));
+  assert.ok(bodies.length > second);
+  assert.ok(!bodies.slice(second).join("\n").includes("المستخدمة الأولى"));
 });
 
 test("1: new chat / quick exit / another region forgets the conversation", async () => {
@@ -307,4 +323,74 @@ test("Gemini blocks a message about sexual content sent to her child: a fixed sa
   assert.match(r.lead, /مش ذنب ولدك أو بنتك/);
   assert.ok(r.options.some((o) => o.includes("100")));
   assert.ok(!/(?:المادة|قانون|عقوبة)/.test([r.lead, ...r.options].join(" ")), "no law in the fixed reply");
+});
+
+/* ---------- (owner, 2026-11-23) the model understands her words; the texts still come only from the app ---------- */
+
+const articleIds = (body) => [...systemText(body).matchAll(/<article id="([^"]+)"/g)].map((m) => m[1]);
+
+test("terms: dialect no word list knows reaches the right texts through the model's legal terms", async () => {
+  const { say, seen } = stack(() => reply({ reply: "فهمت عليكِ." }), {
+    terms: { terms: "القبض على المتهم التوقيف", area: "crime" },
+  });
+  await say("جماعة أخدوا ابني من الدار من امبارح وما رجع");
+  const ids = articleIds(seen[0]);
+  assert.ok(ids.length, "some texts reached the model");
+  assert.ok(
+    ids.every((id) => id.startsWith("cp:")),
+    ids.join(","),
+  );
+  // the terms only steer retrieval: they are never shown to the model as her words
+  assert.ok(!JSON.stringify(seen[0].contents).includes("التوقيف"));
+});
+
+test("terms: a family matter never gets a regular-court text, even if retrieval found one", () => {
+  const turns = [{ role: "user", text: "طليقي بدو ياخد البنت مني" }];
+  const got = articlesForChat(turns, "ps-gaza", { terms: "الحضانة حضانة الصغير", area: "family" });
+  assert.ok(
+    got.some((a) => a.id === "gz:118" || a.id.startsWith("hn:")),
+    got.map((a) => a.id).join(","),
+  );
+  assert.ok(
+    got.every((a) => a.court !== "nizami"),
+    got.map((a) => a.id).join(","),
+  );
+  const mixed = [
+    { id: "gz:97", court: "sharia" },
+    { id: "pc:248", court: "nizami" },
+  ];
+  assert.deepEqual(
+    keepArea(mixed, "family").map((a) => a.id),
+    ["gz:97"],
+  );
+  assert.deepEqual(
+    keepArea(mixed, "crime").map((a) => a.id),
+    ["pc:248"],
+  );
+  assert.equal(keepArea(mixed, "both").length, 2, "violence at home keeps both courts");
+  assert.equal(keepArea([mixed[1]], "family").length, 1, "never leaves her with nothing");
+});
+
+test("terms: off, failing or small talk -> the keyword retrieval as before, and her answer still comes", async () => {
+  const calls = [];
+  const fetchImpl = async (_u, init) => {
+    const body = JSON.parse(init.body);
+    const tool = body.tools[0].functionDeclarations[0].name;
+    calls.push(tool);
+    if (tool === "legal_terms") return new Response("{}", { status: 400 });
+    return reply({ reply: "فهمت عليكِ." });
+  };
+  const ask = (text, env = ENV) => {
+    const req = parseAnswerRequest({ messages: [{ role: "user", text }], country: "ps-gaza" });
+    return answerQuestion(req.question, req.country, env, fetchImpl, req);
+  };
+  const failed = await ask("زوجي ما بدفع نفقة");
+  assert.equal(failed.status, 200);
+  assert.deepEqual(calls, ["legal_terms", "give_reply"]);
+  calls.length = 0;
+  await ask("زوجي ما بدفع نفقة", { ...ENV, QUERY_TERMS: "off" });
+  assert.deepEqual(calls, ["give_reply"]);
+  calls.length = 0;
+  await ask("مرحبا");
+  assert.deepEqual(calls, ["give_reply"], "small talk makes no extra call");
 });

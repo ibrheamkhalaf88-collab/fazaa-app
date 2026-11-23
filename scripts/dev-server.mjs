@@ -43,13 +43,15 @@ async function fakeProvider(_url, init) {
           steps: ids.length ? ["ما توقّعي على أي ورقة قبل ما تحكي مع محامية"] : [],
           cites: ids.slice(0, 1),
         }
-      : tool === "give_support"
-        ? {
-            lead: "(تجربة محلية) فهمت عليكِ، واللي بتحكيه مهم.",
-            ask: "شو أكتر إشي بيضغط عليكِ هلأ؟",
-            options: [],
-          }
-        : { covered: false };
+      : tool === "legal_terms"
+        ? { terms: "", area: "none" } // the keyword retrieval decides locally
+        : tool === "give_support"
+          ? {
+              lead: "(تجربة محلية) فهمت عليكِ، واللي بتحكيه مهم.",
+              ask: "شو أكتر إشي بيضغط عليكِ هلأ؟",
+              options: [],
+            }
+          : { covered: false };
   if (process.env.FAKE_AI === "slow") await new Promise((r) => setTimeout(r, 4000));
   return new Response(
     JSON.stringify({ candidates: [{ content: { parts: [{ functionCall: { name: tool, args } }] } }] }),

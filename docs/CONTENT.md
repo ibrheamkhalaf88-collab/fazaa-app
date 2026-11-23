@@ -13,22 +13,17 @@ Everything a legal reviewer needs to check lives in `src/data/`.
 Workflow: edit -> `npm test` (the rules tests contain sample questions per intent) -> have a lawyer sign off the diff.
 Dialect: Palestinian; avoid legal Latin/MSA jargon unless quoting an article.
 
-## Laws differ by region (Gaza vs West Bank)
+## Laws differ by region and by court (2026-11-21)
 
-`src/data/law/index.js` holds the **law registry** (`LAWS`). Each entry lists the regions where that law applies
-(`"ps-wb"`, `"ps-gaza"`). The user's region comes from the country screen (`state.country`).
-Retrieval, the AI proxy and citation validation all use `articlesFor(region)`, so a Gaza user is never shown or
-quoted a West-Bank-only article, and vice versa.
+The law texts live in **five separate boxes**, one per region and court (`src/data/law/corpora.js`):
+`gaza/sharia`, `gaza/nizami`, `gaza/general`, `wb/sharia`, `wb/nizami`. A law sits in exactly one box, and the
+box (not the law) sets where it applies and which court applies it. The two West Bank boxes are ready and empty.
+Retrieval only sees the boxes of the user's region (`articlesFor(region)`), keeps the sharia and nizami texts
+apart (`keepCourtsApart` in `src/ai/retrieve.js`), every text reaches the model tagged with its court, and a reply
+naming a law of the other region is rejected. `tests/law-separation.test.js` guards all of it.
 
-Planned corpus (each needs verbatim text from an official source + a legal reviewer):
-
-| Topic                                                    | West Bank                                                               | Gaza                                                                          |
-| -------------------------------------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Personal status (divorce, custody, alimony, inheritance) | Jordanian Personal Status Law No. 61/1976 (selected articles in corpus) | Family Rights Law of 1954 (selected articles in corpus; verify with a lawyer) |
-| Penal                                                    | Jordanian Penal Code 16/1960                                            | Mandate-era Criminal Code Ordinance 1936                                      |
-| Cyber crimes                                             | Decree-Law 10/2018 (in corpus)                                          | **unconfirmed** - see TODO in `law/index.js`                                  |
-
-Do not enable a law for a region until a lawyer confirms it is in force there.
+**To add a law or fill a box, follow `docs/LAW-INTAKE.md`.** Do not enable a law for a region until a lawyer
+confirms it is in force there.
 
 ## Adding an article from the dashboard («القوانين», 2026-11-17)
 
@@ -42,5 +37,5 @@ No developer needed. A lawyer pastes the article verbatim with its official sour
 - the app downloads them from `/api/v1/laws` at start and keeps them on the device for offline use.
 
 Approved texts are not edited in place: hide it and add the corrected one. Anyone on the team can hide an
-article at once. Added ids look like `x12:9` (row 12, article 9). Built-in laws in `src/data/law/*.js` are not
+article at once. Added ids look like `x12:9` (row 12, article 9). Built-in laws in the boxes under `src/data/law/` are not
 affected and keep their fingerprint test. Existing database: re-run `schema.sql` once (it adds `law_articles`).

@@ -10,7 +10,7 @@
  * Generated from the PDFs; do NOT edit article text by hand. tests/law-integrity.test.js fingerprints it.
  */
 
-/** @typedef {import("./types.js").Article} Article */
+/** @typedef {import("../../types.js").Article} Article */
 
 export const CYBER_NAME = "قرار بقانون رقم (10) لسنة 2018 بشأن الجرائم الإلكترونية وتعديلاته";
 

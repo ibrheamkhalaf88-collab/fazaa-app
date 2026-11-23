@@ -11,7 +11,7 @@
  * RELEASING: bump CACHE_VERSION on every deploy. tests/precache.test.js fails if a file
  * in the app is missing from PRECACHE, so a forgotten file cannot ship unnoticed.
  */
-const CACHE_VERSION = "fazaa-v40";
+const CACHE_VERSION = "fazaa-v43";
 
 const PRECACHE = [
   "./",
@@ -83,12 +83,20 @@ const PRECACHE = [
   "src/data/procedures.js",
   "src/data/law/index.js",
   "src/data/law/added.js",
-  "src/data/law/cyber-crimes-2018.js",
-  "src/data/law/family-rights-gaza-1954.js",
-  "src/data/law/hanafi-personal-status.js",
-  "src/data/law/sharia-procedure-1965.js",
-  "src/data/law/majalla-claims.js",
-  "src/data/law/sharia-execution-2021.js",
+  "src/data/law/corpora.js",
+  "src/data/law/gaza/sharia/index.js",
+  "src/data/law/gaza/sharia/family-rights-gaza-1954.js",
+  "src/data/law/gaza/sharia/hanafi-personal-status.js",
+  "src/data/law/gaza/sharia/sharia-procedure-1965.js",
+  "src/data/law/gaza/sharia/sharia-execution-2021.js",
+  "src/data/law/gaza/nizami/index.js",
+  "src/data/law/gaza/nizami/cyber-crimes-2018.js",
+  "src/data/law/gaza/nizami/penal-code-1936.js",
+  "src/data/law/gaza/nizami/criminal-procedure-2001.js",
+  "src/data/law/gaza/general/index.js",
+  "src/data/law/gaza/general/majalla-claims.js",
+  "src/data/law/wb/sharia/index.js",
+  "src/data/law/wb/nizami/index.js",
   "src/data/law/types.js",
   "src/features/chat/chat.js",
   "src/features/chat/lawyer-session.js",

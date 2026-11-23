@@ -1,4 +1,4 @@
-import { INTENT_TO_ARTICLES } from "../data/law/index.js";
+import { INTENT_COURTS, INTENT_TO_ARTICLES } from "../data/law/index.js";
 import { detectIntents } from "./detect.js";
 import { tokenize } from "./normalize.js";
 
@@ -31,7 +31,8 @@ const stem = (w) => {
  */
 export function retrieveArticles(question, articles, limit = 3) {
   const fromIntent = [];
-  for (const intent of Object.keys(detectIntents(question))) {
+  const intents = detectIntents(question);
+  for (const intent of Object.keys(intents)) {
     for (const id of INTENT_TO_ARTICLES[intent] || []) {
       if (articles[id] && !fromIntent.includes(id)) fromIntent.push(id);
     }
@@ -61,5 +62,46 @@ export function retrieveArticles(question, articles, limit = 3) {
   for (const { a } of scored.filter((x) => x.score >= 4)) picked.set(a.id, a);
   for (const id of fromIntent) picked.set(id, articles[id]);
   for (const { a } of scored) picked.set(a.id, a);
-  return [...picked.values()].slice(0, limit);
+  const score = new Map(scored.map((x) => [x.a.id, x.score]));
+  return keepCourtsApart([...picked.values()], courtsOf(intents), score).slice(0, limit);
+}
+
+/** The courts her topic belongs to (src/data/law/index.js INTENT_COURTS); empty when no topic was detected. */
+function courtsOf(intents) {
+  return new Set(Object.keys(intents).flatMap((i) => INTENT_COURTS[i] || []));
+}
+
+/**
+ * Keep the sharia and the nizami texts apart (owner, 2026-11-21). A text of general rules (Majalla) goes with
+ * either.
+ *  - Her topic belongs to ONE court (custody -> sharia, blackmail -> nizami): texts of the other court are
+ *    dropped, however many words they share («ضرب» is in a penal article and in divorce for harm).
+ *  - No topic detected: the court of the best text leads; a text of the other court stays only when it matches
+ *    strongly on its own (score 4+), so a passing shared word does not bring in the other court.
+ *  - Her topic belongs to both (violence, threats): both stay, taking turns court by court so the long
+ *    divorce list does not push every nizami text past the limit, and the reply keeps the two parts apart.
+ * @param {{id:string, court?:string}[]} list  ranked
+ * @param {Set<string>} courts
+ * @param {Map<string, number>} score
+ */
+export function keepCourtsApart(list, courts, score) {
+  const own = (a) => !a.court || a.court === "general";
+  if (courts.size === 1) {
+    const [court] = courts;
+    return list.filter((a) => own(a) || a.court === court);
+  }
+  if (courts.size === 0) {
+    const lead = list.find((a) => !own(a))?.court;
+    return list.filter((a) => own(a) || a.court === lead || (score.get(a.id) || 0) >= 4);
+  }
+  // both courts: take turns, best first within each court
+  const groups = new Map();
+  for (const a of list) {
+    const key = a.court || "general";
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(a);
+  }
+  const out = [];
+  for (let i = 0; out.length < list.length; i++) for (const g of groups.values()) if (g[i]) out.push(g[i]);
+  return out;
 }

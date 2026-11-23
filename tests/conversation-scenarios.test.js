@@ -154,16 +154,43 @@ test("asking for an article by number returns THAT article, or says it is not in
   // the same number in two laws: both are shown, and she is asked which one she meant
   const both = findArticleByNumber("شو بتقول المادة 15؟", "ps-gaza");
   assert.equal(both.ambiguous, true);
-  assert.deepEqual(both.found.map((a) => a.id).sort(), ["cy:15", "ex:15", "gz:15", "hn:15", "sp:15"]);
+  assert.deepEqual(both.found.map((a) => a.id).sort(), [
+    "cp:15",
+    "cy:15",
+    "ex:15",
+    "gz:15",
+    "hn:15",
+    "pc:15",
+    "sp:15",
+  ]);
   assert.equal(findArticleByNumber("المادة 999", "ps-gaza").missing, true);
   // a Gaza article asked from the West Bank: known, but for another region, never given
   const wb = findArticleByNumber("شو بتقول المادة 59؟", "ps-wb");
   assert.equal(wb.missing, true);
-  assert.deepEqual(wb.outOfRegion.map((a) => a.id).sort(), ["cy:59", "gz:59", "hn:59", "sp:59"]);
+  assert.deepEqual(wb.outOfRegion.map((a) => a.id).sort(), [
+    "cp:59",
+    "cy:59",
+    "gz:59",
+    "hn:59",
+    "pc:59",
+    "sp:59",
+  ]);
   // a law the app does not have, named: never answered with another law's article
-  const other = findArticleByNumber("المادة 66 من قانون العقوبات", "ps-gaza");
+  const other = findArticleByNumber("المادة 66 من قانون البينات", "ps-gaza");
   assert.equal(other.missing, true);
   assert.deepEqual(other.found, []);
+  // the penal code 1936, named: only its article
+  const penal = findArticleByNumber("المادة 248 من قانون العقوبات", "ps-gaza");
+  assert.deepEqual(
+    penal.found.map((a) => a.id),
+    ["pc:248"],
+  );
+  // the criminal procedure law 2001, named: only its article (art. 5: a complaint within three months)
+  const procedure = findArticleByNumber("المادة 5 من قانون الإجراءات الجزائية", "ps-gaza");
+  assert.deepEqual(
+    procedure.found.map((a) => a.id),
+    ["cp:5"],
+  );
   // a law named by its title: only that law's article, even when another law has the same number
   const hanafi = findArticleByNumber("المادة 66 من قانون الأحوال الشخصية", "ps-gaza");
   assert.deepEqual(

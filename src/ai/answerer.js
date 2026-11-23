@@ -1,4 +1,12 @@
-import { ARTICLES, COURT_NAMES, INTENT_TO_ARTICLES, LAWS, articlesFor } from "../data/law/index.js";
+import {
+  ARTICLES,
+  COURT_NAMES,
+  INTENT_TO_ARTICLES,
+  LAWS,
+  REGION_NAMES,
+  articlesFor,
+  hasLawTexts,
+} from "../data/law/index.js";
 import {
   answeredNo,
   answeredYes,
@@ -105,28 +113,31 @@ export function createAnswerer({
     return (INTENT_TO_ARTICLES[intent] || []).filter((id) => inRegion[id]).slice(0, n);
   }
 
-  /** Which law, court and region the texts come from, and what the corpus does NOT have. */
+  /**
+   * Which law, court and region the texts come from, and what the corpus does NOT have. Region, courts and
+   * caveats come from the law registry (each law's box), so a West Bank or a nizami box needs no change here;
+   * texts of two courts are named each with its own court, never as one list (2026-11-21).
+   */
   function jurisdiction(ids, topic, country) {
     const lines = [];
-    const region = "قطاع غزة"; // the app is for Gaza only (2026-11-19)
+    const region = REGION_NAMES[country] || "";
     const laws = [...new Set(ids.map((id) => ARTICLES[id]?.lawKey))]
       .map((k) => LAWS.find((l) => l.key === k))
       .filter(Boolean);
     if (laws.length) {
       lines.push(`النصوص من ${laws.map((l) => `«${l.name}»`).join(" و")}، حسب منطقتك (${region}).`);
-      const courts = [...new Set(laws.map((l) => COURT_NAMES[l.court]).filter(Boolean))];
-      if (courts.length) lines.push(`هالقضايا بتنظر فيها ${courts.join(" و")}.`);
-      // decree-law issued in Ramallah: whether the Gaza courts apply it is not confirmed yet
-      if (laws.some((l) => l.key === "cyber-2018"))
-        lines.push("انتبهي: تطبيق قانون الجرائم الإلكترونية بغزة مش مؤكد، فاسألي محامية قبل ما تعتمدي عليه.");
-      // both family laws are applied by the sharia courts; which one prevails is a question for the lawyer
-      if (
-        laws.some((l) => l.key === "family-gaza-1954") &&
-        laws.some((l) => l.key === "hanafi-personal-status")
-      )
-        lines.push("إذا اختلف النصين، المحامية بتقدر تحكيلك أي واحد بتطبقه المحكمة.");
+      const courts = [...new Set(laws.map((l) => l.court).filter((c) => COURT_NAMES[c]))];
+      if (courts.length === 1) lines.push(`هالقضايا بتنظر فيها ${COURT_NAMES[courts[0]]}.`);
+      else
+        for (const l of laws.filter((x) => COURT_NAMES[x.court]))
+          lines.push(`«${l.name}» بتنظر فيه ${COURT_NAMES[l.court]}.`);
+      // the registry's caveats (e.g. the cyber-crimes decree-law: whether Gaza applies it is not confirmed)
+      for (const l of laws) if (l.caveat) lines.push(l.caveat);
+      // two laws of the same court that may differ (family rights 1954 and the Hanafi law): the lawyer decides
+      const keys = new Set(laws.map((l) => l.key));
+      for (const l of laws) for (const c of l.conflicts || []) if (keys.has(c.with)) lines.push(c.note);
     }
-    if (country !== "ps-gaza") lines.push("فزعة هلأ لقطاع غزة بس، فما بعطيكِ نص قانوني لمكان تاني.");
+    if (!hasLawTexts(country)) lines.push("فزعة هلأ لقطاع غزة بس، فما بعطيكِ نص قانوني لمكان تاني.");
     return lines;
   }
 
