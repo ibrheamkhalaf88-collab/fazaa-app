@@ -1259,3 +1259,47 @@ dl.client dd {
 .law-form[open] summary {
   margin-bottom: 12px;
 }
+
+/* ---------- phone polish (≤900px): shorter header, visible tab overflow, smaller take button ---------- */
+@media (max-width: 900px) {
+  .side {
+    padding: 8px 12px;
+    gap: 6px;
+  }
+  .brand {
+    font-size: 22px;
+  }
+  .side-foot {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .side .tools {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+  .side .tools button {
+    flex: none;
+    white-space: nowrap;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .nav {
+    /* fade the far edge so a cut-off tab reads as "more to scroll" */
+    -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+    mask-image: linear-gradient(to left, #000 calc(100% - 28px), transparent);
+  }
+  .nav button {
+    flex: none;
+  }
+  .thread-row {
+    padding: 10px 14px;
+  }
+  .thread-row .take {
+    padding: 4px 12px;
+    font-size: 13px;
+  }
+}

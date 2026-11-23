@@ -4,8 +4,8 @@ import { $$, el, icon } from "../../core/dom.js";
 const TABS = [
   ["home", "i-home", "الرئيسية"],
   ["chat", "i-chat", "اسألي"],
-  ["sos", "i-alert", "طوارئ ودعم"],
   ["lawyer", "i-scale", "محامية"],
+  ["sos", "i-alert", "طوارئ ودعم"],
 ];
 
 /** Screens that light up another screen's tab. */
