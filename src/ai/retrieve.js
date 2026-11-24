@@ -16,6 +16,48 @@ const stem = (w) => {
 };
 
 /**
+ * The words of an article, worked out ONCE per article object and kept for the life of the Worker isolate
+ * (2026-11-24). With 2,000+ Gaza articles, tokenising every text on every message took 60-75 ms of CPU and
+ * Cloudflare started refusing the chat (error 1102). A WeakMap: an article that is replaced (a lawyer's edit)
+ * gets its own entry, the old one is dropped with it.
+ * @type {WeakMap<object, {words: Set<string>, keys: Set<string>}>}
+ */
+const WORDS = new WeakMap();
+function wordsOf(a) {
+  let w = WORDS.get(a);
+  if (!w) {
+    // the curated everyday words of a topic («غايب», «بيضربني») are a strong signal: one is enough
+    w = { words: new Set(tokenize(`${a.topic} ${a.text}`).map(stem)), keys: new Set(tokenize(a.keywords || "").map(stem)) };
+    WORDS.set(a, w);
+  }
+  return w;
+}
+
+/**
+ * Word -> articles index of one article list (the per-region list from articlesFor, cached there), built once
+ * and kept while that list lives. `order` is each article's position in the list.
+ * @type {WeakMap<object, {byWord: Map<string, object[]>, order: Map<object, number>}>}
+ */
+const INDEX = new WeakMap();
+function indexOf(articles) {
+  let idx = INDEX.get(articles);
+  if (!idx) {
+    idx = { byWord: new Map(), order: new Map() };
+    Object.values(articles).forEach((a, i) => {
+      idx.order.set(a, i);
+      const { words, keys } = wordsOf(a);
+      for (const w of new Set([...words, ...keys])) {
+        const list = idx.byWord.get(w);
+        if (list) list.push(a);
+        else idx.byWord.set(w, [a]);
+      }
+    });
+    INDEX.set(articles, idx);
+  }
+  return idx;
+}
+
+/**
  * Pick the articles an answer may be built from. Two signals, in order:
  *   1. intent -> article map (precise, hand-curated);
  *   2. word overlap between the question and the article text (catches phrasing
@@ -44,11 +86,15 @@ export function retrieveArticles(question, articles, limit = 3) {
       .filter((w) => w.length >= 3 && !GENERIC.has(w))
       .map(stem),
   );
-  const scored = Object.values(articles)
+  // only the articles that share a word with the question are scored (word index), in their original order,
+  // so equal scores keep the same order as a scan of every article would give
+  const { byWord, order } = indexOf(articles);
+  const candidates = new Set();
+  for (const w of query) for (const a of byWord.get(w) || []) candidates.add(a);
+  const scored = [...candidates]
+    .sort((x, y) => order.get(x) - order.get(y))
     .map((a) => {
-      const words = new Set(tokenize(`${a.topic} ${a.text}`).map(stem));
-      // the curated everyday words of a topic («غايب», «بيضربني») are a strong signal: one is enough
-      const keys = new Set(tokenize(a.keywords || "").map(stem));
+      const { words, keys } = wordsOf(a);
       let score = 0;
       for (const w of query) score += keys.has(w) ? 2 : words.has(w) ? 1 : 0;
       return { a, score };

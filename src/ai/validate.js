@@ -68,6 +68,16 @@ const FORBIDDEN = [
   "دايما هون",
   "مش لوحدك ابدا",
   "مش لحالك ابدا",
+  // (live review 2026-11-24) said by Gemini: a promise of secrecy / company / safety it cannot keep
+  "مش لوحدك",
+  "مش لحالك",
+  "بكل سريه",
+  "بسريه تامه",
+  "بكل سريه وامان",
+  "موقعك هون امن",
+  "هون امن",
+  "انت هون بامان",
+  "انتي هون بامان",
   // safety nobody can know from a chat
   "انت بمكان امن",
   "انتي بمكان امن",
@@ -92,9 +102,12 @@ const FORBIDDEN = [
 /** Pet names: removed from the reply (not a reason to throw it away), never said to her. */
 const PET_NAMES =
   /(?:^|[\s،,.!؟])(?:يا\s+)(?:حبيبتي|حبيبه|قلبي|عمري|روحي|حياتي|عسل|غاليه|غالية|حبيبة\s+قلبي)(?=[\s،,.!؟]|$)/g;
+/** Without «يا»: at the very start («حبيبتي أنا سامعتك», found live 2026-11-24) or between commas. */
+const PET_BARE = /(?:^|(?<=[،,]\s*))(?:حبيبتي|حبيبة\s+قلبي|حبيبه|عمري|روحي|حياتي|غاليتي)(?:[\s،,]+|$)/g;
 const dropPetNames = (s) =>
   s
     .replace(PET_NAMES, " ")
+    .replace(PET_BARE, "")
     .replace(/\s+([،,.!؟])/g, "$1")
     .replace(/\s{2,}/g, " ")
     .replace(/^[\s،,]+/, "")

@@ -36,6 +36,11 @@ const LIMITS = {
 };
 /** The app is for the Gaza Strip only (owner, 2026-11-19); an old client's «ps-wb» or "" is answered as Gaza. */
 const COUNTRIES = ["ps-gaza"];
+
+// Build the word index of each region's laws when the Worker starts (about 70 ms once per isolate), not on a
+// woman's first message: per request, retrieval then costs well under 1 ms (Cloudflare error 1102 on
+// 2026-11-24 came from re-reading 2,000+ articles on every chat message).
+for (const region of COUNTRIES) retrieveArticles("نفقه حضانه طلاق", articlesFor(region), 1);
 /** The <place> line of the prompt. */
 const PLACE_NAMES = { "ps-gaza": "Gaza Strip", "ps-wb": "West Bank" };
 const PLACE = (country = "ps-gaza") => PLACE_NAMES[country] || PLACE_NAMES["ps-gaza"];
@@ -172,7 +177,7 @@ HOW YOUR ANSWER IS SHOWN (fill the fields accordingly)
 The app shows: your reply, then a box «خلاصة حديثنا» with the rights and the steps, then the original law texts folded, then your question.
 
 STYLE
-Palestinian Arabic as spoken in Gaza (هلأ، كتير، شو، منيح، مش), feminine address, simple words. No Syrian, Gulf or Egyptian words (no هلق، مو، شلون، ايش، دلوقتي، كلشي). Longer only when she asks for detail. At most ONE question. No pet names (يا حبيبتي، يا قلبي), no emoji, no markdown. Do not repeat sentences or openings from your earlier replies. Replies that break these rules are discarded by the app.`;
+Palestinian Arabic as spoken in Gaza (هلأ، كتير، شو، منيح، مش), feminine address, simple words. No Syrian, Gulf or Egyptian words (no هلق، مو، شلون، ايش، دلوقتي، كلشي). Longer only when she asks for detail. At most ONE question. No pet names (يا حبيبتي، يا قلبي، حبيبتي، يا اختي), no emoji, no markdown. Do not repeat sentences or openings from your earlier replies; do not open with «ولا يهمك». Never promise secrecy («بكل سرية»), never say she is not alone («مش لوحدك») or that this place is safe. Replies that break these rules are discarded by the app.`;
 
 export const CHAT_TOOL = {
   name: "give_reply",
@@ -639,9 +644,13 @@ export function contactLines(contacts) {
 /** One AI reply in the conversation (the AI-first assistant). */
 async function chatAnswer(turns, country, provider, key, env, fetchImpl, dangerMentioned, contacts = []) {
   // small talk («مرحبا», «شكراً») needs no law texts: no extra call
-  const hint = detectSmallTalk(turns.at(-1).text)
+  // a full new message is read on its own; only a short follow-up («طيب شو بعمل؟») with the one before it.
+  // (live review 2026-11-24: «معه صوري وبدّه مصاري» right after a maintenance question was read as family
+  // law, the cyber-crime texts were dropped, and she got no answer at all)
+  const last = turns.at(-1).text;
+  const hint = detectSmallTalk(last)
     ? { terms: "", area: "" }
-    : await legalTerms(lastWords(turns), provider, key, env, fetchImpl);
+    : await legalTerms(last.split(/\s+/).length > 6 ? last : lastWords(turns), provider, key, env, fetchImpl);
   const articles = articlesForChat(turns, country, hint);
   const byId = Object.fromEntries(articles.map((a) => [a.id, a]));
   const place = PLACE(country);

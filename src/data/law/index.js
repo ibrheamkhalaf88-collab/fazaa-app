@@ -202,6 +202,7 @@ export const ADDED_REGIONS = { "ps-wb": ["ps-wb"], "ps-gaza": ["ps-gaza"], both:
  *          amended?:string, url:string, keywords?:string}[]} list
  */
 export function useAddedArticles(list) {
+  BY_REGION.clear(); // the region lists below are rebuilt on next use
   for (const id of ADDED) delete ARTICLES[id];
   ADDED.clear();
   for (const a of Array.isArray(list) ? list : []) {
@@ -232,8 +233,17 @@ export function useAddedArticles(list) {
  * @param {string} region
  */
 export function articlesFor(region) {
-  return Object.fromEntries(Object.entries(ARTICLES).filter(([, a]) => a.regions.includes(region)));
+  // built once per region and kept until the added articles change (2,000+ Gaza articles: filtering them on
+  // every call cost CPU on each chat message). Treat the result as read-only.
+  let list = BY_REGION.get(region);
+  if (!list) {
+    list = Object.fromEntries(Object.entries(ARTICLES).filter(([, a]) => a.regions.includes(region)));
+    BY_REGION.set(region, list);
+  }
+  return list;
 }
+/** @type {Map<string, Record<string, object>>} */
+const BY_REGION = new Map();
 
 /**
  * Which articles are relevant to which detected intent. Ids missing for the user's
