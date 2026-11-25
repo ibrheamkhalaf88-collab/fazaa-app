@@ -20,7 +20,8 @@
 
 .spark-card img {
   display: block;
-  width: min(220px, 62vw);
+  width: 150px;
+  max-width: 44vw;
   height: auto;
 }
 
