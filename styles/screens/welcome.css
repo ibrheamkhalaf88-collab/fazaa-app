@@ -55,9 +55,9 @@
 }
 
 .welcome .sponsor img {
-  width: 64px;
+  width: min(230px, 75%);
   height: auto;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .welcome .sponsor b {
