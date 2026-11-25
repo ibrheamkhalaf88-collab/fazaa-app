@@ -57,13 +57,22 @@
   <body>
     <div class="device">
       <main class="app" id="app">
-        <!-- 0a. brand screen with the sponsor logo (first run only, before the intro) -->
+        <!-- 0a. greeting screen (first run only, before the intro) -->
         <section class="screen spark" data-screen="spark" hidden>
           <div class="body">
-            <div class="spark-card">
-              <img src="assets/partners/spark-over-jamra.png" alt="شعار سبارك فوق، وتحته شعار جمرة" width="221" height="262" />
+            <div class="spark-hero">
+              <span class="spark-ring" aria-hidden="true"></span>
+              <span class="spark-ring r2" aria-hidden="true"></span>
+              <span class="spark-badge">
+                <svg class="ic"><use href="#i-hands" /></svg>
+              </span>
             </div>
-            <button class="btn primary" data-go="intro">التالي</button>
+            <div class="spark-text">
+              <p class="spark-hi">أهلاً فيكِ في</p>
+              <h1 class="brush spark-wm">فَزعة</h1>
+              <p class="spark-line">مساحة آمنة، وإنتِ مش لحالك.</p>
+            </div>
+            <button class="btn primary" data-go="intro">يلا نبدأ</button>
           </div>
         </section>
 
