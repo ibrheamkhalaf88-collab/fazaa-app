@@ -45,6 +45,30 @@
   color: var(--ink);
 }
 
+.welcome .sponsor {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+.welcome .sponsor img {
+  width: 64px;
+  height: auto;
+  margin-bottom: 4px;
+}
+
+.welcome .sponsor b {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.welcome .sponsor .made {
+  font-size: 12px;
+}
+
 .welcome .btn.primary {
   box-shadow: 0 14px 26px -12px rgba(150, 100, 30, 0.55);
   font-weight: 500;
