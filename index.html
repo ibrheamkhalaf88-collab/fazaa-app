@@ -42,6 +42,7 @@
     <link rel="stylesheet" href="styles/base.css" />
     <link rel="stylesheet" href="styles/layout.css" />
     <link rel="stylesheet" href="styles/components.css" />
+    <link rel="stylesheet" href="styles/screens/spark.css" />
     <link rel="stylesheet" href="styles/screens/intro.css" />
     <link rel="stylesheet" href="styles/screens/welcome.css" />
     <link rel="stylesheet" href="styles/screens/country.css" />
@@ -56,6 +57,16 @@
   <body>
     <div class="device">
       <main class="app" id="app">
+        <!-- 0a. brand screen with the sponsor logo (first run only, before the intro) -->
+        <section class="screen spark" data-screen="spark" hidden>
+          <div class="body">
+            <div class="spark-card">
+              <img src="assets/partners/spark-logo.png" alt="شعار سبارك للابتكار والإبداع" />
+            </div>
+            <button class="btn primary" data-go="intro">التالي</button>
+          </div>
+        </section>
+
         <!-- 0. intro (shown once, reachable again from the welcome screen) -->
         <section class="screen intro" data-screen="intro" hidden>
           <div class="top">

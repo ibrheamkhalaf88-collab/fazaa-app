@@ -54,6 +54,6 @@ export function createIntro({ store, router }) {
 
   return {
     /** The first screen: the intro until it has been seen, otherwise wherever the user left off. */
-    startScreen: () => (store.get("introSeen", false) ? router.restore() : "intro"),
+    startScreen: () => (store.get("introSeen", false) ? router.restore() : "spark"),
   };
 }

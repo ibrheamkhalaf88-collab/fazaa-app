@@ -11,7 +11,7 @@
  * RELEASING: bump CACHE_VERSION on every deploy. tests/precache.test.js fails if a file
  * in the app is missing from PRECACHE, so a forgotten file cannot ship unnoticed.
  */
-const CACHE_VERSION = "fazaa-v46";
+const CACHE_VERSION = "fazaa-v47";
 
 const PRECACHE = [
   "./",
@@ -39,6 +39,7 @@ const PRECACHE = [
   "styles/base.css",
   "styles/layout.css",
   "styles/components.css",
+  "styles/screens/spark.css",
   "styles/screens/intro.css",
   "styles/screens/welcome.css",
   "styles/screens/country.css",
