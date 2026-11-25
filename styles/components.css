@@ -262,10 +262,9 @@
 
 .qx {
   position: absolute;
-  /* in the header row, like the chat's exit button: a floating button at the bottom covered the cards
-     scrolling under it */
+  /* floating at the bottom-left, just above the tab bar so it never covers the tabs */
   left: 14px;
-  top: calc(14px + env(safe-area-inset-top, 0px));
+  bottom: calc(86px + env(safe-area-inset-bottom, 0px));
   z-index: 15;
   display: inline-flex;
   align-items: center;
