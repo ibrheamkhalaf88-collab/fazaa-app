@@ -23,6 +23,7 @@ import { createStore } from "./core/store.js";
 import { createChat } from "./features/chat/chat.js";
 import { createDisguise } from "./features/disguise/disguise.js";
 import { createIntro } from "./features/intro/intro.js";
+import { createInstall } from "./features/install/install.js";
 import { renderTabs } from "./features/nav/tabs.js";
 import { createSettings } from "./features/settings/settings.js";
 import { createTheme } from "./features/settings/theme.js";
@@ -163,6 +164,8 @@ async function boot() {
   lawyerCards.refresh();
   router.onChange((name) => (name === "home" || name === "lawyer") && lawyerCards.refresh());
   window.addEventListener("appinstalled", () => telemetry.track("install"));
+  // the download card on the welcome screen (desktop shortcut or home-screen icon)
+  createInstall({ store });
 
   registerServiceWorker();
 }

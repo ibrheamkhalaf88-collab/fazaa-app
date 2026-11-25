@@ -45,6 +45,34 @@
   color: var(--ink);
 }
 
+.welcome .install {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  max-width: 34ch;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.welcome .install[hidden] {
+  display: none;
+}
+
+.welcome .install-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.welcome .install-actions .btn.small {
+  min-height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
 .welcome .sponsor {
   display: grid;
   justify-items: center;
