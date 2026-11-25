@@ -46,6 +46,45 @@
   background: var(--surface);
 }
 
+/* download button in the top bar, right beside the settings entry */
+.hello .install-top {
+  flex-shrink: 0;
+  color: var(--primary);
+}
+
+.install-top[hidden] {
+  display: none;
+}
+
+/* one-time notice on home: asks her to add Fazaa to the device */
+.install-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: var(--surface);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.install-banner[hidden] {
+  display: none;
+}
+
+.install-banner .install-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.install-banner .btn.small {
+  min-height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+
 /* the settings entry shows a gear icon instead of a picture */
 .avbtn svg.av {
   padding: 11px;

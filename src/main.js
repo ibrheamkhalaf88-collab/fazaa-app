@@ -165,7 +165,7 @@ async function boot() {
   router.onChange((name) => (name === "home" || name === "lawyer") && lawyerCards.refresh());
   window.addEventListener("appinstalled", () => telemetry.track("install"));
   // the download card on the welcome screen (desktop shortcut or home-screen icon)
-  createInstall({ store });
+  createInstall({ store, router });
 
   registerServiceWorker();
 }
