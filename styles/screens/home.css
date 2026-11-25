@@ -46,6 +46,12 @@
   background: var(--surface);
 }
 
+/* the settings entry shows a gear icon instead of a picture */
+.avbtn svg.av {
+  padding: 11px;
+  color: var(--primary);
+}
+
 .chev {
   transform: scaleX(-1);
   color: var(--ink-soft);
